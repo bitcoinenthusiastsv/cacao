@@ -11,11 +11,11 @@ import { escapar } from "./escapar.ts";
 // Every value that comes from a ticket or a document is escaped before it reaches the HTML.
 
 export const OTROS_PRODUCTOS = [
+  { nombre: "cacao", url: "https://cacao.vercel.app" },
   { nombre: "cacaomedia", url: "https://cacao-media.vercel.app" },
   { nombre: "cacaotravel", url: "https://cacao-travel.vercel.app" },
   { nombre: "cacaomarket", url: "https://cacao-market.vercel.app" },
   { nombre: "cacaopay", url: "https://cacao-pay.vercel.app" },
-  { nombre: "cacaojuego", url: "https://cacao-juego.vercel.app" },
 ] as const;
 
 export interface DocumentoSitio {
@@ -81,7 +81,7 @@ function pagina(titulo: string, prefijo: string, cuerpo: string): string {
 ${cuerpo}
 </main>
 <footer class="pie">
-<p>Otros productos del grupo Cacao</p>
+<p>Cacao, la empresa, y los otros productos</p>
 <ul>${enlaces}</ul>
 </footer>
 </body>
