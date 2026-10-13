@@ -1,0 +1,429 @@
+/* CacaoPay: a remittance counter on kraft paper. The page ground is Arena and the panels are
+   Blanco calido. Brand colours are used only through these variables. No shadows, no gradients.
+   Text pairs: Tostado on light grounds, Pulpa on dark ones. */
+:root {
+  --pulpa: #f5ede3;
+  --tostado: #2a1912;
+  --mazorca: #d9902f;
+  --criollo: #8c2f2b;
+  --grano-fresco: #5e3050;
+  --chocolate: #5a3221;
+  --arena: #e6d8c6;
+  --blanco: #fffaf4;
+
+  --fuente: var(--font-bricolage), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: var(--font-mono), ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --canal: 16px;
+  --ancho: 1120px;
+  --radio: 16px;
+  --radio-chico: 10px;
+  --alto-toque: 44px;
+  --barra-alto: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--arena);
+  color: var(--tostado);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  /* A long name without spaces must wrap, not push the page wider. */
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+}
+
+h2 {
+  font-size: clamp(1.4rem, 3.5vw, 1.85rem);
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Focus ring: Tostado on light grounds, Pulpa on dark ones (see the list below).
+   The ring follows each element's own radius, so no border-radius is set here. */
+:focus-visible {
+  outline: 3px solid var(--tostado);
+  outline-offset: 2px;
+}
+
+/* Controls that sit on a dark ground get a Pulpa ring. */
+.boton:focus-visible,
+.saltar:focus-visible,
+.barra-inferior :focus-visible,
+.nav--cabecera a[aria-current='page']:focus-visible {
+  outline-color: var(--pulpa);
+}
+
+/* Tab bar items sit at the screen edge, so their ring is drawn inside them. */
+.barra-inferior :focus-visible {
+  outline-offset: -5px;
+}
+
+main:focus {
+  outline: none;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.contenedor {
+  width: min(100% - 2 * var(--canal), var(--ancho));
+  margin-inline: auto;
+}
+
+.dato {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+/* Skip link: hidden until it takes focus. */
+.saltar {
+  position: absolute;
+  left: var(--canal);
+  top: -100px;
+  z-index: 20;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--tostado);
+  color: var(--pulpa);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.saltar:focus {
+  top: 8px;
+}
+
+/* The demo ribbon. Mono text, Pulpa on Tostado. */
+.cinta {
+  padding: 6px var(--canal);
+  background: var(--tostado);
+  color: var(--pulpa);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Header */
+.cabecera {
+  background: var(--arena);
+  border-bottom: 2px solid var(--tostado);
+}
+
+.cabecera__fila {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+  padding-block: 8px;
+}
+
+.logo-enlace {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: var(--alto-toque);
+  color: var(--tostado);
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+/* The wordmark is smaller below 360px so the logo and the account link share one 320px row. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22em;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--tostado);
+  white-space: nowrap;
+}
+
+@media (min-width: 360px) {
+  .logo {
+    font-size: 21px;
+  }
+}
+
+.logo__letras {
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.logo__letras b {
+  font-weight: 800;
+}
+
+.cabecera__cuenta {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  min-width: 0;
+}
+
+/* Navigation: tab bar on phones, header row on wide screens */
+.nav ul {
+  display: grid;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav--cabecera {
+  display: none;
+}
+
+.barra-inferior {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+.nav--barra ul {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.nav--barra a {
+  position: relative;
+  min-height: 56px;
+  padding: 6px 2px;
+  color: var(--pulpa);
+  font-size: 0.875rem;
+  line-height: 1.15;
+}
+
+.nav--barra a[aria-current='page'] {
+  font-weight: 800;
+}
+
+/* The mark over the current section: a Mazorca bar along the top edge of the tab. */
+.nav--barra a[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18%;
+  right: 18%;
+  height: 4px;
+  background: var(--mazorca);
+}
+
+.principal {
+  padding-block: 24px calc(var(--barra-alto) + 40px + env(safe-area-inset-bottom));
+}
+
+/* Buttons */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--alto-toque);
+  padding: 0 20px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--tostado);
+  color: var(--pulpa);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.boton--secundario {
+  background: transparent;
+  color: var(--tostado);
+}
+
+.boton:not(:disabled):hover {
+  background: var(--chocolate);
+}
+
+.boton--secundario:not(:disabled):hover {
+  background: var(--blanco);
+}
+
+.boton:disabled {
+  background: var(--arena);
+  color: var(--tostado);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Forms */
+.encabezado {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.encabezado p {
+  font-size: 1.0625rem;
+  max-width: 36em;
+}
+
+.campo-etiqueta {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.campo {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--alto-toque);
+  padding: 0 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  color: var(--tostado);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.aviso {
+  font-size: 0.9375rem;
+}
+
+/* Empty and placeholder states */
+.vacio {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding: 24px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.pagina-vacia {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding-block: 40px;
+}
+
+@media (min-width: 900px) {
+  .logo {
+    font-size: 26px;
+  }
+
+  .barra-inferior {
+    display: none;
+  }
+
+  .principal {
+    padding-bottom: 56px;
+  }
+
+  .nav--cabecera {
+    display: block;
+    margin-left: auto;
+  }
+
+  .nav--cabecera ul {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav--cabecera a {
+    min-height: var(--alto-toque);
+    padding: 0 12px;
+    border-radius: 999px;
+  }
+
+  .nav--cabecera a[aria-current='page'] {
+    background: var(--tostado);
+    color: var(--pulpa);
+  }
+
+  .cabecera__cuenta {
+    margin-left: 0;
+  }
+}
+
+/* Motion only where it answers a press or a hover, and never for people who ask for less. */
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  .boton {
+    transition: background-color 0.15s, color 0.15s;
+  }
+}
+
+/* Four tab labels do not fit a 320px screen at full size. */
+@media (max-width: 359px) {
+  .nav--barra a {
+    font-size: 0.8125rem;
+    padding-inline: 0;
+  }
+}

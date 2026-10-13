@@ -1,0 +1,55 @@
+/* Profile page. Brand variables only; Tostado on Arena, Blanco and Mazorca. */
+.cuenta {
+  display: grid;
+  gap: 32px;
+}
+
+.bloque {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.datos {
+  display: grid;
+  gap: 4px;
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

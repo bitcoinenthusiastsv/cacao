@@ -460,3 +460,85 @@ export async function negocioDe(dueno: Usuario): Promise<Fila> {
   if (error) throw error;
   return data;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Funnel events, Cacao Media and Cacao Pay (tests/db/eventos.test.ts, media-cobros.test.ts,
+// pay-transferencias.test.ts).
+
+// A user who signs in with an email. The profile keeps the email where the phone would be.
+export async function usuarioConCorreo(): Promise<Usuario & { correo: string }> {
+  const correo = `prueba-${sufijo()}@ejemplo.sv`;
+  const { data, error } = await servicio().auth.admin.createUser({ email: correo, password: CLAVE, email_confirm: true });
+  if (error) throw error;
+  return { id: data.user.id, telefono: correo, correo };
+}
+
+// A phone that no test user has (test users use the 5035 range).
+export function contactoSinCuenta(): string {
+  return `+5038${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`;
+}
+
+// A stored phone (digits only) as a person types it: "+503 7000 0002".
+export function telefonoComoLoEscribe(telefono: string): string {
+  return `+${telefono.slice(0, 3)} ${telefono.slice(3, 7)} ${telefono.slice(7)}`;
+}
+
+export type DatosTransferencia = {
+  remitente: Usuario;
+  nombre?: string;
+  contacto?: string;
+  origen?: 'USD' | 'EUR';
+  monto: number;
+  destino?: 'USD' | 'SATS';
+  entrega?: 'efectivo' | 'cuenta' | 'lightning';
+  tasa?: number;
+  comision: number;
+  montoDestino: number;
+  nota?: string;
+  clave?: string;
+};
+
+// Raw result of pay_crear_transferencia, so tests can check the error.
+export function transferirRaw(d: DatosTransferencia) {
+  return servicio().rpc('pay_crear_transferencia', {
+    p_remitente: d.remitente.id,
+    p_destinatario_nombre: d.nombre ?? 'Mamá Marta',
+    p_destinatario_contacto: d.contacto ?? contactoSinCuenta(),
+    p_moneda_origen: d.origen ?? 'USD',
+    p_monto_origen: d.monto,
+    p_moneda_destino: d.destino ?? 'USD',
+    p_entrega: d.entrega ?? 'efectivo',
+    p_tasa: d.tasa ?? 1,
+    p_tasa_fuente: 'Tasa de prueba',
+    p_comision: d.comision,
+    p_monto_destino: d.montoDestino,
+    p_nota: d.nota ?? '',
+    p_clave: d.clave ?? `pay-${sufijo()}`,
+  });
+}
+
+// Creates a transfer and fails the test if it is refused.
+export async function transferir(d: DatosTransferencia): Promise<Fila> {
+  const { data, error } = await transferirRaw(d);
+  if (error) throw error;
+  return data;
+}
+
+// State changes of a transfer, oldest first.
+export async function historialPayDe(transferenciaId: string): Promise<Fila[]> {
+  const { data, error } = await servicio().from('pay_historial').select('*').eq('transferencia_id', transferenciaId).order('id');
+  if (error) throw error;
+  return data ?? [];
+}
+
+// Audit rows of a transfer, oldest first.
+export async function auditoriaDeTransferencia(transferenciaId: string): Promise<Fila[]> {
+  const { data, error } = await servicio()
+    .from('auditoria')
+    .select('*')
+    .eq('entidad', 'transferencia')
+    .eq('entidad_id', transferenciaId)
+    .order('id');
+  if (error) throw error;
+  return data ?? [];
+}

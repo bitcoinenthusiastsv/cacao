@@ -34,7 +34,7 @@ export type LineaOrden = {
 
 export type PagoOrden = {
   proveedor: 'manual' | 'falso' | 'nwc' | 'blink';
-  estado: 'pendiente' | 'pagado' | 'expirado';
+  estado: 'pendiente' | 'pagado' | 'expirado' | 'cancelado';
 };
 
 export type ResenaOrden = {

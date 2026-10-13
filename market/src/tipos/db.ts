@@ -351,6 +351,81 @@ export type Database = {
           },
         ]
       }
+      eventos: {
+        Row: {
+          creado_en: string
+          hora: string
+          id: number
+          nombre: string
+          objeto: string | null
+          ruta: string
+          sesion: string
+          sitio: string
+          usuario_id: string | null
+          valor_usd_centavos: number | null
+        }
+        Insert: {
+          creado_en?: string
+          hora?: string
+          id?: never
+          nombre: string
+          objeto?: string | null
+          ruta?: string
+          sesion: string
+          sitio: string
+          usuario_id?: string | null
+          valor_usd_centavos?: number | null
+        }
+        Update: {
+          creado_en?: string
+          hora?: string
+          id?: never
+          nombre?: string
+          objeto?: string | null
+          ruta?: string
+          sesion?: string
+          sitio?: string
+          usuario_id?: string | null
+          valor_usd_centavos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_sitio_nombre_fkey"
+            columns: ["sitio", "nombre"]
+            isOneToOne: false
+            referencedRelation: "eventos_permitidos"
+            referencedColumns: ["sitio", "nombre"]
+          },
+          {
+            foreignKeyName: "eventos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_permitidos: {
+        Row: {
+          etiqueta: string
+          nombre: string
+          orden: number
+          sitio: string
+        }
+        Insert: {
+          etiqueta: string
+          nombre: string
+          orden: number
+          sitio: string
+        }
+        Update: {
+          etiqueta?: string
+          nombre?: string
+          orden?: number
+          sitio?: string
+        }
+        Relationships: []
+      }
       lineas_orden: {
         Row: {
           cantidad: number
@@ -405,6 +480,122 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      media_accesos: {
+        Row: {
+          cobro_id: string
+          creado_en: string
+          id: string
+          lector_id: string
+          slug: string
+        }
+        Insert: {
+          cobro_id: string
+          creado_en?: string
+          id?: string
+          lector_id: string
+          slug: string
+        }
+        Update: {
+          cobro_id?: string
+          creado_en?: string
+          id?: string
+          lector_id?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_accesos_cobro_id_fkey"
+            columns: ["cobro_id"]
+            isOneToOne: true
+            referencedRelation: "media_cobros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_accesos_lector_id_fkey"
+            columns: ["lector_id"]
+            isOneToOne: false
+            referencedRelation: "media_lectores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_cobros: {
+        Row: {
+          cerrada_en: string | null
+          cotizacion_usd_btc: number
+          creado_en: string
+          estado: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en: string
+          factura: string
+          id: string
+          lector_id: string
+          motivo: string | null
+          pagada_en: string | null
+          precio_sats: number
+          precio_usd_centavos: number
+          slug: string
+          titulo: string
+        }
+        Insert: {
+          cerrada_en?: string | null
+          cotizacion_usd_btc: number
+          creado_en?: string
+          estado?: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en: string
+          factura: string
+          id?: string
+          lector_id: string
+          motivo?: string | null
+          pagada_en?: string | null
+          precio_sats: number
+          precio_usd_centavos: number
+          slug: string
+          titulo: string
+        }
+        Update: {
+          cerrada_en?: string | null
+          cotizacion_usd_btc?: number
+          creado_en?: string
+          estado?: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en?: string
+          factura?: string
+          id?: string
+          lector_id?: string
+          motivo?: string | null
+          pagada_en?: string | null
+          precio_sats?: number
+          precio_usd_centavos?: number
+          slug?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_cobros_lector_id_fkey"
+            columns: ["lector_id"]
+            isOneToOne: false
+            referencedRelation: "media_lectores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_lectores: {
+        Row: {
+          creado_en: string
+          id: string
+          visto_en: string
+        }
+        Insert: {
+          creado_en?: string
+          id?: string
+          visto_en?: string
+        }
+        Update: {
+          creado_en?: string
+          id?: string
+          visto_en?: string
+        }
+        Relationships: []
       }
       mensajes: {
         Row: {
@@ -655,6 +846,179 @@ export type Database = {
           },
         ]
       }
+      pay_historial: {
+        Row: {
+          creado_en: string
+          detalle: string
+          estado: Database["public"]["Enums"]["pay_estado"]
+          id: number
+          transferencia_id: string
+        }
+        Insert: {
+          creado_en?: string
+          detalle?: string
+          estado: Database["public"]["Enums"]["pay_estado"]
+          id?: never
+          transferencia_id: string
+        }
+        Update: {
+          creado_en?: string
+          detalle?: string
+          estado?: Database["public"]["Enums"]["pay_estado"]
+          id?: never
+          transferencia_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_historial_transferencia_id_fkey"
+            columns: ["transferencia_id"]
+            isOneToOne: false
+            referencedRelation: "pay_transferencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pay_tarifas: {
+        Row: {
+          descripcion: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          fijo_centavos: number
+          minutos_estimados: number
+          porcentaje_bps: number
+        }
+        Insert: {
+          descripcion: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          fijo_centavos: number
+          minutos_estimados: number
+          porcentaje_bps: number
+        }
+        Update: {
+          descripcion?: string
+          entrega?: Database["public"]["Enums"]["pay_entrega"]
+          fijo_centavos?: number
+          minutos_estimados?: number
+          porcentaje_bps?: number
+        }
+        Relationships: []
+      }
+      pay_tasas: {
+        Row: {
+          actualizada_en: string
+          fuente: string
+          par: string
+          tasa: number
+        }
+        Insert: {
+          actualizada_en?: string
+          fuente: string
+          par: string
+          tasa: number
+        }
+        Update: {
+          actualizada_en?: string
+          fuente?: string
+          par?: string
+          tasa?: number
+        }
+        Relationships: []
+      }
+      pay_transferencias: {
+        Row: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        Insert: {
+          cancelada_en?: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en?: string | null
+          creada_en?: string
+          destinatario_contacto: string
+          destinatario_id?: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado?: Database["public"]["Enums"]["pay_estado"]
+          fallida_en?: string | null
+          id?: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo?: string | null
+          neto_centavos: number
+          nota?: string
+          procesando_en?: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        Update: {
+          cancelada_en?: string | null
+          clave_idempotencia?: string
+          codigo?: string
+          comision_centavos?: number
+          completada_en?: string | null
+          creada_en?: string
+          destinatario_contacto?: string
+          destinatario_id?: string | null
+          destinatario_nombre?: string
+          entrega?: Database["public"]["Enums"]["pay_entrega"]
+          estado?: Database["public"]["Enums"]["pay_estado"]
+          fallida_en?: string | null
+          id?: string
+          moneda_destino?: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen?: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino?: number
+          monto_origen_centavos?: number
+          motivo?: string | null
+          neto_centavos?: number
+          nota?: string
+          procesando_en?: string | null
+          remitente_id?: string
+          tasa?: number
+          tasa_fuente?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_transferencias_destinatario_id_fkey"
+            columns: ["destinatario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_transferencias_remitente_id_fkey"
+            columns: ["remitente_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productos: {
         Row: {
           activo: boolean
@@ -879,6 +1243,62 @@ export type Database = {
       _codigo_entrega: { Args: never; Returns: string }
       _correo_lightning: { Args: { p_direccion: string }; Returns: string }
       _exigir_admin: { Args: { p_actor: string }; Returns: undefined }
+      _pay_avanzar: {
+        Args: {
+          p_actor: string
+          p_detalle: string
+          p_hacia: Database["public"]["Enums"]["pay_estado"]
+          p_motivo: string
+          p_transferencia: string
+        }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _pay_calcular: {
+        Args: {
+          p_entrega: Database["public"]["Enums"]["pay_entrega"]
+          p_moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          p_monto: number
+          p_tasa: number
+        }
+        Returns: {
+          comision: number
+          monto_destino: number
+          neto: number
+        }[]
+      }
+      _pay_codigo: { Args: never; Returns: string }
+      _pay_es_admin: { Args: { p_actor: string }; Returns: boolean }
       _rol_en_orden: {
         Args: {
           p_actor: string
@@ -1325,6 +1745,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      embudo: {
+        Args: { p_desde: string; p_hasta: string; p_sitio: string }
+        Returns: {
+          etiqueta: string
+          eventos: number
+          nombre: string
+          orden: number
+          sesiones: number
+          valor_usd_centavos: number
+        }[]
+      }
       enviar_mensaje: {
         Args: { p_actor: string; p_orden: string; p_texto: string }
         Returns: {
@@ -1541,6 +1972,116 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      media_crear_cobro: {
+        Args: {
+          p_cotizacion: number
+          p_lector: string
+          p_precio_sats: number
+          p_segundos?: number
+          p_slug: string
+          p_titulo: string
+        }
+        Returns: {
+          cerrada_en: string | null
+          cotizacion_usd_btc: number
+          creado_en: string
+          estado: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en: string
+          factura: string
+          id: string
+          lector_id: string
+          motivo: string | null
+          pagada_en: string | null
+          precio_sats: number
+          precio_usd_centavos: number
+          slug: string
+          titulo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "media_cobros"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      media_fallar_cobro: {
+        Args: { p_cobro: string; p_motivo: string }
+        Returns: {
+          cerrada_en: string | null
+          cotizacion_usd_btc: number
+          creado_en: string
+          estado: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en: string
+          factura: string
+          id: string
+          lector_id: string
+          motivo: string | null
+          pagada_en: string | null
+          precio_sats: number
+          precio_usd_centavos: number
+          slug: string
+          titulo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "media_cobros"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      media_lector: {
+        Args: { p_lector: string }
+        Returns: {
+          creado_en: string
+          id: string
+          visto_en: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "media_lectores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      media_pagar_cobro: {
+        Args: { p_cobro: string }
+        Returns: {
+          cerrada_en: string | null
+          cotizacion_usd_btc: number
+          creado_en: string
+          estado: Database["public"]["Enums"]["media_estado_cobro"]
+          expira_en: string
+          factura: string
+          id: string
+          lector_id: string
+          motivo: string | null
+          pagada_en: string | null
+          precio_sats: number
+          precio_usd_centavos: number
+          slug: string
+          titulo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "media_cobros"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      media_resumen: {
+        Args: { p_desde: string; p_hasta: string }
+        Returns: {
+          cobros: number
+          fallidas: number
+          pagadas: number
+          sats: number
+          slug: string
+          titulo: string
+          usd_centavos: number
+          vencidas: number
+        }[]
+      }
+      media_vencer_cobros: { Args: never; Returns: number }
       mi_negocio_id: { Args: never; Returns: string }
       ocultar_necesidad: {
         Args: { p_actor: string; p_necesidad: string; p_oculta: boolean }
@@ -1615,6 +2156,204 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      pay_cancelar: {
+        Args: { p_actor: string; p_transferencia: string }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pay_completar: {
+        Args: { p_actor: string; p_transferencia: string }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pay_crear_transferencia: {
+        Args: {
+          p_clave: string
+          p_comision: number
+          p_destinatario_contacto: string
+          p_destinatario_nombre: string
+          p_entrega: Database["public"]["Enums"]["pay_entrega"]
+          p_moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          p_moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          p_monto_destino: number
+          p_monto_origen: number
+          p_nota: string
+          p_remitente: string
+          p_tasa: number
+          p_tasa_fuente: string
+        }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pay_fallar: {
+        Args: { p_actor: string; p_motivo: string; p_transferencia: string }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pay_procesar: {
+        Args: { p_actor: string; p_transferencia: string }
+        Returns: {
+          cancelada_en: string | null
+          clave_idempotencia: string
+          codigo: string
+          comision_centavos: number
+          completada_en: string | null
+          creada_en: string
+          destinatario_contacto: string
+          destinatario_id: string | null
+          destinatario_nombre: string
+          entrega: Database["public"]["Enums"]["pay_entrega"]
+          estado: Database["public"]["Enums"]["pay_estado"]
+          fallida_en: string | null
+          id: string
+          moneda_destino: Database["public"]["Enums"]["pay_moneda"]
+          moneda_origen: Database["public"]["Enums"]["pay_moneda"]
+          monto_destino: number
+          monto_origen_centavos: number
+          motivo: string | null
+          neto_centavos: number
+          nota: string
+          procesando_en: string | null
+          remitente_id: string
+          tasa: number
+          tasa_fuente: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_transferencias"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      pay_resumen: {
+        Args: { p_desde: string; p_hasta: string }
+        Returns: {
+          cantidad: number
+          comision_usd_centavos: number
+          estado: Database["public"]["Enums"]["pay_estado"]
+          monto_origen_usd_centavos: number
+        }[]
       }
       publicar_necesidad: {
         Args: {
@@ -1727,6 +2466,18 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      registrar_evento: {
+        Args: {
+          p_nombre: string
+          p_objeto: string
+          p_ruta: string
+          p_sesion: string
+          p_sitio: string
+          p_usuario: string
+          p_valor: number
+        }
+        Returns: undefined
       }
       resolver_disputa: {
         Args: {
@@ -1861,7 +2612,7 @@ export type Database = {
       vencer_necesidades: { Args: never; Returns: number }
     }
     Enums: {
-      estado_cobro: "pendiente" | "pagado" | "expirado"
+      estado_cobro: "pendiente" | "pagado" | "expirado" | "cancelado"
       estado_cotizacion:
         | "solicitada"
         | "ofrecida"
@@ -1885,7 +2636,16 @@ export type Database = {
         | "acordada"
         | "hecha"
         | "cancelada"
+      media_estado_cobro: "pendiente" | "pagada" | "vencida" | "fallida"
       modo_entrega: "recogida" | "entrega_vendedor"
+      pay_entrega: "lightning" | "efectivo" | "cuenta"
+      pay_estado:
+        | "creada"
+        | "procesando"
+        | "completada"
+        | "fallida"
+        | "cancelada"
+      pay_moneda: "USD" | "EUR" | "SATS"
       resultado_disputa:
         | "reembolso_total"
         | "reembolso_parcial"
@@ -2025,7 +2785,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      estado_cobro: ["pendiente", "pagado", "expirado"],
+      estado_cobro: ["pendiente", "pagado", "expirado", "cancelado"],
       estado_cotizacion: [
         "solicitada",
         "ofrecida",
@@ -2051,7 +2811,17 @@ export const Constants = {
         "hecha",
         "cancelada",
       ],
+      media_estado_cobro: ["pendiente", "pagada", "vencida", "fallida"],
       modo_entrega: ["recogida", "entrega_vendedor"],
+      pay_entrega: ["lightning", "efectivo", "cuenta"],
+      pay_estado: [
+        "creada",
+        "procesando",
+        "completada",
+        "fallida",
+        "cancelada",
+      ],
+      pay_moneda: ["USD", "EUR", "SATS"],
       resultado_disputa: [
         "reembolso_total",
         "reembolso_parcial",
