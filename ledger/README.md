@@ -36,7 +36,10 @@ El uso diario es `node src/cli.ts ayuda`. Los datos viven en `datos/`, que no en
 | `importar market <archivo>` | Crea un ticket pagado desde un pedido exportado de CacaoMarket. Ver `docs/importar-market.md`. |
 | `dte construir <id>` | Construye el DTE 01 o 03 y lo valida. Escribe la atestación si el pago es Lightning. |
 | `dte validar <archivo o id>` | Valida un documento contra el esquema y las reglas propias. |
+| `dte firmar <id> [--comercio <id>] [--firmador-url <url>]` | Pide un JWS al SVFE-API-Firmador (URL configurable). Opcional; sin firmador, el ciclo simulado sigue. |
 | `dte transmitir <id> --simulado` | Completa el ciclo con un sello simulado. La transmisión real no existe. |
+| `comercio registrar <id> --nit ... --password-pri ... --clave-privada <pem>` | Registra un comercio con credenciales cifradas (requiere `LEDGER_CLAVE_MAESTRA`). |
+| `comercio lista` | Lista comercios registrados y cuál está activo. |
 | `atestacion ver <id>`, `atestacion verificar`, `atestacion exportar` | Muestra, verifica o exporta la cadena de atestaciones de tasa. |
 | `cierre [YYYY-MM-DD]` | Cierre del día: cada ticket en un grupo y una pregunta final. `cierre --ayuda` explica el plazo. |
 | `mes <YYYY-MM> [--json] [--csv <carpeta>]` | Libros de IVA del mes y cifras para F-07 y F-14. |
@@ -67,10 +70,10 @@ segunda construcción.
 
 | # | Punto | Estado | Por qué |
 |---|---|---|---|
-| 7 | Firma con el firmador del Ministerio (SVFE) y JWS | No hecho | Hace falta correr el firmador de Hacienda y un certificado de prueba. Sin eso no hay firma que mostrar. |
+| 7 | Firma con el firmador del Ministerio (SVFE) y JWS | Hecho (opcional) | `dte firmar <id>` con `LEDGER_FIRMADOR_URL`. Ver `docs/firma-y-comercios.md`. Sin firmador, `dte transmitir --simulado` sigue igual. |
 | 8 | Libros de consumidor final y de contribuyentes, y cifras de F-07 y F-14 | Hecho | `node src/cli.ts mes <YYYY-MM>`. Ver la sección siguiente. |
 | 9 | Convención defendida para la referencia de 50 caracteres | Hecho | `BTC-LN\|<sats>sat\|<tasa>\|<hash>`. Los argumentos están en `docs/hallazgos.md`, sección 8. |
-| 10 | Credenciales por inquilino con cifrado | No hecho | Solo hay un comerciante. Diseñar el cifrado sin un segundo comerciante real sería especular. |
+| 10 | Credenciales por inquilino con cifrado | Hecho (módulo) | Varios comercios en `datos/comercios/` con sobre cifrado (`LEDGER_CLAVE_MAESTRA`). La demo sigue con un comercio. Ver `docs/firma-y-comercios.md`. |
 | 11 | Contingencia (`tipoOperacion` 2) con cola de reenvío | No hecho | Requiere el canal de transmisión real. |
 | 12 | Recibo para el cliente con QR y versión legible | No hecho | No hay PDF ni QR en esta versión. |
 | 13 | Transmisión a la prueba del Ministerio | No hecho | Las credenciales de prueba salen de un NIT registrado; no se pudieron obtener dentro del sprint. El sello es simulado. |
@@ -130,13 +133,13 @@ vigente. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
 
 - **No transmite al Ministerio.** Sin credenciales de prueba de un contribuyente registrado no es
   posible. `dte transmitir` exige `--simulado`, y el sello que devuelve empieza por `SIMULADO-`.
-- **No firma.** No usa el firmador del Ministerio ni hay JWS. El DTE sale sin firma.
+- **No firma sola.** `dte firmar` habla con el firmador que vos configures; no viene integrado ni valida certificados ante Hacienda. Sin ese paso, el DTE sale sin JWS.
 - **Los pagos son fixtures construidos a mano**, con la forma documentada por Blink. No hay una cuenta
   real ni se capturó un pago real.
 - **La importación de CacaoMarket lee un archivo.** No se conecta a su base de datos ni a la red, y
   solo importa consumidores finales.
 - **No calcula el dígito verificador** del NIT ni del NRC. Solo valida el formato.
-- **Un solo comerciante**, un solo emisor de prueba, sin credenciales por inquilino.
+- **Un comerciante en la demo**, pero el módulo `comercio` admite varios registros cifrados en `datos/`.
 - **Sin contingencia, invalidación ni eventos.** Tipo de operación 1 siempre.
 - **Los libros no son la declaración.** No incluyen compras ni retenciones, no llevan los nombres
   oficiales de columnas que no se pudieron confirmar, y no presentan nada.
@@ -168,7 +171,7 @@ vigente. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
 ## Lo que sigue
 
 - Transmisión real a la prueba del Ministerio, con un NIT registrado. Hoy el ciclo está simulado.
-- Firma con el firmador del Ministerio (SVFE) y el JWS.
+- Transmisión real del JWS firmado al ambiente de prueba del Ministerio.
 - Contingencia (`tipoOperacion` 2) con cola de reenvío.
 - Importar pedidos de contribuyentes, con precios sin IVA y datos fiscales del receptor.
 - Firma o ancla externa de la cadena de atestaciones (`docs/atestacion.md`).
@@ -179,5 +182,6 @@ vigente. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
   las decisiones, los libros de IVA y lo que no se pudo confirmar.
 - `docs/atestacion.md`: qué prueba la cadena y qué no.
 - `docs/importar-market.md`: formato del pedido de CacaoMarket y sus rechazos.
+- `docs/firma-y-comercios.md`: firmador SVFE, JWS, varios comercios y cifrado.
 - `esquemas/README.md`: origen y huellas de cada archivo de esquema.
 - `fixtures/README.md`: qué es cada dato de prueba.

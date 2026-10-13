@@ -71,11 +71,10 @@ async function PagoOrden({
   const pagable = trabajo ? ESTADOS_DE_TRABAJO.includes(estado.estado) : ESTADOS_DE_PAGO.includes(estado.estado);
   if (!pagable) redirect(`/ordenes/${id}`);
 
-  // Funnel: the payment screen opened. Only product orders are in the market funnel.
   const sesionVisita = await sesionDeVisita();
-  if (!trabajo && sesionVisita) {
+  if (sesionVisita) {
     await registrarEvento({
-      nombre: 'vio_pago',
+      nombre: trabajo ? 'vio_pago_trabajo' : 'vio_pago',
       sesion: sesionVisita,
       usuarioId: sesion.usuario.id,
       ruta: `/ordenes/${id}/pagar`,

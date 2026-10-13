@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { idDe, servicio, sesionDe } from './ayuda';
+import { idDe, type Persona, servicio, sesionDe } from './ayuda';
 
 // The receipt of a paid order: the buyer and the shop see it, a stranger does not, and an unpaid order
 // goes back to the order.
@@ -103,6 +103,99 @@ test('el comprobante de una orden pagada: totales, partes y el aviso; un extrañ
   } finally {
     await comprador.context().close();
     await extrano.context().close();
+  }
+});
+
+async function categoriaDeServicio(): Promise<number> {
+  const { data, error } = await servicio().from('categorias_servicio').select('id').order('orden').limit(1).single();
+  if (error) throw error;
+  return data.id as number;
+}
+
+async function servicioFijoDe(vendedor: Persona, titulo: string) {
+  const usuarioId = await idDe(vendedor);
+  const { data, error } = await servicio().rpc('guardar_servicio', {
+    p_usuario: usuarioId,
+    p_servicio: null as unknown as string,
+    p_categoria: await categoriaDeServicio(),
+    p_titulo: titulo,
+    p_descripcion: 'Servicio de prueba del comprobante.',
+    p_zona: 'Suchitoto',
+    p_tipo_precio: 'fijo',
+    p_precio: 500,
+    p_unidad: 'por corte',
+    p_activo: true,
+    p_fotos: [],
+  });
+  if (error) throw new Error(error.message);
+  return { id: data.id as string, negocioId: data.negocio_id as string, usuarioId };
+}
+
+async function contratarTrabajo(cliente: Persona, servicioId: string): Promise<string> {
+  const { data, error } = await servicio().rpc('contratar_servicio', {
+    p_cliente: await idDe(cliente),
+    p_servicio: servicioId,
+    p_nota: 'Trabajo de prueba para el comprobante.',
+    p_clave: `recibo-trabajo-${Date.now()}`,
+    p_cotizacion_btc: 100000,
+  });
+  if (error) throw new Error(error.message);
+  return data.id as string;
+}
+
+async function marcarHechaTrabajo(ordenId: string, proveedor: Persona) {
+  const { error } = await servicio().rpc('marcar_hecha', { p_orden: ordenId, p_actor: await idDe(proveedor) });
+  if (error) throw new Error(error.message);
+}
+
+test('el comprobante de un trabajo pagado: dice trabajo, monto y partes', async ({ browser }) => {
+  const titulo = `Corte comprobante ${Date.now()}`;
+  const svc = await servicioFijoDe('andres', titulo);
+  const { data: negocio, error: errorNegocio } = await servicio()
+    .from('negocios')
+    .select('nombre')
+    .eq('id', svc.negocioId)
+    .single();
+  if (errorNegocio) throw errorNegocio;
+
+  const comprador = await sesionDe(browser, 'lucia');
+  try {
+    const ordenId = await contratarTrabajo('lucia', svc.id);
+    await marcarHechaTrabajo(ordenId, 'andres');
+
+    await comprador.goto(`/ordenes/${ordenId}/pagar`);
+    await comprador.getByRole('button', { name: 'Simular pago' }).click();
+    await expect(comprador).toHaveURL(new RegExp(`/ordenes/${ordenId}$`), { timeout: 60_000 });
+
+    await comprador.getByRole('link', { name: 'Ver comprobante' }).click();
+    await expect(comprador).toHaveURL(new RegExp(`/ordenes/${ordenId}/recibo$`));
+
+    const recibo = comprador.getByRole('article', { name: 'Comprobante de pago' });
+    await expect(recibo.getByText(/^Trabajo \d+$/)).toBeVisible();
+    await expect(recibo.getByText('Bitcoin por Lightning, pago simulado')).toBeVisible();
+    await expect(recibo.getByText(negocio.nombre, { exact: true })).toBeVisible();
+    await expect(recibo.getByText('Lucía', { exact: false }).first()).toBeVisible();
+    await expect(recibo.getByText(`1 × $5.00 por corte`)).toBeVisible();
+    await expect(recibo.getByText(/^\$5\.00 · [\d,]+ sats$/).last()).toBeVisible();
+  } finally {
+    try {
+      await servicio().rpc('guardar_servicio', {
+        p_usuario: svc.usuarioId,
+        p_servicio: svc.id,
+        p_categoria: await categoriaDeServicio(),
+        p_titulo: titulo,
+        p_descripcion: 'Servicio de prueba del comprobante.',
+        p_zona: 'Suchitoto',
+        p_tipo_precio: 'fijo',
+        p_precio: 500,
+        p_unidad: 'por corte',
+        p_activo: false,
+        p_fotos: [],
+      });
+    } catch {
+      // Limpieza best-effort.
+    }
+    await comprador.context().close();
   }
 });
 

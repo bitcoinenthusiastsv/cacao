@@ -200,7 +200,6 @@ const PEDIDOS = [
 ];
 
 // [dueño, categoría, título, descripción, zona, tipo ('fijo' | 'cotizar'), precio en centavos, unidad, foto (en public/productos, o null)]
-// The electrical service has no photo: no clean picture of a house installation was found.
 const SERVICIOS = [
   [2, 'Clases y tutorías', 'Asesoría para huerto casero', 'Te enseño a sembrar, abonar y regar un huerto pequeño en tu patio, con semillas de la zona.', 'El Zonte, La Libertad', 'fijo', 800, 'por hora', '/productos/servicio-asesoria-huerto-casero.jpg'],
   [2, 'Hogar y reparaciones', 'Instalación de huerto en patio', 'Preparamos la tierra, armamos los cajones y dejamos sembrado el huerto. El precio depende del tamaño.', 'El Zonte, La Libertad', 'cotizar', null, null, '/productos/servicio-instalacion-huerto-patio.jpg'],
@@ -212,7 +211,7 @@ const SERVICIOS = [
   [5, 'Clases y tutorías', 'Clases de guitarra', 'Clases de guitarra para principiantes, con tu propia guitarra o con la mía.', 'Bálsamo, La Libertad', 'fijo', 600, 'por hora', '/productos/servicio-clases-guitarra.jpg'],
   [7, 'Belleza y cuidado personal', 'Corte de pelo clásico', 'Corte a tijera o máquina, con lavado. Atendemos sin cita los sábados.', 'Suchitoto, Cuscatlán', 'fijo', 500, 'por corte', '/productos/servicio-corte-pelo-clasico.jpg'],
   [7, 'Belleza y cuidado personal', 'Arreglo de barba', 'Perfilado y arreglo de barba con navaja y toalla caliente.', 'Suchitoto, Cuscatlán', 'fijo', 300, 'por servicio', '/productos/servicio-arreglo-barba.jpg'],
-  [8, 'Hogar y reparaciones', 'Instalación eléctrica en casa', 'Cableado, tomacorrientes, breakers y revisión del tablero. Cotizamos después de ver la casa.', 'Suchitoto, Cuscatlán', 'cotizar', null, null, null],
+  [8, 'Hogar y reparaciones', 'Instalación eléctrica en casa', 'Cableado, tomacorrientes, breakers y revisión del tablero. Cotizamos después de ver la casa.', 'Suchitoto, Cuscatlán', 'cotizar', null, null, '/productos/servicio-instalacion-electrica-casa.jpg'],
   [8, 'Tecnología', 'Reparación de celulares', 'Cambio de pantalla, batería y cargadores. Revisamos el equipo y decimos el costo antes de cambiar piezas.', 'Suchitoto, Cuscatlán', 'cotizar', null, null, '/productos/servicio-reparacion-celulares.jpg'],
 ];
 

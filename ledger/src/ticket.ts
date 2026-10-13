@@ -53,6 +53,15 @@ export interface Sello {
   simulado: true;
 }
 
+// JWS from SVFE-API-Firmador. Optional; transmission can still use the simulated seal alone.
+export interface FirmaDte {
+  jws: string;
+  momento: string;
+  firmadorUrl: string;
+  comercioId: string;
+  archivo: string; // path relative to the data directory
+}
+
 export interface Rechazo {
   momento: string; // ISO-8601, starts the 24-hour fuse
   observaciones: string[];
@@ -74,8 +83,10 @@ export interface Ticket {
   lineas: LineaTicket[];
   pago: Pago | null;
   dte: DteRef | null;
+  firma: FirmaDte | null;
   sello: Sello | null;
   rechazo: Rechazo | null;
+  comercioId?: string | null;
   origen?: OrigenTicket | null;
 }
 
@@ -197,9 +208,18 @@ export function crearTicket(entrada: EntradaTicket, ahora: Date = new Date(), id
     lineas: valida.lineas,
     pago: null,
     dte: null,
+    firma: null,
     sello: null,
     rechazo: null,
   };
+}
+
+export function adjuntarFirma(ticket: Ticket, firma: FirmaDte, ahora: Date = new Date()): Ticket {
+  if (!ticket.dte) throw new ErrorLedger(`El ticket ${ticket.id} no tiene documento.`);
+  if (ticket.firma) {
+    throw new ErrorLedger(`El ticket ${ticket.id} ya tiene firma JWS (${ticket.firma.archivo}).`);
+  }
+  return { ...ticket, firma, comercioId: firma.comercioId, actualizado: ahora.toISOString() };
 }
 
 export function registrarPago(ticket: Ticket, pago: Pago, ahora: Date = new Date()): Ticket {

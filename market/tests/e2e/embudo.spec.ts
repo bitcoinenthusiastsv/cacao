@@ -103,6 +103,11 @@ test('cada paso del embudo suma una sesión, y el panel de administración lo mu
       'Hizo el pedido',
       'Abrió la pantalla de pago',
       'Pagó',
+      'Vio un servicio',
+      'Acordó o contrató el trabajo',
+      'Marcó el trabajo hecho',
+      'Abrió la pantalla de pago del trabajo',
+      'Pagó el trabajo',
     ]) {
       await expect(ana.getByText(etiqueta, { exact: true })).toBeVisible();
     }

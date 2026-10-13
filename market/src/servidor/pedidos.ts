@@ -13,6 +13,7 @@ import type {
 import { accionesPosibles, type OrdenParaAcciones } from '@/lib/estados';
 import type { Database } from '@/tipos/db';
 
+import { registrarEvento, sesionDeVisitaCreando } from './eventos';
 import { confirmarPagoEnBD } from './pagos';
 import { barrer } from './mantenimiento';
 import { desdeError, exito, fallo, type Resultado } from './resultado';
@@ -461,7 +462,17 @@ export async function marcarLista(ordenId: string, usuarioId: string): Promise<R
 /** The shop says an agreed job is done. From then on the client can pay it. */
 export async function marcarHecha(ordenId: string, usuarioId: string): Promise<Resultado<null>> {
   if (!esUuid(ordenId) || !esUuid(usuarioId)) return NO_ENCONTRADA();
-  return ejecutarRpc(clienteServicio().rpc('marcar_hecha', { p_orden: ordenId, p_actor: usuarioId }));
+  const { error } = await clienteServicio().rpc('marcar_hecha', { p_orden: ordenId, p_actor: usuarioId });
+  if (error) return desdeError(error);
+  await registrarEvento({
+    nombre: 'trabajo_hecho',
+    sesion: await sesionDeVisitaCreando(),
+    usuarioId,
+    ruta: `/ordenes/${ordenId}`,
+    objeto: ordenId,
+    valorUsdCentavos: null,
+  });
+  return exito(null);
 }
 
 /**

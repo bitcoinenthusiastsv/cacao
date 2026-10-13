@@ -8,14 +8,18 @@ import { EtiquetaPrecio } from '@/componentes/EtiquetaPrecio';
 import { FotoProducto } from '@/componentes/FotoProducto';
 import { RegistrarEvento } from '@/componentes/RegistrarEvento';
 import { usdCentavosASats } from '@/lib/dinero';
+import type { ProductoDetalle } from '@/servidor/catalogo';
 import { cotizacionSegura, productoPorId } from '@/servidor/catalogo';
 
-// The id comes from the URL, so the product is read per request. The heading area streams in
-// behind a Suspense boundary, and notFound() renders in place when the product does not exist.
-export default function PaginaProducto(props: PageProps<'/productos/[id]'>) {
+// The id comes from the URL. Existence is checked before Suspense so a missing product returns HTTP 404.
+export default async function PaginaProducto(props: PageProps<'/productos/[id]'>) {
+  const { id } = await props.params;
+  const producto = await productoPorId(id);
+  if (!producto) notFound();
+
   return (
     <Suspense fallback={<p role="status">Cargando el producto…</p>}>
-      <DetalleProducto params={props.params} />
+      <DetalleProducto producto={producto} />
     </Suspense>
   );
 }
@@ -26,11 +30,8 @@ export async function generateMetadata(props: PageProps<'/productos/[id]'>): Pro
   return { title: producto ? producto.nombre : 'Producto no encontrado' };
 }
 
-async function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const [producto, cotizacion] = await Promise.all([productoPorId(id), cotizacionSegura()]);
-  if (!producto) notFound();
-
+async function DetalleProducto({ producto }: { producto: ProductoDetalle }) {
+  const cotizacion = await cotizacionSegura();
   const sats = cotizacion === null ? null : usdCentavosASats(producto.precioUsdCentavos, cotizacion);
 
   // The reason the button is off, written under it. Sold out wins over closed.
