@@ -80,11 +80,22 @@ async function expectVisibles(page: Page, esperadas: Tour[]): Promise<void> {
   expect(await titulosVisibles(page)).toEqual(porTitulo(esperadas));
 }
 
-/** A Cacao Media unlock token for a paid story, or null when the story is free or unknown. */
+/**
+ * A Cacao Media reader token for a paid story, or null when the story is free or unknown.
+ * Media gives a token only after its invoice is paid, so this pays the simulated invoice.
+ */
 async function tokenDePago(request: APIRequestContext, slug: string): Promise<string | null> {
-  const r = await request.post(`${MEDIA}/api/desbloquear/`, { data: { slug } });
-  if (!r.ok()) return null;
-  return ((await r.json()) as { token: string }).token;
+  const cobro = await request.post(`${MEDIA}/api/cobro/`, { data: { slug } });
+  if (!cobro.ok()) return null;
+  const creado = (await cobro.json()) as { id?: string; estado: string; token?: string };
+  // A reader who already has access gets the token straight away.
+  if (creado.token) return creado.token;
+  if (!creado.id) return null;
+  const pago = await request.post(`${MEDIA}/api/cobro/${creado.id}/pagar/`);
+  if (!pago.ok()) return null;
+  const estado = await request.get(`${MEDIA}/api/cobro/${creado.id}/`);
+  if (!estado.ok()) return null;
+  return ((await estado.json()) as { token?: string }).token ?? null;
 }
 
 /** The first paid story of the list, with its token. */

@@ -2,6 +2,7 @@
 import '@fontsource-variable/bricolage-grotesque/wght.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
 import '../styles/global.css';
+import GrupoCacao from '../components/GrupoCacao.astro';
 import Logo from '../components/Logo.astro';
 import Telon from '../components/Telon.astro';
 import { MEDIA_URL } from '../lib/tours';
@@ -69,6 +70,7 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
         </nav>
       </div>
       <p class="dato pie__nota">Parte de Cacao Media · precios en sats · catálogo de muestra</p>
+      <GrupoCacao actual="travel" />
     </footer>
   </body>
 </html>

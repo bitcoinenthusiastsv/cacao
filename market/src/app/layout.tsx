@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, JetBrains_Mono } from 'next/font/google';
 
 import { BarraInferior } from '@/componentes/BarraInferior';
 import { Cabecera } from '@/componentes/Cabecera';
+import { GrupoCacao } from '@/componentes/GrupoCacao';
 
 import './globals.css';
 
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <main id="contenido" tabIndex={-1} className="principal">
           <div className="contenedor">{children}</div>
         </main>
+        <GrupoCacao actual="market" />
         <BarraInferior />
       </body>
     </html>

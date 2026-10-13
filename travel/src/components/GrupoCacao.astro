@@ -1,0 +1,107 @@
+---
+// The Cacao group block: the five products, with the current one marked and not linked.
+import { GRUPO_FRASE, PRODUCTOS, type ProductoId } from '../lib/grupo';
+
+interface Props {
+  actual: ProductoId;
+  /** Hide the "Grupo Cacao" heading when the page writes its own. */
+  sinTitulo?: boolean;
+}
+const { actual, sinTitulo = false } = Astro.props;
+---
+
+<div class="grupo">
+  {!sinTitulo && <h2 class="grupo__titulo">Grupo Cacao</h2>}
+  <nav class="grupo__nav" aria-label="Productos del grupo Cacao">
+    <ul class="grupo__lista">
+      {
+        PRODUCTOS.map((p) => (
+          <li class="grupo__item">
+            {p.id === actual ? (
+              <span class="grupo__enlace grupo__enlace--actual" aria-current="true">
+                <span class="grupo__marca"><b>cacao</b>{p.marca}</span>
+                <span class="grupo__linea">{p.linea}</span>
+                <span class="grupo__aqui" aria-hidden="true">aquí</span>
+                <span class="solo-lectores">estás aquí</span>
+              </span>
+            ) : (
+              <a class="grupo__enlace" href={p.url}>
+                <span class="grupo__marca"><b>cacao</b>{p.marca}</span>
+                <span class="grupo__linea">{p.linea}</span>
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <p class="grupo__frase">{GRUPO_FRASE}</p>
+</div>
+
+<style>
+  .grupo {
+    display: grid;
+    gap: 16px;
+    color: var(--pulpa);
+    padding-top: 28px;
+    border-top: 1.5px solid var(--chocolate);
+  }
+  .grupo__titulo {
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .grupo__lista {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .grupo__item { min-width: 0; }
+  /* From 720px the tiles flow in a grid: about three per row, all five in a row on wide screens. */
+  @media (min-width: 720px) {
+    .grupo__lista { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 12px; }
+  }
+  .grupo__enlace {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 4px;
+    height: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: var(--radio-chico);
+    color: var(--pulpa);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  a.grupo__enlace:hover { background: var(--chocolate); color: var(--pulpa); }
+  .grupo__marca {
+    font-size: 1.25rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .grupo__marca b { font-weight: 800; }
+  .grupo__linea { font-size: 0.9375rem; line-height: 1.35; }
+  /* A text tag, so the current product is not told apart by colour alone. */
+  .grupo__aqui {
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--mazorca);
+    color: var(--tostado);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .grupo__frase { max-width: 42em; font-size: 0.9375rem; line-height: 1.5; }
+</style>

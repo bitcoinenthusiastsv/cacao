@@ -1,0 +1,111 @@
+/* The group block: a Tostado band with Pulpa text, the same dark ground as the tab bar. Only the
+   brand variables are used. No shadows, no gradients. */
+
+.banda {
+  background: var(--tostado);
+  color: var(--pulpa);
+  /* On phones the fixed tab bar covers the bottom of the screen: keep the last link above it. */
+  padding-block: 32px calc(var(--barra-alto) + 24px + env(safe-area-inset-bottom));
+}
+
+/* The focus ring sits on the dark band, so it is Pulpa here (the global ring is Tostado). */
+.banda a:focus-visible {
+  outline-color: var(--pulpa);
+}
+
+@media (min-width: 900px) {
+  .banda {
+    padding-block: 40px 48px;
+  }
+}
+
+.grupo {
+  display: grid;
+  gap: 16px;
+}
+
+.titulo {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.lista {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* From 720px the tiles flow in a grid: about three per row, all five in a row on wide screens. */
+@media (min-width: 720px) {
+  .lista {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 6px 12px;
+  }
+}
+
+.item {
+  min-width: 0;
+}
+
+.enlace {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  height: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--pulpa);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+a.enlace:hover {
+  background: var(--chocolate);
+  color: var(--pulpa);
+}
+
+.marca {
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.marca b {
+  font-weight: 800;
+}
+
+.linea {
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+/* A text tag, so the current product is not told apart by colour alone. */
+.aqui {
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.frase {
+  max-width: 42em;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}

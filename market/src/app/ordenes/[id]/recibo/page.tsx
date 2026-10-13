@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { formatoSats, formatoUsd, usdCentavosASats } from '@/lib/dinero';
+import { URL_LEDGER } from '@/lib/grupo';
 import { detalleDeOrden, referenciaDeCobro } from '@/servidor/pedidos';
 import { exigirSesion } from '@/servidor/sesion';
 
@@ -128,7 +129,8 @@ async function Recibo({ params }: { params: Promise<{ id: string }> }) {
         </p>
 
         <p className={styles.aviso}>
-          Este comprobante no es un documento tributario. La factura electrónica (DTE) la emite el vendedor.
+          Este comprobante no es un documento tributario. La factura electrónica (DTE) la emite el vendedor; puede hacerlo con{' '}
+          <a href={URL_LEDGER}>CacaoLedger</a>.
         </p>
       </article>
     </>
