@@ -6,7 +6,7 @@ Guía práctica para retomar el proyecto en cualquier computadora: qué instalar
 
 | Producto | Carpeta | Tecnología | Puerto local | En vivo |
 |---|---|---|---|---|
-| Cacao | `cacao/` | HTML estático | no usa | https://cacao.vercel.app |
+| Cacao | `cacao/` | HTML estático | no usa | https://cacao-grupo.vercel.app |
 | Cacao Media | raíz (`src/`) | Astro 7 | 4321 | https://cacao-media.vercel.app |
 | Cacao Travel | `travel/` | Astro 7 | 4322 | https://cacao-travel.vercel.app |
 | CacaoMarket | `market/` | Next.js 16 y Supabase | 4323 | https://cacao-market.vercel.app |

@@ -15,7 +15,7 @@ export const GRUPO_FRASE =
   'Cacao es la empresa. Media, Travel, Market, Pay y Ledger son la plataforma: el dinero llega, se gasta en lo local, se declara y se cuenta.';
 
 // Addresses are constants, except the Travel link, which follows the environment like the rest of Media.
-export const URL_CACAO = 'https://cacao.vercel.app';
+export const URL_CACAO = 'https://cacao-grupo.vercel.app';
 
 export const PRODUCTOS: Producto[] = [
   { id: 'cacao', marca: '', url: URL_CACAO, linea: 'La empresa y la plataforma. De aquí salen los demás.' },
