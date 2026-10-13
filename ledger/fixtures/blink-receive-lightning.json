@@ -1,0 +1,31 @@
+{
+  "accountId": "3f0c6a1e-8d2b-4c7e-9a51-2b6d0e4f7c10",
+  "eventType": "receive.lightning",
+  "walletId": "9a7e2d54-61c3-4f08-b2d9-7e1a3c5b8f42",
+  "transaction": {
+    "createdAt": "2026-10-12T18:41:07.312Z",
+    "id": "655cd1926445716f60b89418",
+    "initiationVia": {
+      "paymentHash": "bf6b61f814b2e2284f5cbb7c9f9e67887018ffe3f53bedb9b70dec0a15ebca1c",
+      "pubkey": "d75a81acb76fd85dafe491799bbd1940a25e8a8fa776cacccda4ee8444555e3e",
+      "type": "lightning"
+    },
+    "memo": null,
+    "settlementAmount": 12236,
+    "settlementCurrency": "BTC",
+    "settlementDisplayAmount": "4.52",
+    "settlementDisplayFee": "0.00",
+    "settlementDisplayPrice": {
+      "base": "36941263391",
+      "displayCurrency": "USD",
+      "offset": "6",
+      "walletCurrency": "BTC"
+    },
+    "settlementFee": 0,
+    "settlementVia": {
+      "type": "lightning"
+    },
+    "status": "success",
+    "walletId": "9a7e2d54-61c3-4f08-b2d9-7e1a3c5b8f42"
+  }
+}

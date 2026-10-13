@@ -1,0 +1,25 @@
+{
+  "name": "cacao-ledger",
+  "version": "0.1.0",
+  "description": "Command-line tool that turns a paid sale into a Salvadoran DTE (factura 01 or CCF 03) and checks it against the Ministry of Finance JSON Schemas.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\"",
+    "check": "tsc --noEmit",
+    "ledger": "node src/cli.ts",
+    "demo": "node src/cli.ts demo"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2"
+  }
+}

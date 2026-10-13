@@ -1,0 +1,18 @@
+{
+  "nit": "06141901010013",
+  "nrc": "2345678",
+  "nombre": "Comercial Demostración, S.A. de C.V.",
+  "nombreComercial": "Tienda Demo",
+  "codActividad": "47219",
+  "descActividad": "Venta al por menor de alimentos n.c.p.",
+  "direccion": {
+    "departamento": "05",
+    "municipio": "27",
+    "distrito": "Tamanique",
+    "complemento": "Calle principal, Playa El Zonte, La Libertad"
+  },
+  "telefono": "2500-0000",
+  "correo": "ventas@tienda-demo.test",
+  "codEstable": "M001",
+  "codPuntoVenta": "P001"
+}

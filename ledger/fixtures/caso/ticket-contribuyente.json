@@ -1,0 +1,23 @@
+{
+  "cliente": "contribuyente",
+  "receptor": {
+    "nit": "10141905781025",
+    "nrc": "1234567",
+    "nombre": "Distribuidora Ejemplo, S.A. de C.V.",
+    "nombreComercial": null,
+    "codActividad": "46632",
+    "descActividad": "Venta al por mayor de artículos de ferretería y pinturerías",
+    "direccion": {
+      "departamento": "06",
+      "municipio": "14",
+      "distrito": "San Salvador",
+      "complemento": "Colonia Escalón, calle demostrativa 123, San Salvador"
+    },
+    "telefono": null,
+    "correo": "compras@ejemplo.test"
+  },
+  "lineas": [
+    { "descripcion": "Café americano", "cantidad": 2, "precio": "1.00" },
+    { "descripcion": "Pan de maíz", "cantidad": 1, "precio": "2.00" }
+  ]
+}
