@@ -10,12 +10,20 @@ import { resolverGeneracion, CONFIG, type Generacion } from "./generacion.ts";
 
 const CLI = join(raizLedger(), "src", "cli.ts");
 const SEMILLA = "demostracion";
+export const DIA_DEMO = "2026-10-12";
 const INICIO = Date.parse("2026-10-12T18:00:00Z"); // 12:00 in El Salvador
+// The close and the month export run at this minute of the demo.
+export const MINUTO_CIERRE_DEMO = 60;
+
+export interface OpcionesDemo {
+  // Keep the data in this folder instead of a temporary one. The folder is not removed.
+  datos?: string;
+  // Print nothing. Used by npm run sitio.
+  silenciosa?: boolean;
+}
 
 interface Paso {
-  titulo: string;
   args: string[];
-  minutos: number;
 }
 
 function ejecutar(gen: Generacion, tmp: string, datos: string, paso: Paso, minutos: number) {
@@ -32,29 +40,32 @@ function limpiar(texto: string, tmp: string): string {
   return texto.split(tmp).join("<carpeta temporal>").split(tmp.replace(/\\/g, "/")).join("<carpeta temporal>");
 }
 
-function encabezado(n: number, titulo: string, comando: string) {
-  process.stdout.write(`\n${n}. ${titulo}\n   $ ledger ${comando}\n`);
-}
-
-function bloque(texto: string) {
-  for (const linea of texto.replace(/\n$/, "").split("\n")) process.stdout.write(`   ${linea}\n`);
-}
-
-function nota(texto: string) {
-  process.stdout.write(`   ${texto}\n`);
-}
-
 function idDe(salida: string): string {
   const m = /TK-\d{8}-[0-9A-F]{4}/.exec(salida);
   if (!m) throw new Error("La demostración no encontró el identificador del ticket.");
   return m[0];
 }
 
-export function ejecutarDemo(valor?: string): number {
+// The stored file name of a ticket's document, read from the ticket.
+function dteArchivo(datos: string, id: string): string {
+  const ticket = JSON.parse(readFileSync(join(datos, "tickets", `${id}.json`), "utf8")) as { dte: { archivo: string } };
+  return ticket.dte.archivo.replace(/^dte\//, "");
+}
+
+export function ejecutarDemo(valor?: string, opciones: OpcionesDemo = {}): number {
   const gen = resolverGeneracion(valor);
   const config = CONFIG[gen];
+  const escribir = (s: string) => {
+    if (!opciones.silenciosa) process.stdout.write(s);
+  };
+  const encabezado = (n: number, titulo: string, comando: string) => escribir(`\n${n}. ${titulo}\n   $ ledger ${comando}\n`);
+  const bloque = (texto: string) => {
+    for (const linea of texto.replace(/\n$/, "").split("\n")) escribir(`   ${linea}\n`);
+  };
+  const nota = (texto: string) => escribir(`   ${texto}\n`);
+
   const tmp = mkdtempSync(join(tmpdir(), "ledger-demo-"));
-  const datos = join(tmp, "datos");
+  const datos = opciones.datos ?? join(tmp, "datos");
   mkdirSync(datos, { recursive: true });
   const fixtureContribuyente = gen === "caso" ? "fixtures/caso/ticket-contribuyente.json" : "fixtures/ticket-contribuyente.json";
   let n = 0;
@@ -62,13 +73,13 @@ export function ejecutarDemo(valor?: string): number {
   const run = (titulo: string, args: string[], minutos: number, mostrarComando = args.join(" "), carpeta = datos) => {
     n += 1;
     encabezado(n, titulo, mostrarComando);
-    const r = ejecutar(gen, tmp, carpeta, { titulo, args, minutos }, minutos);
+    const r = ejecutar(gen, tmp, carpeta, { args }, minutos);
     bloque(r.salida);
     return r;
   };
 
   try {
-    process.stdout.write(`CacaoLedger · demostración · esquemas ${gen}\n`);
+    escribir(`CacaoLedger · demostración · esquemas ${gen}\n`);
     nota(`Esquema de 01: ${config.esquema["01"]} (${config.origen}).`);
     nota(`Esquema de 03: ${config.esquema["03"]}.`);
     if (gen === "caso") {
@@ -113,17 +124,29 @@ export function ejecutarDemo(valor?: string): number {
     run("Ver la atestación de tasa de la factura Lightning", ["atestacion", "ver", idA], 9);
     run("Verificar la cadena de atestaciones", ["atestacion", "verificar"], 10);
 
+    // A pedido exported from CacaoMarket, paid by Lightning: imported, then its 01 is built.
+    const m = run("Importar el pedido 1042 de CacaoMarket (pagado por Lightning)", ["importar", "market", "fixtures/market-orden-1042.json"], 25);
+    const idM = idDe(m.salida);
+    run("Construir la factura 01 del pedido importado", ["dte", "construir", idM, "--esquemas", gen], 26);
+    run("Ver la atestación de tasa del pedido importado", ["atestacion", "ver", idM], 26);
+
     // A sale paid in cash with no document: money received, nothing built.
-    const c = run("Una venta pagada en efectivo sin documento (huérfana)", ["ticket", "nuevo", "--desde", "fixtures/ticket-consumidor.json"], 11);
+    const c = run("Una venta pagada en efectivo sin documento (huérfana)", ["ticket", "nuevo", "--desde", "fixtures/ticket-consumidor.json"], 27);
     const idC = idDe(c.salida);
-    run("Pagarla en efectivo; no se construye su documento", ["pagar", idC, "--efectivo"], 12);
+    run("Pagarla en efectivo; no se construye su documento", ["pagar", idC, "--efectivo"], 28);
+
+    // A Lightning payment with no document: the sats come from the payment, and there is no attestation yet.
+    const p = run("Una venta pagada por Lightning sin documento (huérfana)", ["ticket", "nuevo", "--desde", "fixtures/ticket-consumidor-pupusas.json"], 29);
+    const idP = idDe(p.salida);
+    run("Pagarla por Lightning; no se construye su documento", ["pagar", idP, "--blink", "fixtures/blink-receive-lightning-pupusas.json"], 30);
+    nota("Sin documento no hay atestación: la atestación se escribe al construir el 01. Hasta entonces, los sats vienen del pago de Blink.");
 
     // A document that the reception refuses: a production document sent to the test service.
-    const d = run("Una venta en efectivo cuyo documento de producción no se acepta en la prueba", ["ticket", "nuevo", "--desde", "fixtures/ticket-consumidor.json"], 13);
+    const d = run("Una venta en efectivo cuyo documento de producción no se acepta en la prueba", ["ticket", "nuevo", "--desde", "fixtures/ticket-consumidor.json"], 31);
     const idD = idDe(d.salida);
-    run("Pagarla en efectivo", ["pagar", idD, "--efectivo"], 14);
-    run("Construir su factura con ambiente de producción", ["dte", "construir", idD, "--ambiente", "01", "--confirmar-produccion", "--esquemas", gen], 15);
-    const rechazo = run("Transmitir: el servicio de prueba rechaza el documento de producción", ["dte", "transmitir", idD, "--simulado"], 16);
+    run("Pagarla en efectivo", ["pagar", idD, "--efectivo"], 32);
+    run("Construir su factura con ambiente de producción", ["dte", "construir", idD, "--ambiente", "01", "--confirmar-produccion", "--esquemas", gen], 33);
+    const rechazo = run("Transmitir: el servicio de prueba rechaza el documento de producción", ["dte", "transmitir", idD, "--simulado"], 34);
     if (rechazo.codigo === 0) fallos += 1;
     nota("El rechazo abre 24 horas para reenviar el documento. El cierre diario lo muestra.");
 
@@ -136,21 +159,18 @@ export function ejecutarDemo(valor?: string): number {
     const lineas = readFileSync(destino, "utf8").split("\n");
     lineas[0] = (lineas[0] ?? "").replace('"sats":12236', '"sats":12200');
     writeFileSync(destino, lineas.join("\n"), "utf8");
-    run("Alterar un solo número en una copia de la cadena y verificarla", ["atestacion", "verificar"], 17, "atestacion verificar  (sobre una copia alterada)", copia);
+    run("Alterar un solo número en una copia de la cadena y verificarla", ["atestacion", "verificar"], 35, "atestacion verificar  (sobre una copia alterada)", copia);
 
-    const cierre = run("Cierre diario del día: cada cobro en un solo grupo", ["cierre", "2026-10-12"], 60);
+    const cierre = run("Cierre diario del día: cada cobro en un solo grupo", ["cierre", DIA_DEMO], MINUTO_CIERRE_DEMO);
     if (cierre.codigo === 0) nota("El cierre salió con código 0.");
     else nota(`El cierre salió con código ${cierre.codigo}: hay cobros sin documento válido, como se esperaba en esta demostración.`);
 
-    process.stdout.write("\nFin de la demostración.\n");
+    run("Libros de IVA y cifras del mes", ["mes", DIA_DEMO.slice(0, 7)], MINUTO_CIERRE_DEMO);
+    nota("Los libros salen de los documentos con sello. Los pedidos sin documento válido aparecen en No incluidos.");
+
+    escribir("\nFin de la demostración.\n");
     return fallos === 0 ? 0 : 1;
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
-}
-
-// The stored file name of a ticket's document, read from the ticket.
-function dteArchivo(datos: string, id: string): string {
-  const ticket = JSON.parse(readFileSync(join(datos, "tickets", `${id}.json`), "utf8")) as { dte: { archivo: string } };
-  return ticket.dte.archivo.replace(/^dte\//, "");
 }

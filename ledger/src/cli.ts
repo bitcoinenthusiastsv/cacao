@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { adjuntarDte, aceptarDte, crearTicket, guardarTicket, leerTicket, listarTickets, rechazarDte, registrarPago, totalDeTicket, validarEntrada, validarId, validarReceptor, type EntradaTicket, type LineaTicket, type Ticket } from "./ticket.ts";
+import { adjuntarDte, aceptarDte, crearTicket, guardarTicket, leerTicket, listarTickets, rechazarDte, registrarPago, ticketConHashDePago, totalDeTicket, validarEntrada, validarId, validarReceptor, type EntradaTicket, type LineaTicket, type Ticket } from "./ticket.ts";
+import { importarOrdenMarket } from "./market.ts";
+import { escribirLibrosCsv, informeMes, leerDocumentosEmitidos, lineasMes, validarMes } from "./mes.ts";
+import { generarSitio } from "./web/generar.ts";
 import { centavosDesdeTexto, formatoSats, formatoUsd } from "./dinero.ts";
 import { dirDatos, escribirJson, leerJson, raizLedger } from "./datos.ts";
 import { ErrorLedger } from "./errores.ts";
@@ -20,7 +23,21 @@ import { AYUDA_CIERRE, clasificarCierre, lineasCierre } from "./cierre.ts";
 import { ejecutarDemo } from "./demo.ts";
 
 // Option names that take a value. Everything else starting with -- is a switch.
-const CON_VALOR = new Set(["datos", "emisor", "desde", "linea", "cliente", "receptor", "blink", "forzar-codigo", "ambiente", "esquemas"]);
+const CON_VALOR = new Set([
+  "datos",
+  "emisor",
+  "desde",
+  "linea",
+  "cliente",
+  "receptor",
+  "blink",
+  "forzar-codigo",
+  "ambiente",
+  "esquemas",
+  "csv",
+  "salida",
+  "dia",
+]);
 const INTERRUPTORES = new Set(["json", "efectivo", "confirmar-produccion", "ayuda", "simulado"]);
 
 interface Argumentos {
@@ -125,14 +142,6 @@ function cmdTicketLista(datos: string): Resultado {
   return { datos: tickets, lineas };
 }
 
-// One payment hash must settle one ticket. Reusing a payment is refused.
-function pagoYaUsado(datos: string, hash: string, idTicket: string): string | null {
-  for (const t of listarTickets(datos)) {
-    if (t.id !== idTicket && t.pago?.rail === "lightning" && t.pago.paymentHash === hash) return t.id;
-  }
-  return null;
-}
-
 function cmdPagar(id: string, a: Argumentos, datos: string): Resultado {
   const blink = unico(a, "blink");
   const efectivo = a.interruptores.has("efectivo");
@@ -144,7 +153,7 @@ function cmdPagar(id: string, a: Argumentos, datos: string): Resultado {
   if (blink !== undefined) {
     pago = pagoDesdeBlink(leerJson(resolve(blink)));
     if (pago.rail === "lightning") {
-      const otro = pagoYaUsado(datos, pago.paymentHash, ticket.id);
+      const otro = ticketConHashDePago(datos, pago.paymentHash, ticket.id);
       if (otro) throw new ErrorLedger(`Ese pago de Lightning ya cubre el ticket ${otro}; no se puede usar dos veces.`);
     }
   } else {
@@ -379,6 +388,43 @@ function cmdCierre(fechaTexto: string | undefined, a: Argumentos, datos: string)
   };
 }
 
+function cmdImportar(origen: string | undefined, archivo: string | undefined, datos: string): Resultado {
+  if (origen !== "market") {
+    throw new ErrorLedger('Origen de importación desconocido. Usá "importar market <archivo.json>".');
+  }
+  const ruta = needArg(archivo, "archivo del pedido");
+  const r = importarOrdenMarket(datos, leerJson(resolve(ruta)), ahora());
+  const numero = r.ticket.origen?.numero ?? "";
+  const cabecera = r.nueva
+    ? `Pedido de CacaoMarket ${numero} importado como ticket ${r.ticket.id}.`
+    : `El pedido ${numero} ya estaba importado como ${r.ticket.id}; no se creó otro ticket.`;
+  return { datos: { ...r.ticket, nueva: r.nueva }, lineas: [cabecera, ...vistaTicket(r.ticket)] };
+}
+
+function cmdMes(mesTexto: string | undefined, a: Argumentos, datos: string): Resultado {
+  const mes = validarMes(needArg(mesTexto, "mes (YYYY-MM)"));
+  const tickets = listarTickets(datos);
+  const informe = informeMes(mes, leerDocumentosEmitidos(datos, tickets), tickets);
+  const lineas = lineasMes(informe);
+  const carpeta = unico(a, "csv");
+  if (carpeta !== undefined) {
+    const rutas = escribirLibrosCsv(resolve(carpeta), informe);
+    lineas.push("", "Libros en CSV (separador punto y coma, decimales con coma, UTF-8 con BOM):", ...rutas.map((r) => `  ${r}`));
+  }
+  return { datos: informe, lineas };
+}
+
+function cmdWeb(a: Argumentos, datos: string): Resultado {
+  const salida = resolve(unico(a, "salida") ?? join(raizLedger(), "sitio"));
+  const dia = unico(a, "dia") ?? fechaHoraSalvador(ahora()).fecEmi;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) throw new ErrorLedger(`La fecha "${dia}" no tiene la forma YYYY-MM-DD.`);
+  const archivos = generarSitio({ datos, salida, dia, ahora: ahora() });
+  return {
+    datos: { salida, dia, archivos },
+    lineas: [`Sitio del cierre del ${dia} escrito en ${salida} (${archivos.length} archivos).`, `Abrí ${join(salida, "index.html")} en el navegador.`],
+  };
+}
+
 const AYUDA = `Uso: ledger <orden> [opciones]
 
   ticket nuevo --cliente consumidor|contribuyente --linea "desc|cant|precio" ...
@@ -388,12 +434,15 @@ const AYUDA = `Uso: ledger <orden> [opciones]
   ticket lista
   pagar <id> --blink <archivo.json>
   pagar <id> --efectivo
+  importar market <archivo.json>   pedido pagado exportado de CacaoMarket (docs/importar-market.md)
   dte construir <id> [--forzar-codigo <código>]
                      [--ambiente 01 --confirmar-produccion]
   dte validar <archivo o id> [--confirmar-produccion]
   dte transmitir <id> --simulado
   atestacion ver <id> | verificar | exportar
   cierre [YYYY-MM-DD] [--json]     (cierre --ayuda explica el plazo de 24 horas)
+  mes <YYYY-MM> [--json] [--csv <carpeta>]   libros de IVA y cifras para F-07 y F-14
+  web [--dia YYYY-MM-DD] [--salida <carpeta>] sitio estático del cierre (por defecto ledger/sitio)
   demo                             recorrido completo con datos de prueba
 
 Opciones generales:
@@ -427,6 +476,9 @@ async function main(argv: string[]): Promise<number> {
   else if (grupo === "dte" && orden === "transmitir") r = cmdDteTransmitir(needArg(resto[0], "identificador del ticket"), a, datos);
   else if (grupo === "atestacion") r = cmdAtestacion(orden, resto, a, datos);
   else if (grupo === "cierre") r = cmdCierre(orden, a, datos);
+  else if (grupo === "importar") r = cmdImportar(orden, resto[0], datos);
+  else if (grupo === "mes") r = cmdMes(orden, a, datos);
+  else if (grupo === "web") r = cmdWeb(a, datos);
   else throw new ErrorLedger(`Orden desconocida: "${[grupo, orden].filter(Boolean).join(" ")}". Usá "ledger ayuda".`);
 
   if (json) {

@@ -58,6 +58,12 @@ export interface Rechazo {
   observaciones: string[];
 }
 
+// Where the ticket came from, when it was imported. Absent on tickets typed by hand.
+export interface OrigenTicket {
+  plataforma: "cacaomarket";
+  numero: string;
+}
+
 export interface Ticket {
   id: string;
   creado: string;
@@ -70,6 +76,7 @@ export interface Ticket {
   dte: DteRef | null;
   sello: Sello | null;
   rechazo: Rechazo | null;
+  origen?: OrigenTicket | null;
 }
 
 export interface EntradaTicket {
@@ -261,4 +268,17 @@ export function listarTickets(dirDatos: string): Ticket[] {
     .filter((f) => f.endsWith(".json"))
     .map((f) => leerJson(join(dir, f)) as Ticket)
     .sort((a, b) => a.creado.localeCompare(b.creado));
+}
+
+// One payment hash must settle one ticket. Returns the other ticket that already holds it.
+export function ticketConHashDePago(dirDatos: string, hash: string, idTicket: string): string | null {
+  for (const t of listarTickets(dirDatos)) {
+    if (t.id !== idTicket && t.pago?.rail === "lightning" && t.pago.paymentHash === hash) return t.id;
+  }
+  return null;
+}
+
+// The ticket already imported from this order number, if any.
+export function ticketDeOrigen(dirDatos: string, plataforma: "cacaomarket", numero: string): Ticket | null {
+  return listarTickets(dirDatos).find((t) => t.origen?.plataforma === plataforma && t.origen.numero === numero) ?? null;
 }

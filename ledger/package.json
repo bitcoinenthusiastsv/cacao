@@ -12,7 +12,8 @@
     "test": "node --test \"src/**/*.test.ts\"",
     "check": "tsc --noEmit",
     "ledger": "node src/cli.ts",
-    "demo": "node src/cli.ts demo"
+    "demo": "node src/cli.ts demo",
+    "sitio": "node src/sitio.ts"
   },
   "dependencies": {
     "ajv": "^8.20.0",

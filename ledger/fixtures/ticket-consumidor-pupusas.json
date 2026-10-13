@@ -1,0 +1,7 @@
+{
+  "cliente": "consumidor",
+  "lineas": [
+    { "descripcion": "Pupusas de queso, orden de 3", "cantidad": 1, "precio": "3.25" },
+    { "descripcion": "Horchata de morro", "cantidad": 1, "precio": "0.95" }
+  ]
+}

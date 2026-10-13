@@ -25,7 +25,8 @@ function centavosDesdeDisplay(v: unknown): number {
 }
 
 // Rate in cents of USD per BTC, rounded half up: usdCentavos * 1e8 / sats.
-function tasaCentavosPorBtc(usdCentavos: number, sats: number): string {
+// Exported so that other rail adapters derive the rate the same way.
+export function tasaCentavosPorBtc(usdCentavos: number, sats: number): string {
   const tc = Math.floor((2 * usdCentavos * SATS_POR_BTC + sats) / (2 * sats));
   return `${Math.floor(tc / 100)}.${String(tc % 100).padStart(2, "0")}`;
 }

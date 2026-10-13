@@ -263,3 +263,84 @@ proveedor del pago, el hash completo (no cabe), el monto en dólares (ya está e
   El constructor refusa estos casos; CacaoLedger no captura esos datos.
 - **MTIST 2.0, §6.4.** No se revisó.
 - **Pagos reales.** Ningún dato proviene de una cuenta real de Blink.
+
+## 12. Libros de IVA y cifras para F-07 y F-14
+
+El caso pide que los libros de ventas y las cifras salgan de los tickets, no de teclearlas. La
+tabla de obligaciones del caso dice que los libros de IVA se llevan al día, a más tardar 15 días
+calendario después (Art. 242 CT). El comando `mes` los produce para un mes.
+
+**Lo que se intentó confirmar y no se pudo.** Se consultaron tres fuentes del Ministerio que cita el
+caso. El material de capacitación de TAIIA (el PDF que dice que los libros sobreviven a los DTE)
+respondió 404. La página de información técnica de factura.gob.sv lista guías y catálogos, pero no
+describe los libros ni sus columnas. La página de F-07 y F-14 no menciona los anexos, las columnas ni la
+base del pago a cuenta. Por eso **no hay nombres oficiales de columnas**: los encabezados describen
+lo que contiene cada campo.
+
+**Lo que sale de cada documento, que sí es cierto.** Fecha de emisión (`identificacion.fecEmi`),
+número de control, código de generación, nombre y NRC del receptor (solo 03), venta gravada, IVA y
+total. Todo se lee del documento guardado, no de los tickets, para que el libro diga lo que se emitió.
+
+**Decisiones y su razón.**
+
+- **Libro 01.** Una fila por día del mes, incluidos los días sin ventas, para que el libro muestre
+  cada día. Las ventas gravadas son `totalGravada` del documento, que incluye el IVA, como lo registra
+  el libro de consumidor final.
+- **Libro 03.** Una fila por documento, en orden de fecha y de número de control. La venta gravada es
+  el neto (`totalGravada`) y el total es `montoTotalOperacion`.
+- **F-07.** La base gravada es la suma del neto de los 01 y de los 03, sin IVA. El débito de IVA es la
+  suma del IVA de todos los documentos. Así el débito cuadra al centavo con los documentos.
+- **F-14.** La base de ingresos brutos es la misma base sin IVA. El pago a cuenta es el 1.75 % de
+  esa base del mes, redondeado medio hacia arriba al centavo, y se calcula una sola vez por mes, no
+  documento por documento.
+- **Solo documentos con sello.** Los rechazados y los cobros sin documento van a "No incluidos" con el
+  motivo. Un ticket abierto no es venta y no aparece.
+
+**Lo que no se confirmó.**
+
+- Los nombres oficiales de las columnas de ambos libros.
+- Si el libro de consumidor final exige una fila por cada día sin ventas. Aquí se listan todos los días.
+- Que la base del F-14 excluya el IVA. El caso habla de "ingresos brutos"; se tomó la base sin IVA
+  porque el IVA no es ingreso del contribuyente. Hay que confirmarlo con el contador.
+- La casilla exacta de cada cifra en el F-07 y el F-14. Las cifras dicen a qué formulario alimentan,
+  no en qué casilla caen.
+- Anexos del F-07 distintos de los libros (1, 2, 3 y 5). Este tool no produce compras ni retenciones.
+
+**Formato de los CSV.** Separador punto y coma, decimales con coma, UTF-8 con BOM, fechas en DD/MM/YYYY.
+Es el formato que abre una hoja de cálculo en configuración de El Salvador sin tocar nada. No se
+probó en Excel ni en otra hoja de cálculo.
+
+## 13. Sitio estático del cierre
+
+- **Por qué HTML sin script.** El sitio se lee y se imprime sin JavaScript, y se abre sin red. Por eso
+  las fuentes son las del sistema: la guía de marca pide Bricolage Grotesque y JetBrains Mono, pero
+  cargarlas desde un servicio externo rompe el modo sin conexión. Si se quieren, se pueden copiar a
+  `src/web/` y declarar con `@font-face`; no se hizo.
+- **Escapado.** Todo texto de un ticket o de un documento pasa por `escapar()`. Hay una prueba con una
+  descripción que contiene `<script>`, que aparece como texto, y otra que confirma que ninguna página
+  tiene etiquetas `<script>`.
+- **Validación en la página.** Cada documento se valida al generar el sitio, con la generación con la
+  que se construyó y con la misma regla de producción que usa la recepción simulada. Un 01 de producción
+  aparece como no válido, con la razón; es lo que pasó en la demo.
+- **Enlaces.** Una prueba recorre cada página y comprueba que cada enlace relativo y la hoja de estilo
+  apunten a un archivo existente.
+- **Anchos.** Las capturas de un navegador a 375 px y 320 px no tienen desplazamiento lateral. Los
+  datos van en listas, no en tablas anchas, para que el teléfono no se desborde.
+- **Vercel.** `vercel.json` ejecuta `npm run sitio` y publica `sitio/`. El proyecto de Vercel debe usar
+  Node 24 (el paquete lo pide en `engines`); no se verificó desde el panel de Vercel.
+
+## 14. Importación de pedidos de CacaoMarket
+
+- **Solo consumidores.** Un pedido a contribuyente necesita precios sin IVA y los datos fiscales del
+  receptor; el formato no los trae. Se rechaza con esa razón.
+- **Precios con IVA incluido**, como los ve el consumidor. Es la misma regla que el ticket de consumidor.
+- **La tasa se comprueba.** La importación calcula la tasa con la misma fórmula que el webhook de Blink y
+  rechaza el pedido si la tasa declarada no cuadra con el total y los sats. Así un pedido no puede
+  declarar un monto que no cuadra con su pago.
+- **Idempotencia.** El ticket guarda el número del pedido. Un segundo intento no crea otro ticket; si el
+  contenido cambió, se rechaza.
+- **Formato desconocido, rechazado.** Un campo que no se reconoce hace fallar la importación. Así un
+  nombre mal escrito no se pierde en silencio.
+- **No verificado contra CacaoMarket real.** El formato es propio y está documentado en
+  `docs/importar-market.md`. El archivo de ejemplo se construyó a mano; producirlo desde la base de datos
+  de CacaoMarket es el paso siguiente.

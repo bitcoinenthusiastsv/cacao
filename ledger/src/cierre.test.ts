@@ -62,8 +62,8 @@ test("one ticket in each group: counts, the 23-hour and 25-hour fuses, and the a
   assert.equal(informe.todosConSello, false);
   assert.equal(informe.respuesta, "¿Todos los cobros de hoy tienen su sello? No: 3 cobros sin documento válido.");
   const texto = lineasCierre(informe).join("\n");
-  assert.match(texto, /quedan 1 h 00 min/);
-  assert.match(texto, /plazo vencido \(hace 1 h 00 min\)/);
+  assert.match(texto, /  quedan 1 h  TK-20261013-5003/);
+  assert.match(texto, /plazo vencido hace 1 h  TK-20261013-5004/);
 });
 
 test("each ticket appears in exactly one group", () => {
@@ -102,4 +102,31 @@ test("Bitcoin totals show sats from the attestation next to the dollars", () => 
   assert.equal(informe.totales.huerfanos.porRail.lightning.sats, 12236);
   assert.equal(informe.totales.huerfanos.porRail.lightning.usdCentavos, 452);
   assert.equal(informe.grupos.huerfanos[0]?.sats, 12236);
+});
+
+test("open tickets carry their total in the Abiertos group, marked as not paid", () => {
+  const abierto = crearTicket(entradaConsumidor(), new Date("2026-10-13T16:00:00Z"), "TK-20261013-5040");
+  const informe = clasificarCierre({ fecha: DIA, ahora: CIERRE, tickets: [abierto], atestaciones: [] });
+  assert.equal(informe.totales.abiertos.cantidad, 1);
+  assert.equal(informe.totales.abiertos.usdCentavos, 452);
+  assert.match(lineasCierre(informe).join("\n"), /TK-20261013-5040  2026-10-13  \$4\.52 sin pagar  creado, sin pago/);
+});
+
+test("a Lightning orphan says why it has no attestation, and its sats come from the payment", () => {
+  const pago = pagoDesdeBlink(leerFixture("blink-receive-lightning.json"));
+  const pagado = registrarPago(crearTicket(entradaConsumidor(), new Date("2026-10-12T18:00:00Z"), "TK-20261012-5041"), pago, new Date("2026-10-12T18:41:07Z"));
+  const informe = clasificarCierre({ fecha: "2026-10-12", ahora: CIERRE, tickets: [pagado], atestaciones: [] });
+  const texto = lineasCierre(informe).join("\n");
+  assert.match(texto, /TK-20261012-5041  2026-10-12  \$4\.52 \(12,236 sats\) Lightning  sin documento: nunca se construyó, así que aún no hay atestación; los sats son del pago/);
+  assert.equal(informe.grupos.huerfanos[0]?.sats, 12236);
+});
+
+test("the time left is the first thing on a rejected line, in hours or minutes", () => {
+  // Rejected 26 hours before the close: the fuse ended 2 hours ago. Rejected 23 h 20 min before: 40 minutes left.
+  const r = rechazado("TK-20261013-5050", new Date("2026-10-12T14:00:00Z"), new Date("2026-10-12T14:01:00Z"), new Date(CIERRE.getTime() - 26 * HORA), 50);
+  const r2 = rechazado("TK-20261013-5051", new Date("2026-10-12T14:00:00Z"), new Date("2026-10-12T14:01:00Z"), new Date(CIERRE.getTime() - 23 * HORA - 20 * 60_000), 51);
+  const informe = clasificarCierre({ fecha: DIA, ahora: CIERRE, tickets: [r, r2], atestaciones: [] });
+  const lineas = lineasCierre(informe);
+  assert.ok(lineas.some((l) => l.startsWith("  plazo vencido hace 2 h  TK-20261013-5050")));
+  assert.ok(lineas.some((l) => l.startsWith("  quedan 40 min  TK-20261013-5051")));
 });

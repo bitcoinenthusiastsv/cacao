@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run sitio",
+  "outputDirectory": "sitio",
+  "framework": null
+}
