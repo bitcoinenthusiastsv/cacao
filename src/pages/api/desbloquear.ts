@@ -1,28 +1,51 @@
-// Issues the token that opens one paid story for 7 days.
-//
-// DEMO: no payment is checked yet. This is the single place where a Lightning invoice has to be
-// verified as paid before the token is signed; everything downstream already trusts only the token.
+// The 7-day pass for a paid story. It is given only to a reader who already has access (paid
+// earlier, from this browser). A first unlock goes through an invoice: see /api/cobro/.
 import type { APIContext } from 'astro';
-import cerrado from '../../data/cerrado.json';
-import { DIA, firmar } from '../../lib/firma';
+import { hayBase } from '../../lib/servidor/bd';
+import {
+  historiaDePago,
+  precioUsdCentavos,
+  respuestaError,
+  sinGuardar,
+  tieneAcceso,
+  tokenDeAcceso,
+} from '../../lib/servidor/cobros';
+import { lectorDe } from '../../lib/servidor/lector';
 
 export const prerender = false;
 
-const DIAS_DE_ACCESO = 7;
-
-export async function POST({ request }: APIContext) {
+export async function POST(context: APIContext) {
   let slug: unknown;
   try {
-    ({ slug } = await request.json());
+    ({ slug } = await context.request.json());
   } catch {
-    return Response.json({ error: 'Pedido inválido.' }, { status: 400 });
+    return Response.json({ error: 'Pedido inválido.' }, { status: 400, headers: sinGuardar });
   }
-  if (typeof slug !== 'string' || !Object.hasOwn(cerrado, slug)) {
-    return Response.json({ error: 'Esa historia no existe o es gratis.' }, { status: 404 });
+  const historia = await historiaDePago(slug);
+  if (!historia) {
+    return Response.json({ error: 'Esa historia no existe o es gratis.' }, { status: 404, headers: sinGuardar });
   }
-  const exp = Date.now() + DIAS_DE_ACCESO * DIA;
+  if (!hayBase()) {
+    return Response.json({ error: 'Los pagos no están disponibles en este momento.' }, { status: 503, headers: sinGuardar });
+  }
+
+  try {
+    const lector = await lectorDe(context);
+    if (await tieneAcceso(lector, historia.slug)) {
+      const { token, expira } = tokenDeAcceso(historia.slug);
+      return Response.json({ token, expira }, { headers: sinGuardar });
+    }
+  } catch (error) {
+    return respuestaError(error);
+  }
+
+  // The price is for the gate's dollar line only; null when no BTC price is available.
   return Response.json(
-    { token: firmar({ tipo: 'pago', slugs: [slug], exp }), expira: exp, demo: true },
-    { headers: { 'Cache-Control': 'no-store' } },
+    {
+      error: 'Esta historia se desbloquea pagando su factura.',
+      precioSats: historia.precioSats,
+      precioUsdCentavos: await precioUsdCentavos(historia.precioSats),
+    },
+    { status: 402, headers: sinGuardar },
   );
 }

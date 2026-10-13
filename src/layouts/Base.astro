@@ -21,6 +21,8 @@ const {
 } = Astro.props;
 const tituloCompleto = titulo ? `${titulo} — Cacao Media` : 'Cacao Media — Historias de El Salvador';
 const canonica = new URL(Astro.url.pathname, Astro.site);
+// The admin link shows only in demo builds.
+const demo = import.meta.env.PUBLIC_DEMO === '1';
 ---
 
 <!doctype html>
@@ -84,6 +86,7 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
         <a href="/acerca/#linea-editorial">Línea editorial</a>
         <a href="/creditos/">Créditos de fotos</a>
         <a href="/rss.xml">RSS</a>
+        {demo && <a href="/admin/">Panel</a>}
       </nav>
       <p class="etiqueta">13.69°N · 89.22°W · San Salvador</p>
     </footer>

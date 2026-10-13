@@ -1,0 +1,246 @@
+/* Admin panel. Brand tokens come from src/styles/global.css; colours are used only as text pairs
+   from the brand list (Tostado on Pulpa, Arena, Blanco calido or Mazorca; Pulpa on Tostado, Criollo,
+   Grano fresco or Chocolate). No shadows, no gradients. */
+
+.saltar { position: absolute; left: -999px; top: 8px; background: var(--mazorca); color: var(--tostado); padding: 0.5em 1em; border-radius: 999px; z-index: 10; }
+.saltar:focus { left: 8px; }
+
+.panel {
+  width: min(100% - 2 * var(--canal), var(--ancho));
+  margin-inline: auto;
+  padding-block: 16px 72px;
+  min-width: 0;
+}
+
+/* Header: wordmark and title stack on phones, the sign-out button sits beside them from 560px. */
+.panel__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding-block: 8px 16px;
+  border-bottom: 1.5px solid var(--tostado);
+}
+.panel__logo { text-decoration: none; }
+.panel__titulo { font-size: var(--t-h2); font-weight: 800; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.panel__salir { margin-left: auto; }
+.panel__salir .boton { min-height: 44px; }
+
+.panel__nav { margin-top: 16px; }
+.panel__nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.panel__nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 999px;
+  background: var(--arena);
+  color: var(--tostado);
+  font-family: var(--mono);
+  font-size: var(--t-etiqueta);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.panel__nav a:hover { background: var(--mazorca); }
+.panel__nav a[aria-current='page'] { background: var(--tostado); color: var(--pulpa); }
+
+/* Date range */
+.rango { margin-top: 20px; min-width: 0; }
+.rango__campos {
+  border: 0;
+  margin: 0;
+  padding: 16px;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  background: var(--arena);
+  border-radius: var(--radio-chico);
+}
+.rango__leyenda { font-family: var(--mono); font-size: var(--t-etiqueta); letter-spacing: 0.04em; text-transform: uppercase; padding: 0; margin-bottom: 4px; }
+.rango__campos .boton { justify-self: start; min-height: 44px; }
+.campo { display: grid; gap: 6px; min-width: 0; }
+.campo label { font-weight: 600; }
+.campo input,
+.campo select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--tostado);
+  background: var(--blanco-calido);
+  border: 1.5px solid var(--tostado);
+  border-radius: var(--radio-chico);
+}
+@media (min-width: 560px) {
+  .rango__campos { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; align-items: end; }
+  .rango__leyenda { grid-column: 1 / -1; }
+  .rango__campos .boton { justify-self: stretch; }
+}
+
+.aviso {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco-calido);
+  color: var(--tostado);
+  border: 1.5px solid var(--tostado);
+}
+
+.panel__principal { margin-top: 28px; min-width: 0; }
+.panel__principal:focus { outline: none; }
+
+.seccion-titulo { font-size: var(--t-h2); font-weight: 800; margin-bottom: 6px; }
+.nota { margin-top: 6px; color: var(--tostado); }
+.bloque { margin-top: 36px; }
+.bloque > .nota { margin-bottom: 12px; }
+.vacio { padding: 16px; background: var(--blanco-calido); border-radius: var(--radio-chico); }
+.mono { font-family: var(--mono); }
+
+/* Figures */
+.cifras { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.cifra { display: grid; gap: 4px; padding: 16px; background: var(--blanco-calido); border-radius: var(--radio-chico); min-width: 0; }
+.cifra dt { font-family: var(--mono); font-size: var(--t-etiqueta); letter-spacing: 0.04em; text-transform: uppercase; }
+.cifra dd { margin: 0; font-family: var(--mono); font-size: var(--t-h2); font-weight: 500; overflow-wrap: anywhere; }
+.cifra__usd { font-family: var(--mono); font-size: var(--t-etiqueta); }
+@media (min-width: 560px) { .cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .cifras { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Funnel: bars are plain HTML; the numbers and labels carry the meaning. */
+.embudo { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.embudo__cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.embudo__etiqueta { font-weight: 600; }
+.embudo__cifra { font-family: var(--mono); }
+.embudo__barra { height: 18px; margin-top: 6px; background: var(--arena); border-radius: 999px; overflow: hidden; }
+.embudo__barra span { display: block; height: 100%; background: var(--mazorca); border-radius: 999px; }
+.embudo__pie { margin-top: 4px; font-size: var(--t-etiqueta); }
+.embudo__resumen { margin-top: 20px; padding: 14px 16px; background: var(--arena); border-radius: var(--radio-chico); font-weight: 600; }
+
+/* Chips: state is always written out, the colour is an extra. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: var(--t-etiqueta);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.chip--pendiente { background: var(--mazorca); color: var(--tostado); }
+.chip--pagada { background: var(--chocolate); color: var(--pulpa); }
+.chip--vencida { background: var(--arena); color: var(--tostado); }
+.chip--fallida { background: var(--criollo); color: var(--pulpa); }
+
+/* Tables. From 720px they are real tables; below that each row becomes a card. */
+.tabla-caja { min-width: 0; }
+.tabla { width: 100%; border-collapse: collapse; background: var(--blanco-calido); }
+.tabla caption { text-align: left; font-weight: 700; padding-block: 8px; }
+.tabla a { font-weight: 600; overflow-wrap: anywhere; }
+
+@media (max-width: 719px) {
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .tabla,
+  .tabla tbody,
+  .tabla tr,
+  .tabla th,
+  .tabla td { display: block; width: 100%; }
+  .tabla tbody { display: grid; gap: 12px; }
+  .tabla tr {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    background: var(--blanco-calido);
+    border: 1.5px solid var(--tostado);
+    border-radius: var(--radio-chico);
+  }
+  .tabla th[scope='row'] { padding: 0; font-weight: 700; overflow-wrap: anywhere; }
+  .tabla td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  .tabla td::before {
+    content: attr(data-etiqueta);
+    font-family: var(--mono);
+    font-size: var(--t-etiqueta);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    flex: none;
+  }
+  .tabla td:empty { display: none; }
+}
+
+@media (min-width: 720px) {
+  .tabla th,
+  .tabla td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--arena); }
+  .tabla thead th {
+    font-family: var(--mono);
+    font-size: var(--t-etiqueta);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1.5px solid var(--tostado);
+  }
+  .tabla .numero { text-align: right; font-family: var(--mono); }
+  /* Eight columns need the room: tighter cells until the full width is available. */
+  .tabla-caja { overflow-x: auto; }
+}
+@media (min-width: 720px) and (max-width: 979px) {
+  .tabla th,
+  .tabla td { padding: 8px; }
+  .tabla thead th { letter-spacing: 0; }
+}
+
+/* Pagination */
+.paginas { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.paginas a,
+.paginas span[aria-disabled='true'] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.paginas a { background: var(--tostado); color: var(--pulpa); }
+.paginas a:hover { background: var(--mazorca); color: var(--tostado); }
+.paginas span[aria-disabled='true'] { background: var(--arena); color: var(--tostado); }
+
+/* Filter on the transactions page */
+.filtro { display: grid; gap: 12px; margin-top: 16px; padding: 16px; background: var(--arena); border-radius: var(--radio-chico); }
+.filtro .boton { justify-self: start; min-height: 44px; }
+@media (min-width: 560px) { .filtro { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } .filtro .boton { justify-self: stretch; } }
+
+/* Sign-in page */
+.entrar { display: grid; gap: 28px; max-width: 34rem; }
+.entrar__bloque { display: grid; gap: 12px; padding: 20px; background: var(--blanco-calido); border-radius: var(--radio); }
+.entrar__bloque .boton { justify-self: start; min-height: 44px; }
+.entrar__bloque .boton:disabled { opacity: 1; background: var(--arena); color: var(--tostado); cursor: not-allowed; }
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--criollo);
+  color: var(--pulpa);
+}
+.error[hidden] { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel__nav a, .paginas a { transition: background-color 0.15s, color 0.15s; }
+}

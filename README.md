@@ -16,7 +16,8 @@ Sitios en vivo:
 ## Estado actual: demo
 
 - No se cobra ningún pago. Desbloquear historias y reservar funcionan, pero sin costo.
-- Hay dos archivos donde hay que verificar que una factura Lightning está pagada antes de firmar el token o la confirmación: `src/pages/api/desbloquear.ts` (Cacao Media) y `travel/src/pages/api/reservar.ts` (Cacao Travel).
+- En Cacao Media el pago de cada historia es una factura simulada: la confirma el propio navegador en modo demo (ver "Cacao Gate"). Cuando haya un proveedor Lightning, la confirmación tiene que venir de él.
+- En Cacao Travel, `travel/src/pages/api/reservar.ts` firma la reserva sin verificar ningún pago: hay que verificarlo antes de firmar.
 - Las 13 experiencias son de muestra y no tienen un operador real.
 - Las reservas y los borradores de operador se guardan solo en el navegador de cada visitante. No hay cuentas, no hay base de datos y los cupos no se descuentan.
 - Las historias son textos de muestra que no pasaron por verificación editorial.
@@ -47,6 +48,46 @@ CACAO MEDIA                                       CACAO TRAVEL
 
 **Tokens firmados.** Ambos proyectos usan el mismo formato, definido en `src/lib/firma.ts` (`travel/src/lib/firma.ts` es una copia idéntica). Un token tiene dos partes separadas por un punto: un payload en JSON codificado en base64url, con el tipo (`pago` o `reserva`), las historias que abre y la fecha de vencimiento; y una firma HMAC-SHA256 de ese payload. Cualquiera puede leer el payload, pero solo quien conoce el secreto de la variable de entorno `CACAO_SECRET` puede firmar, y cualquier cambio en el payload invalida la firma.
 
+## Cacao Gate: el muro de pago
+
+Cada historia de pago tiene un muro al final de su parte gratis. Antes de pagar muestra el precio en sats con su valor en dólares y el botón "Desbloquear por 120 sats". Al tocarlo, el servidor crea una factura y el muro pasa por estos estados:
+
+| Estado | Qué ve el lector |
+|---|---|
+| `pendiente` | Un QR con la factura, el texto de la factura con "Copiar factura", la cuenta regresiva "Vence en 4:32" y la página consulta el estado cada 3 segundos mientras la pestaña está visible. |
+| `pagada` | "Pago recibido." y la historia se abre en su lugar, sin mover la página. |
+| `vencida` | "La factura venció. No la pagués." y el botón "Pedir otra factura". |
+| `fallida` | "El pago no se completó.", el motivo y el botón "Intentar de nuevo". |
+
+Si no hay base de datos configurada, el muro dice "Los pagos no están disponibles en este momento." y la historia queda cerrada.
+
+**Lector sin cuenta.** El servidor identifica cada navegador con la cookie `cm_lector` (`HttpOnly`, `SameSite=Lax`, un año, `Secure` en https). La cookie guarda el id de `media_lectores`; la página nunca lo recibe. La lógica está en `src/lib/servidor/lector.ts`.
+
+**Factura.** `POST /api/cobro/` con `{ "slug": "..." }`. El precio en sats y el título salen de los datos del servidor, nunca del pedido. El valor en dólares sale del precio de bitcoin (`src/lib/servidor/precio.ts`, copia de la fuente de CacaoMarket); con `PRECIO_FIJO_USD_BTC` definido, se usa ese precio fijo. La factura vence a los 300 segundos. Si el lector ya tiene acceso, la respuesta es `{ "estado": "pagada", "token": "..." }` y no se crea nada.
+
+**Estado.** `GET /api/cobro/<id>/` devuelve la factura. Solo la ve el lector que la creó: a cualquier otro le responde 404. Antes de responder, marca como vencidas las facturas que pasaron de plazo. Cuando está pagada, la respuesta incluye el token firmado.
+
+**Acceso.** Pagar crea una fila en `media_accesos`: un acceso permanente por lector y por historia. Como el acceso está ligado a la cookie, volver al mismo navegador abre la historia sin pagar de nuevo, aunque se haya borrado el token guardado. El token firmado de 7 días (el mismo formato de siempre, `src/lib/firma.ts`) se guarda en `localStorage`, con la clave `cacao-gate:<slug>`. Ahí lo lee el widget de Cacao Travel para dar el descuento. Si el token vence, `POST /api/desbloquear/` emite uno nuevo solo a un lector que ya tiene acceso; si no, responde 402.
+
+**Qué es simulado.** No hay proveedor de Lightning. Las facturas son cadenas `lnsim1` seguidas de 40 caracteres hexadecimales, las genera la base de datos, y la confirmación del pago la da el propio navegador con dos rutas que solo responden con `PUBLIC_DEMO=1` (sin esa variable responden 403):
+
+- `POST /api/cobro/<id>/pagar/` ("Simular pago").
+- `POST /api/cobro/<id>/fallar/` ("Simular pago fallido").
+
+Ninguna de las dos mueve dinero. Las dos sirven solo para el lector dueño de la factura.
+
+**Cómo entra un proveedor real de Lightning.** En el servidor, las dos rutas de simulación se quitan y la confirmación llega del proveedor por un webhook con firma verificada. Ese webhook llama a `media_pagar_cobro` (y a `media_fallar_cobro` si la factura no se paga). La factura real reemplaza a la simulada: hace falta una migración que cambie la restricción de `media_cobros.factura`, que hoy solo acepta `lnsim1`. El navegador no cambia: sigue consultando `GET /api/cobro/<id>/`. Las funciones de la base de datos, la cookie y el token firmado se mantienen igual.
+
+**Eventos del embudo.** `POST /api/evento/` recibe `vista_historia` (al abrir una historia de pago), `vio_muro` (cuando el muro entra en pantalla) y `leyo_completa` (cuando llega al final del texto abierto). El servidor agrega `creo_cobro` y `pago`. Se guardan en `eventos` con el sitio `media` y el embudo se lee con `embudo`. La ruta siempre responde 204 y nunca rompe la página.
+
+**Variables de entorno.** Están listadas en `.env.example`:
+
+- `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`: la base de datos compartida. Sin ellas, el muro queda cerrado.
+- `PRECIO_FIJO_USD_BTC`: precio fijo para demos y trabajo sin internet.
+- `PUBLIC_DEMO`: `1` activa los botones de pago simulado.
+- `CACAO_SECRET`: secreto que firma los tokens.
+- `ADMIN_CLAVE`: clave del panel de administración.
+
 ## APIs
 
 Las rutas de Cacao Media están en `src/pages/api/` y las de Cacao Travel en `travel/src/pages/api/`. El feed RSS está en `src/pages/rss.xml.ts`.
@@ -54,8 +95,13 @@ Las rutas de Cacao Media están en `src/pages/api/` y las de Cacao Travel en `tr
 | Sitio | Método | Ruta | Qué hace |
 |---|---|---|---|
 | Cacao Media | GET | `/api/historias.json` | Índice público de las historias: título, bajada, lugar, precio y URL. CORS abierto. Cacao Travel lo usa para mostrar la lectura de cada experiencia. |
-| Cacao Media | POST | `/api/desbloquear/` | Emite un token de 7 días para una historia de pago. Cuerpo: `{ "slug": "..." }`. Demo: no cobra. |
-| Cacao Media | GET | `/api/contenido/<slug>/` | Devuelve el texto cerrado de una historia si el token de `Authorization: Bearer` la cubre. Si no, responde 401. |
+| Cacao Media | POST | `/api/desbloquear/` | Emite un token de 7 días para una historia de pago, solo a un lector que ya la pagó (cookie). Cuerpo: `{ "slug": "..." }`. Si no tiene acceso, responde 402 con el precio. |
+| Cacao Media | POST | `/api/cobro/` | Crea una factura para una historia de pago, o devuelve el acceso si ya la tiene. Cuerpo: `{ "slug": "..." }`. Responde la factura: `id`, `factura`, `precioSats`, `precioUsdCentavos`, `estado`, `expiraEn`, `segundosRestantes`. |
+| Cacao Media | GET | `/api/cobro/<id>/` | Estado de una factura del lector de la cookie: `pendiente`, `pagada` (con token), `vencida` o `fallida`. Otro lector recibe 404. |
+| Cacao Media | POST | `/api/cobro/<id>/pagar/` | Pago simulado. Solo con `PUBLIC_DEMO=1`; si no, 403. Responde `{ "estado": "pagada", "token": "..." }`. |
+| Cacao Media | POST | `/api/cobro/<id>/fallar/` | Pago simulado fallido. Solo con `PUBLIC_DEMO=1`. Responde `{ "estado": "fallida", "motivo": "..." }`. |
+| Cacao Media | POST | `/api/evento/` | Registra un paso del embudo. Cuerpo: `nombre`, `objeto` y `ruta`. Siempre responde 204. |
+| Cacao Media | GET | `/api/contenido/<slug>/` | Devuelve el texto cerrado de una historia con un token de `Authorization: Bearer` que la cubre, o con la cookie de un lector que la pagó. Si no, responde 401. |
 | Cacao Media | GET | `/rss.xml` | Feed RSS de todas las historias. |
 | Cacao Travel | GET | `/api/tours.json` | Catálogo público de experiencias: precio, lugar, salidas, grupo, historias vinculadas y reparto. CORS abierto. |
 | Cacao Travel | POST | `/api/lector/` | Indica si un token de lector da descuento en una experiencia. Cuerpo: `{ "token": "...", "tour": "<id>" }`. |
@@ -153,7 +199,9 @@ npm test
 
 `npm test` corre los dos proyectos de Playwright (`media` y `travel`, ver `playwright.config.ts`). Si el servidor de desarrollo de cada sitio no está corriendo (puerto 4321 para Cacao Media y 4322 para Cacao Travel), Playwright lo arranca solo. Si pide un navegador que no está instalado, seguí la documentación de Playwright para instalarlo.
 
-Las pruebas de Cacao Media cubren el muro de pago. Una historia de pago empieza bloqueada. El desbloqueo dura 7 días, sobrevive a una recarga, y un desbloqueo vencido vuelve a bloquear la historia. La parte cerrada no aparece en el HTML, y la API solo la entrega con un token válido para esa historia; un token alterado se rechaza. También prueban el widget de Cacao Travel dentro de las historias, con la API de Travel simulada, y que no haya desborde horizontal a 375 px en cinco páginas.
+Las pruebas de Cacao Media cubren el muro de pago de punta a punta: la factura con su QR y su cuenta regresiva, el pago simulado que abre la historia sin saltos de página, la vuelta del lector (por cookie, aunque se borre el token guardado), el pago fallido, la factura vencida y la factura de otro navegador, que no se puede leer. La parte cerrada no aparece en el HTML, y la API solo la entrega con un token válido para esa historia o con el acceso del lector; un token alterado se rechaza. También prueban el widget de Cacao Travel dentro de las historias, con la API de Travel simulada, y que no haya desborde horizontal a 375 px y 320 px.
+
+Las pruebas que crean o vencen facturas necesitan las variables de `.env.local` (`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`). Por eso se corren con `node --env-file=.env.local node_modules/@playwright/test/cli.js test --project=media`.
 
 Las pruebas de Cacao Travel recorren el catálogo con búsqueda, fecha, personas, filtros y orden, y comprueban que las tarjetas coincidan con `/api/tours.json`. También cubren la reserva: el reparto en cada experiencia, las validaciones de `POST /api/reservar/`, el descuento de lector y el guardado de reservas y borradores en el navegador. Por último revisan el mapa, la página de créditos, la página 404, el desborde horizontal a 320 px y la animación de entrada.
 

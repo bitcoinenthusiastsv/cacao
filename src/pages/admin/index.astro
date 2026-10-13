@@ -1,0 +1,146 @@
+---
+// Admin summary: figures, funnel and per-story table for the chosen period.
+import Panel from './_panel.astro';
+import { hayBase, leerError } from '../../lib/servidor/bd';
+import {
+  leerRango,
+  porcentaje,
+  resumenPanel,
+  sats,
+  usd,
+  type ResumenPanel,
+} from '../../lib/servidor/admin';
+import { sesionDeCookies } from '../../lib/servidor/admin-sesion';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (!sesionDeCookies(Astro.cookies)) return Astro.redirect('/admin/entrar/');
+
+const rango = leerRango({
+  desde: Astro.url.searchParams.get('desde'),
+  hasta: Astro.url.searchParams.get('hasta'),
+});
+
+let resumen: ResumenPanel | null = null;
+let error: string | null = null;
+if (hayBase()) {
+  try {
+    resumen = await resumenPanel(rango);
+  } catch (e) {
+    error = leerError(e).mensaje;
+  }
+}
+
+const textoEmbudo =
+  resumen?.pagan == null
+    ? 'Todavía no hay aperturas de historias de pago en este período.'
+    : `De cada 100 que abren una historia de pago, ${resumen.pagan} ${resumen.pagan === 1 ? 'la paga' : 'la pagan'}.`;
+---
+
+<Panel titulo="Resumen" seccion="resumen" rango={rango}>
+  <h2 class="seccion-titulo">Resumen del período</h2>
+
+  {!hayBase() && <p class="vacio">La base de datos no está configurada.</p>}
+  {error && <p class="error" role="alert">{error}</p>}
+
+  {
+    resumen && (
+      <>
+        <section class="bloque" aria-labelledby="cifras-titulo">
+          <h3 id="cifras-titulo" class="seccion-titulo">Cifras</h3>
+          <dl class="cifras">
+            <div class="cifra">
+              <dt>Facturas creadas</dt>
+              <dd>{resumen.cifras.cobros}</dd>
+            </div>
+            <div class="cifra">
+              <dt>Facturas pagadas</dt>
+              <dd>{resumen.cifras.pagadas}</dd>
+            </div>
+            <div class="cifra">
+              <dt>Conversión</dt>
+              <dd>{porcentaje(resumen.cifras.pagadas, resumen.cifras.cobros)}</dd>
+            </div>
+            <div class="cifra">
+              <dt>Ingresos</dt>
+              <dd>
+                {sats(resumen.cifras.sats)} <span class="cifra__usd">{usd(resumen.cifras.usd)}</span>
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="bloque" aria-labelledby="embudo-titulo">
+          <h3 id="embudo-titulo" class="seccion-titulo">Embudo de pago</h3>
+          <p class="nota">Lectores que llegaron a cada paso. Cuenta sesiones distintas del navegador.</p>
+          <ol class="embudo">
+            {resumen.embudo.map((paso, i) => (
+              <li>
+                <div class="embudo__cabeza">
+                  <span class="embudo__etiqueta">{paso.etiqueta}</span>
+                  <span class="embudo__cifra">
+                    {paso.lectores} {paso.lectores === 1 ? 'lector' : 'lectores'}
+                  </span>
+                </div>
+                <div class="embudo__barra" aria-hidden="true">
+                  <span style={`width: ${paso.anchoBarra}%`} />
+                </div>
+                <p class="embudo__pie">
+                  {
+                    i === 0
+                      ? 'Primer paso del embudo'
+                      : paso.porcentajeAnterior === null
+                        ? 'Sin datos'
+                        : `${paso.porcentajeAnterior}% del paso anterior`
+                  }
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p class="embudo__resumen">{textoEmbudo}</p>
+        </section>
+
+        <section class="bloque" aria-labelledby="historias-titulo">
+          <h3 id="historias-titulo" class="seccion-titulo">Historias</h3>
+          {resumen.historias.length === 0 ? (
+            <p class="vacio">Sin actividad de facturas en este período.</p>
+          ) : (
+            <div class="tabla-caja">
+              <table class="tabla">
+                <caption>Facturas por historia, de más a menos sats</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Historia</th>
+                    <th scope="col">Facturas</th>
+                    <th scope="col">Pagadas</th>
+                    <th scope="col">Vencidas</th>
+                    <th scope="col">Fallidas</th>
+                    <th scope="col">Conversión</th>
+                    <th scope="col">Sats</th>
+                    <th scope="col">USD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resumen.historias.map((h) => (
+                    <tr>
+                      <th scope="row">
+                        <a href={`/historias/${h.slug}/`}>{h.titulo}</a>
+                      </th>
+                      <td class="numero" data-etiqueta="Facturas">{h.cobros}</td>
+                      <td class="numero" data-etiqueta="Pagadas">{h.pagadas}</td>
+                      <td class="numero" data-etiqueta="Vencidas">{h.vencidas}</td>
+                      <td class="numero" data-etiqueta="Fallidas">{h.fallidas}</td>
+                      <td class="numero" data-etiqueta="Conversión">{porcentaje(h.pagadas, h.cobros)}</td>
+                      <td class="numero" data-etiqueta="Sats">{sats(h.sats)}</td>
+                      <td class="numero" data-etiqueta="USD">{usd(h.usd)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </>
+    )
+  }
+</Panel>

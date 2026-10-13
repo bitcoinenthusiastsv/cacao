@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "test": "playwright test",
-    "dev": "node scripts/cerrado.mjs && astro dev",
+    "dev": "node scripts/cerrado.mjs && node --env-file-if-exists=.env.local node_modules/astro/bin/astro.mjs dev",
     "build": "node scripts/cerrado.mjs && astro build && node scripts/arreglar-funcion.mjs",
     "preview": "astro preview",
     "check": "node scripts/cerrado.mjs && astro check"
@@ -21,6 +21,7 @@
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@supabase/supabase-js": "^2.117.3",
     "astro": "^7.3.8",
+    "qrcode": "^1.5.4",
     "rehype-raw": "^7.0.0",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@playwright/test": "^1.64.0",
+    "@types/qrcode": "^1.5.6",
     "typescript": "^6.0.3"
   }
 }
