@@ -27,8 +27,8 @@ import { MEDIA_URL } from '../lib/tours';
   .pagina { display: grid; gap: clamp(28px, 4vw, 44px); padding-block: 0 clamp(56px, 8vw, 96px); min-width: 0; }
   .cabecera-pagina { display: grid; gap: 14px; padding-top: clamp(24px, 5vw, 56px); min-width: 0; }
   h1 { font-size: var(--t-h1); line-height: 1; letter-spacing: -0.03em; max-width: 16ch; overflow-wrap: anywhere; }
-  .bajada { max-width: 60ch; color: var(--arena); }
-  .sin-js { color: var(--arena); }
+  .bajada { max-width: 60ch; color: var(--tinta-suave); }
+  .sin-js { color: var(--tinta-suave); }
 
   .tickets {
     display: grid;
@@ -45,6 +45,7 @@ import { MEDIA_URL } from '../lib/tours';
     background: var(--chocolate);
     border-radius: var(--radio);
     min-width: 0;
+    color: var(--pulpa);
   }
   .vacio p { font-size: 1.25rem; font-weight: 700; color: var(--arena); }
   .vacio[hidden] { display: none; }
@@ -110,7 +111,7 @@ import { MEDIA_URL } from '../lib/tours';
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--tostado);
+    background: var(--pulpa);
   }
   [data-reservas] :global(.ticket__talon)::before { left: -12px; }
   [data-reservas] :global(.ticket__talon)::after { right: -12px; }

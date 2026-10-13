@@ -1,6 +1,6 @@
 ---
 // Same construction as the Cacao Media logo (symbol 1.15x the letter height, gap 0.22x,
-// 800 / 400 lowercase with no space), with "travel" as the light half. Always on a dark ground here.
+// 800 / 400 lowercase with no space), with "travel" as the light half. The header sits on Pulpa.
 import Simbolo from './Simbolo.astro';
 interface Props {
   /** Font size of the wordmark in px. */
@@ -10,12 +10,12 @@ const { altura = 30 } = Astro.props;
 ---
 
 <span class="logo" style={`font-size:${altura}px`}>
-  <Simbolo tamano={Math.round(altura * 1.15)} fondo="oscuro" decorativo />
+  <Simbolo tamano={Math.round(altura * 1.15)} fondo="claro" decorativo />
   <span class="logo__letras"><b>cacao</b>travel</span>
 </span>
 
 <style>
-  .logo { display: inline-flex; align-items: center; gap: 0.22em; line-height: 1; color: var(--pulpa); }
+  .logo { display: inline-flex; align-items: center; gap: 0.22em; line-height: 1; color: var(--tostado); }
   .logo :global(svg) { flex: none; width: 1.15em; height: 1.15em; }
   .logo__letras { font-weight: 400; letter-spacing: -0.03em; }
   .logo__letras b { font-weight: 800; }

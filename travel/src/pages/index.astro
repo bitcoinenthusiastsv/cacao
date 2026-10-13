@@ -156,7 +156,7 @@ const NIVELES = ['Fácil', 'Moderado', 'Exigente'].filter((n) => tours.some((t) 
     border: 1.5px solid var(--chocolate);
     border-radius: 999px;
     background: transparent;
-    color: var(--pulpa);
+    color: var(--tostado);
     font: 600 0.9375rem/1 var(--fuente);
     cursor: pointer;
   }
@@ -171,10 +171,10 @@ const NIVELES = ['Fácil', 'Moderado', 'Exigente'].filter((n) => tours.some((t) 
     gap: 12px 24px;
     margin-block: clamp(18px, 3vw, 28px);
   }
-  .barra__cuenta { font-size: 1.0625rem; color: var(--arena); }
-  .barra__cuenta strong { color: var(--pulpa); font-weight: 800; }
+  .barra__cuenta { font-size: 1.0625rem; color: var(--tinta-suave); }
+  .barra__cuenta strong { color: var(--tostado); font-weight: 800; }
   .barra__controles { display: flex; flex-wrap: wrap; gap: 10px 16px; }
-  .barra__controles label { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--arena-oscura); }
+  .barra__controles label { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--tinta-suave); }
   .barra__controles select {
     padding: 0.5em 0.8em;
     border: 1.5px solid var(--chocolate);
@@ -189,7 +189,7 @@ const NIVELES = ['Fácil', 'Moderado', 'Exigente'].filter((n) => tours.some((t) 
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: clamp(16px, 2vw, 24px);
   }
-  .vacio { display: grid; gap: 16px; justify-items: start; padding: clamp(24px, 4vw, 48px); background: var(--chocolate); border-radius: var(--radio-chico); }
+  .vacio { display: grid; gap: 16px; justify-items: start; padding: clamp(24px, 4vw, 48px); background: var(--chocolate); border-radius: var(--radio-chico); color: var(--pulpa); }
   .vacio[hidden] { display: none; }
 
   .pasos { margin-top: clamp(56px, 9vw, 112px); }
@@ -211,6 +211,7 @@ const NIVELES = ['Fácil', 'Moderado', 'Exigente'].filter((n) => tours.some((t) 
     padding: clamp(20px, 3vw, 32px);
     background: var(--chocolate);
     border-radius: var(--radio-chico);
+    color: var(--pulpa);
   }
   .pasos li::before { content: counter(paso); font-family: var(--mono); font-size: 2rem; line-height: 1; color: var(--mazorca); }
   .pasos h3 { font-size: var(--t-h2); }

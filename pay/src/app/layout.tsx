@@ -50,12 +50,21 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <a className="saltar" href="#contenido">
           Saltar al contenido
         </a>
-        <div className="cinta">Modo demo: envíos simulados</div>
-        <Cabecera />
-        <main id="contenido" tabIndex={-1} className="principal">
-          <div className="contenedor">{children}</div>
-        </main>
-        <GrupoCacao actual="pay" />
+        <div className="hoja">
+          <div className="cinta">Modo demo: envíos simulados</div>
+          <Cabecera />
+          <main id="contenido" tabIndex={-1} className="principal">
+            <div className="contenedor">{children}</div>
+          </main>
+        </div>
+        <div className="zona-grupo">
+          <div className="contenedor">
+            <p className="marca-gigante" aria-hidden="true">
+              <b>cacao</b>pay
+            </p>
+          </div>
+          <GrupoCacao actual="pay" />
+        </div>
         <BarraInferior />
       </body>
     </html>

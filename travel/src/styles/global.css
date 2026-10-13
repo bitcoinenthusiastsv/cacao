@@ -1,12 +1,13 @@
-/* Cacao Travel. Same brand as Cacao Media (Brandbook v1.0), turned inside out:
-   the ground is Tostado, paper only appears as tickets. No shadows, no gradients. */
+/* Cacao Travel — brand tokens from Brandbook v1.0. No shadows, no gradients. */
 :root {
   --tostado: #2a1912;
   --chocolate: #5a3221;
   --criollo: #8c2f2b;
   --grano-fresco: #5e3050;
   --mazorca: #d9902f;
+  --mazorca-oscuro: #b86e1f;
   --pulpa: #f5ede3;
+  --blanco-calido: #fffaf4;
   --arena: #e6d8c6;
   --arena-oscura: #c9b6a4;
   --tinta-suave: #6b5648;
@@ -31,7 +32,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--tostado);
-  color: var(--pulpa);
+  color: var(--tostado);
   font-family: var(--fuente);
   font-size: 1.125rem;
   line-height: 1.55;
@@ -44,6 +45,8 @@ h1, h2, h3, p, figure { margin: 0; }
 h1, h2, h3 { line-height: 1; letter-spacing: -0.03em; font-weight: 800; text-wrap: balance; }
 
 a { color: inherit; text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; }
+a:hover { color: var(--mazorca-oscuro); }
+
 :focus-visible { outline: 3px solid var(--mazorca); outline-offset: 3px; border-radius: 4px; }
 
 .dato {
@@ -69,8 +72,7 @@ a { color: inherit; text-decoration-thickness: 0.08em; text-underline-offset: 0.
   text-decoration: none;
   cursor: pointer;
 }
-.boton:hover { background: var(--pulpa); }
-/* Outline, not a shadow: the brand allows no shadows. */
+.boton:hover { background: var(--tostado); color: var(--pulpa); }
 .boton--secundario { background: transparent; color: inherit; outline: 1.5px solid currentColor; outline-offset: -1.5px; }
 .boton--secundario:hover { background: var(--mazorca); color: var(--tostado); outline-color: transparent; }
 .boton[aria-disabled='true'] { background: var(--arena); color: var(--tinta-suave); cursor: not-allowed; }

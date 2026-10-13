@@ -41,20 +41,24 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
   <body>
     <Telon />
     <a class="saltar" href="#contenido">Saltar al contenido</a>
-    <p class="aviso dato">Modo demo · experiencias de muestra · no se cobra nada</p>
-    <header class="cabecera contenedor">
-      <a href="/" aria-label="Cacao Travel, inicio"><Logo /></a>
-      <nav aria-label="Principal">
-        <a href="/#experiencias">Experiencias</a>
-        <a href="/mapa/">Mapa</a>
-        <a href="/reservas/">Mis reservas</a>
-        <a href="/operadores/">Operadores</a>
-        <a href={`${MEDIA_URL}/`}>Cacao Media</a>
-      </nav>
-    </header>
-    <main id="contenido" tabindex="-1">
-      <slot />
-    </main>
+    <div class="hoja">
+      <p class="aviso dato">Modo demo · experiencias de muestra · no se cobra nada</p>
+      <div class="barra">
+        <header class="cabecera contenedor">
+          <a href="/" aria-label="Cacao Travel, inicio"><Logo /></a>
+          <nav aria-label="Principal">
+            <a href="/#experiencias">Experiencias</a>
+            <a href="/mapa/">Mapa</a>
+            <a href="/reservas/">Mis reservas</a>
+            <a href="/operadores/">Operadores</a>
+            <a href={`${MEDIA_URL}/`}>Cacao Media</a>
+          </nav>
+        </header>
+      </div>
+      <main id="contenido" tabindex="-1">
+        <slot />
+      </main>
+    </div>
     <footer class="pie contenedor">
       <p class="pie__gigante" aria-hidden="true"><b>cacao</b>travel</p>
       <div class="pie__fila">
@@ -78,8 +82,21 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
 <style>
   .saltar { position: absolute; left: -999px; top: 8px; background: var(--mazorca); color: var(--tostado); padding: 0.5em 1em; border-radius: 999px; z-index: 10; }
   .saltar:focus { left: 8px; }
-  /* The skip link moves focus here; the content itself needs no focus ring. */
-  #contenido:focus, #contenido:focus-visible { outline: none; }
+
+  /* Pulpa sheet on a Tostado ground, aligned with Cacao Media. */
+  .hoja {
+    background: var(--pulpa);
+    margin-inline: clamp(0px, 1.5vw, 20px);
+    border-radius: 0 0 var(--radio) var(--radio);
+    padding-bottom: clamp(48px, 8vw, 96px);
+  }
+
+  .barra { background: var(--pulpa); }
+  @media (min-width: 861px) {
+    .barra { position: sticky; top: 0; z-index: 5; }
+  }
+
+  main:focus { outline: none; }
 
   .aviso { margin: 0; padding: 8px var(--canal); background: var(--mazorca); color: var(--tostado); text-align: center; }
 
@@ -89,9 +106,11 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     align-items: center;
     justify-content: space-between;
     gap: 12px 24px;
-    padding-block: 20px;
+    padding-block: 16px;
+    border-bottom: 1.5px solid var(--tostado);
   }
   .cabecera > a { text-decoration: none; }
+  .cabecera > a :global(.logo) { color: var(--tostado); }
   .cabecera nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
   .cabecera nav a {
     display: inline-flex;
@@ -103,7 +122,13 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
   }
   .cabecera nav a:hover { color: var(--mazorca); }
 
-  .pie { overflow: hidden; padding-block: clamp(56px, 9vw, 120px) clamp(28px, 4vw, 48px); display: grid; gap: 20px; }
+  .pie {
+    overflow: hidden;
+    display: grid;
+    gap: 20px;
+    padding-block: clamp(40px, 6vw, 72px);
+    color: var(--pulpa);
+  }
   .pie__gigante {
     font-size: clamp(3rem, 17.5vw, 16.5rem);
     font-weight: 400;
@@ -111,6 +136,7 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     letter-spacing: -0.045em;
     white-space: nowrap;
     color: var(--chocolate);
+    margin-bottom: clamp(16px, 3vw, 40px);
   }
   .pie__gigante b { font-weight: 800; }
   .pie__fila { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }

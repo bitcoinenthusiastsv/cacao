@@ -1,28 +1,63 @@
+/* Cacao, the company page. Brandbook v1.0: Pulpa sheet on Tostado, no shadows, no gradients. */
 :root {
   --tostado: #2a1912;
   --chocolate: #5a3221;
   --mazorca: #d9902f;
+  --mazorca-oscuro: #b86e1f;
   --pulpa: #f5ede3;
+  --arena: #e6d8c6;
+  --arena-oscura: #c9b6a4;
   --fuente: "Bricolage Grotesque", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --canal: clamp(16px, 4vw, 48px);
+  --ancho: 1100px;
+  --radio: 28px;
 }
 
 * { box-sizing: border-box; }
 html { background: var(--tostado); }
 body {
   margin: 0;
-  color: var(--pulpa);
+  background: var(--tostado);
+  color: var(--tostado);
   font-family: var(--fuente);
   font-size: 1.125rem;
-  line-height: 1.45;
-  background: var(--tostado);
+  line-height: 1.5;
 }
-h1, h2, p { margin: 0; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { letter-spacing: -0.03em; line-height: 0.95; text-wrap: balance; }
 a { color: inherit; }
+:focus-visible { outline: 3px solid var(--mazorca); outline-offset: 3px; }
 
-.cabecera, main, footer {
-  width: min(1100px, calc(100% - var(--canal) * 2));
+.saltar {
+  position: absolute;
+  left: -999px;
+  top: 8px;
+  background: var(--mazorca);
+  color: var(--tostado);
+  padding: 0.5em 1em;
+  border-radius: 999px;
+}
+.saltar:focus { left: 8px; }
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hoja {
+  background: var(--pulpa);
+  margin-inline: clamp(0px, 1.5vw, 20px);
+  border-radius: 0 0 var(--radio) var(--radio);
+  padding-bottom: clamp(36px, 6vw, 72px);
+}
+
+.cabecera, .hero, .mitades, .indice, .puertas {
+  width: min(var(--ancho), calc(100% - var(--canal) * 2));
   margin-inline: auto;
 }
 
@@ -30,117 +65,137 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 0 8px;
+  gap: 16px;
+  padding-block: 22px;
+  border-bottom: 1.5px solid var(--tostado);
 }
 .logo {
   display: flex;
   align-items: center;
   gap: 0.22em;
   margin: 0;
-  font-size: 1.7rem;
+  font-size: clamp(1.7rem, 3vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
 }
 .logo svg { width: 1.15em; height: 1.15em; }
 .lugar {
-  font-family: var(--mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.entrada { padding: 48px 0 28px; }
-.etiqueta {
-  font-family: var(--mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--mazorca);
-}
-h1 {
-  margin-top: 10px;
-  font-size: clamp(4rem, 14vw, 8rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 0.9;
-}
-.bajada {
-  max-width: 38rem;
-  margin-top: 18px;
-  font-size: clamp(1.2rem, 2vw, 1.45rem);
-}
-
-.circuito, .puertas { padding: 28px 0; }
-h2 {
+  margin: 0;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.circuito ol {
+
+.etiqueta {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mazorca-oscuro);
+}
+
+.hero { padding: clamp(40px, 7vw, 88px) 0 12px; }
+.hero h1 {
+  margin-top: 12px;
+  font-size: clamp(3.4rem, 9vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+.bajada {
+  max-width: 38rem;
+  margin-top: 22px;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+}
+
+.mitades {
   display: grid;
-  gap: 10px;
-  margin: 16px 0 0;
+  gap: 28px;
+  padding: clamp(28px, 5vw, 56px) 0;
+  border-top: 1.5px solid var(--tostado);
+}
+@media (min-width: 800px) {
+  .mitades { grid-template-columns: 1fr 1fr; gap: 48px; }
+}
+.mitades h3 {
+  margin: 10px 0 12px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+}
+.mitades article:first-child h3 { max-width: 16ch; }
+.mitades p:last-child { max-width: 36ch; }
+
+.indice { padding-bottom: 8px; }
+.indice h2 {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.indice ol {
+  display: grid;
+  gap: 0;
+  margin: 14px 0 0;
   padding: 0;
   list-style: none;
   counter-reset: paso;
 }
-.circuito li {
+.indice li {
   counter-increment: paso;
-  padding-top: 10px;
-  border-top: 1.5px solid var(--chocolate);
+  padding: 14px 0;
+  border-top: 1.5px solid var(--tostado);
 }
-.circuito li::before {
-  content: counter(paso);
+.indice li::before {
+  content: counter(paso, decimal-leading-zero);
   display: block;
   margin-bottom: 4px;
   font-family: var(--mono);
   font-size: 0.8125rem;
-  color: var(--mazorca);
+  color: var(--mazorca-oscuro);
 }
-@media (min-width: 800px) {
-  .circuito ol { grid-template-columns: repeat(5, 1fr); gap: 18px; }
+@media (min-width: 900px) {
+  .indice ol { grid-template-columns: repeat(5, 1fr); }
+  .indice li { padding-right: 16px; }
 }
 
-.puertas ul {
+.puertas {
   display: grid;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-@media (min-width: 720px) {
-  .puertas ul { grid-template-columns: repeat(6, 1fr); }
-  .puertas ul li:nth-child(1),
-  .puertas ul li:nth-child(2),
-  .puertas ul li:nth-child(3) { grid-column: span 2; }
-  .puertas ul li:nth-child(4),
-  .puertas ul li:nth-child(5) { grid-column: span 3; }
+  padding-top: 8px;
 }
 .puertas a {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 7.5rem;
-  padding: 16px;
-  border: 1.5px solid var(--chocolate);
-  border-radius: 14px;
+  display: grid;
+  gap: 4px 20px;
+  align-items: baseline;
+  padding: 18px 0;
+  border-top: 1.5px solid var(--tostado);
   text-decoration: none;
 }
-.puertas a:hover, .puertas a:focus-visible {
-  background: var(--chocolate);
-  outline: none;
+.puertas a:last-child { border-bottom: 1.5px solid var(--tostado); }
+@media (min-width: 700px) {
+  .puertas a { grid-template-columns: 16rem 1fr; }
 }
-.marca { font-size: 1.35rem; letter-spacing: -0.03em; }
+.marca { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; }
 .marca b { font-weight: 800; }
-.puertas a span:last-child { color: #c9b6a4; font-size: 1rem; }
-.puertas a:hover span:last-child, .puertas a:focus-visible span:last-child { color: var(--pulpa); }
+.puertas a span:last-child { color: var(--chocolate); }
+.puertas a:hover .marca, .puertas a:focus-visible .marca { color: var(--mazorca-oscuro); }
 
-footer {
-  padding: 12px 0 40px;
-  border-top: 1.5px solid var(--chocolate);
-  color: #c9b6a4;
-  font-size: 0.95rem;
+.pie {
+  width: min(var(--ancho), calc(100% - var(--canal) * 2));
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) 0 clamp(40px, 7vw, 80px);
+  color: var(--pulpa);
+  overflow: hidden;
 }
+.gigante {
+  margin: 0 0 16px;
+  font-size: clamp(4.5rem, 22vw, 16rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.8;
+  color: var(--chocolate);
+}
+.pie p:last-child { max-width: 36rem; color: var(--arena); }
