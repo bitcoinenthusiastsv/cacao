@@ -8,6 +8,7 @@
     "start": "next start -p 4324",
     "lint": "eslint",
     "test": "vitest run",
+    "e2e": "playwright test",
     "check": "tsc --noEmit"
   },
   "dependencies": {

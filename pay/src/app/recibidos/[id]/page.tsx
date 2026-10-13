@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
 
 import { ActualizarEnvio } from '@/componentes/ActualizarEnvio';
-import { esEstadoFinal, primerNombre } from '@/componentes/textosEnvio';
+import { esEstadoFinal, primerNombre, saludoDestinatario } from '@/componentes/textosEnvio';
 import { VistaDestinatario } from '@/componentes/VistaDestinatario';
 import { envioPara } from '@/servidor/transferencias';
 import { exigirSesion } from '@/servidor/sesion';
@@ -40,7 +40,7 @@ export default async function PaginaRecibido(props: PageProps<'/recibidos/[id]'>
       </p>
 
       <VistaDestinatario
-        saludo={`${primerNombre(envio.destinatarioNombre)}, te mandaron dinero`}
+        saludo={saludoDestinatario(envio.destinatarioNombre)}
         envio={envio}
         extra={
           <section className={estilos.datos} aria-labelledby="titulo-datos">

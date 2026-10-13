@@ -21,14 +21,14 @@
   min-width: 0;
 }
 
-/* Two selects side by side from 360px; stacked on the narrowest screens. */
+/* Two selects side by side from 480px; stacked on phones, so "Bitcoin por Lightning (sats)" reads whole. */
 .fila {
   display: grid;
   gap: 16px;
   min-width: 0;
 }
 
-@media (min-width: 360px) {
+@media (min-width: 480px) {
   .fila {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }

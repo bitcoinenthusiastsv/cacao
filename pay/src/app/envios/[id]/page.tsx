@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
-import { Suspense } from 'react';
 
 import { ChipEstado } from '@/componentes/ChipEstado';
 import { fechaEnvio, fraseDeLaSuma } from '@/componentes/formatoEnvio';
@@ -23,18 +22,13 @@ import estilos from './estilos.module.css';
 import { LineaTiempo } from './LineaTiempo';
 import { SeguimientoEnCamino } from './SeguimientoEnCamino';
 
-// One transfer, for its sender or an administrator. The recipient is sent to their own view.
-export default function PaginaEnvio(props: PageProps<'/envios/[id]'>) {
-  return (
-    <Suspense fallback={<p role="status">Cargando el envío…</p>}>
-      <Envio parametros={props.params} />
-    </Suspense>
-  );
-}
+// Blocking, so a transfer that is not the visitor's gets a real 404 before anything streams.
+export const instant = false;
 
-async function Envio({ parametros }: { parametros: PageProps<'/envios/[id]'>['params'] }) {
+// One transfer, for its sender or an administrator. The recipient is sent to their own view.
+export default async function PaginaEnvio(props: PageProps<'/envios/[id]'>) {
   await connection();
-  const { id } = await parametros;
+  const { id } = await props.params;
   const sesion = await exigirSesion(`/envios/${id}`);
   const envio = await envioPara(sesion.usuario, id);
   if (!envio) notFound();

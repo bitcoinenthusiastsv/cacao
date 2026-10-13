@@ -44,6 +44,15 @@ export function dolaresDeSats(sats: number, usdBtc: number | null): string | nul
   return formatoUsd(Math.round((sats * usdBtc) / 1_000_000));
 }
 
+/**
+ * "Mamá, te mandaron dinero" from the recipient's name. A missing name or a one-letter first word
+ * falls back to "Te mandaron dinero", so the greeting never reads ", te mandaron dinero".
+ */
+export function saludoDestinatario(nombre: string | null | undefined): string {
+  const primero = (nombre ?? '').trim().split(/\s+/)[0] ?? '';
+  return Array.from(primero).length >= 2 ? `${primero}, te mandaron dinero` : 'Te mandaron dinero';
+}
+
 /** The first word of a name, or a plain fallback when there is no name. */
 export function primerNombre(nombre: string | null | undefined, sinNombre = 'alguien'): string {
   return (nombre ?? '').trim().split(/\s+/)[0] || sinNombre;
