@@ -7,6 +7,20 @@ Sitios en vivo:
 - https://cacao-media.vercel.app
 - https://cacao-travel.vercel.app
 
+## El grupo Cacao
+
+Este repositorio contiene cinco productos hechos en El Salvador para que el dinero circule cerca: llega, se gasta en lo local, se declara y se cuenta. Cada uno se publica por separado y tiene su propia documentación.
+
+| Producto | Carpeta | Qué es | En vivo |
+|---|---|---|---|
+| Cacao Media | raíz (`src/`) | Historias de El Salvador; cada una se desbloquea por 120 sats | https://cacao-media.vercel.app |
+| Cacao Travel | `travel/` | Experiencias con precio en sats | https://cacao-travel.vercel.app |
+| CacaoMarket | `market/` | Productos y servicios locales pagados en sats | https://cacao-market.vercel.app |
+| CacaoPay | `pay/` | Simulador de remesas: lo que se envía, la comisión, el tipo de cambio y lo que llega | https://cacao-pay.vercel.app |
+| CacaoLedger | `ledger/` | Herramienta de terminal: la venta, su pago y su factura electrónica (DTE) | https://cacao-ledger.vercel.app |
+
+Media, Market y Pay comparten una base de datos (las migraciones viven en `market/supabase/`). Todos los pagos son simulados: no se mueve dinero real. Lo que sigue en este documento describe Cacao Media y Cacao Travel; los otros tres tienen su `README.md` en su carpeta.
+
 ## La idea
 
 - **Pago por historia, no suscripción.** Cada historia de pago cuesta 120 sats. Con tarjeta, un cobro tan chico no tiene sentido porque las comisiones superan el precio. Con bitcoin por Lightning, pagar una sola historia sí es práctico.
