@@ -5,23 +5,68 @@ interface Props {
   tipo: 'guía' | 'crónica' | 'historia';
   /** Already formatted, e.g. "120 sats". */
   precio: string;
+  slug: string;
 }
-const { tipo, precio } = Astro.props;
+const { tipo, precio, slug } = Astro.props;
+// Build-time switch for the demo panel. The payment routes check PUBLIC_DEMO again at run time.
+const demo = import.meta.env.PUBLIC_DEMO === '1';
 ---
 
-<aside class="muro" data-gate-muro aria-label="Cacao Gate">
+<aside class="muro" data-gate-muro data-slug={slug} data-paso="inicio" aria-label="Cacao Gate">
   <div class="muro__marca">
     <Simbolo tamano={56} fondo="oscuro" decorativo />
     <span class="muro__nombre"><b>cacao</b>gate</span>
   </div>
   <p class="muro__que">Cacao Gate: desbloqueás la historia completa, sin cuenta ni suscripción.</p>
-  <p class="muro__vencido" data-gate-vencido hidden>Tu acceso venció.</p>
-  <h2 class="muro__titulo">Desbloqueá esta {tipo} completa</h2>
-  <p class="etiqueta">por {precio} · sin cuenta, sin suscripción</p>
+  <h2 class="muro__titulo" tabindex="-1" data-gate-titulo>Desbloqueá esta {tipo} completa</h2>
+  <p class="muro__estado" role="status" aria-live="polite" data-gate-estado-texto>
+    Pagás una vez y la historia queda abierta en este navegador.
+  </p>
   <p class="muro__error" role="alert" data-gate-error hidden></p>
-  <button class="boton" type="button" data-gate-boton data-texto-normal={`Desbloquear ${tipo}`}>Desbloquear {tipo}</button>
-  <p class="muro__nota">Acceso por 7 días en este dispositivo.</p>
-  <p class="etiqueta muro__demo">Modo demo · no se cobra nada</p>
+
+  <p class="muro__precio" data-gate-precio>
+    <span class="mono">{precio}</span>
+    <span class="muro__usd mono" data-gate-usd hidden></span>
+  </p>
+  <p class="muro__cerrado" data-gate-cerrado-texto>Lo que sigue está cerrado: el resto de esta {tipo}, hasta el final.</p>
+
+  <div class="muro__pendiente" data-gate-pendiente hidden>
+    <div class="muro__factura">
+      <img class="muro__qr" data-gate-qr alt="Código QR de la factura" width="200" height="200" />
+      <div class="muro__datos">
+        <p class="etiqueta">Factura Lightning simulada</p>
+        <p class="muro__monto mono" data-gate-monto></p>
+        <p class="muro__codigo mono" data-gate-factura></p>
+        <button class="boton muro__secundario" type="button" data-gate-copiar>Copiar factura</button>
+      </div>
+    </div>
+    <p class="muro__cuenta">Vence en <span class="mono" data-gate-cuenta>5:00</span></p>
+    {
+      demo && (
+        <div class="muro__demo" data-gate-demo>
+          <p class="etiqueta muro__demo-titulo">Pago simulado (modo demo)</p>
+          <div class="muro__acciones">
+            <button class="boton" type="button" data-gate-simular>Simular pago</button>
+            <button class="boton muro__secundario" type="button" data-gate-fallar>Simular pago fallido</button>
+          </div>
+        </div>
+      )
+    }
+  </div>
+
+  <p class="muro__motivo" data-gate-motivo hidden></p>
+
+  <button
+    class="boton muro__boton"
+    type="button"
+    data-gate-pedir
+    data-texto-inicio={`Desbloquear por ${precio}`}
+    data-texto-vencida="Pedir otra factura"
+    data-texto-fallida="Intentar de nuevo"
+  >Desbloquear por {precio}</button>
+
+  <p class="muro__nota">Acceso permanente en este navegador. Sin cuenta ni suscripción.</p>
+  {demo && <p class="etiqueta muro__demo-nota">Modo demo · no se cobra nada</p>}
 </aside>
 
 <style>
@@ -33,6 +78,7 @@ const { tipo, precio } = Astro.props;
     display: grid;
     gap: 14px;
     justify-items: start;
+    min-width: 0;
   }
   .muro [hidden] { display: none; }
 
@@ -51,14 +97,491 @@ const { tipo, precio } = Astro.props;
     line-height: 1.05;
     letter-spacing: -0.02em;
   }
+  .muro__titulo:focus { outline: none; }
   .muro__que { color: var(--arena-oscura); }
-  .muro__vencido { font-weight: 600; color: var(--mazorca); }
+  .muro__estado { font-weight: 600; max-width: 40ch; }
   .muro__error {
     background: var(--criollo);
     color: var(--pulpa);
     padding: 10px 14px;
     border-radius: var(--radio-chico);
+    max-width: 100%;
   }
   .muro__nota { font-size: 1rem; color: var(--arena-oscura); }
-  .muro__demo { color: var(--mazorca); }
+  .muro__cerrado { color: var(--arena-oscura); max-width: 40ch; }
+  .muro__demo-nota { color: var(--arena-oscura); }
+
+  .muro__precio {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .muro__usd { font-size: 1rem; font-weight: 500; color: var(--arena-oscura); }
+
+  .muro__pendiente { display: grid; gap: 16px; width: 100%; min-width: 0; }
+  .muro__factura {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+  }
+  .muro__qr {
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+    padding: 8px;
+    background: var(--blanco-calido);
+    border-radius: var(--radio-chico);
+  }
+  .muro__datos { display: grid; gap: 8px; justify-items: start; flex: 1 1 200px; min-width: 0; }
+  .muro__monto { font-size: 1.125rem; font-weight: 500; }
+  .muro__codigo {
+    font-size: var(--t-etiqueta);
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+  .muro__cuenta { font-size: 1.125rem; }
+  .muro__cuenta .mono { font-weight: 500; }
+  .muro__demo {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1.5px dashed var(--arena-oscura);
+    border-radius: var(--radio-chico);
+  }
+  .muro__demo-titulo { color: var(--pulpa); }
+  .muro__acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+  .muro__motivo { color: var(--arena); }
+
+  .muro__boton { min-height: 44px; }
+  .muro__secundario {
+    min-height: 44px;
+    background: transparent;
+    color: var(--pulpa);
+    border: 1.5px solid var(--pulpa);
+  }
+  .muro__secundario:hover { background: var(--pulpa); color: var(--tostado); }
+  .muro .boton:hover { background: var(--pulpa); color: var(--tostado); }
+  .muro .boton:disabled { opacity: 0.6; cursor: wait; }
+  .muro .boton:focus-visible { outline: 3px solid var(--mazorca); outline-offset: 3px; }
 </style>
+
+<script>
+  import QRCode from 'qrcode';
+  import { aceptarPase, tokenDe, traerCerrado } from '../lib/gate';
+
+  type Paso = 'inicio' | 'pendiente' | 'pagada' | 'vencida' | 'fallida' | 'sin-base';
+  interface Respuesta {
+    estado?: string;
+    id?: string;
+    factura?: string;
+    precioSats?: number;
+    precioUsdCentavos?: number | null;
+    segundosRestantes?: number;
+    token?: string;
+    motivo?: string | null;
+    error?: string;
+  }
+
+  const MENSAJE_RED = 'No pudimos conectar. Revisá tu conexión y probá de nuevo.';
+  const MENSAJE_FACTURA = 'No pudimos crear la factura. Revisá tu conexión y probá de nuevo.';
+  const MENSAJE_VENCIDA = 'La factura venció. No la pagués.';
+  const SIN_BASE = 'Los pagos no están disponibles en este momento.';
+  const SIN_COMPRAR = 'Sin cuenta ni suscripción: pagás una vez y la historia queda abierta en este navegador.';
+  const SONDEO_MS = 3000;
+  const PAUSA_RECIBO_MS = 1200;
+
+  const muro = document.querySelector<HTMLElement>('[data-gate-muro]');
+  const articulo = document.querySelector<HTMLElement>('article[data-historia]');
+  if (muro && articulo && articulo.dataset.gateEstado !== 'gratis') iniciarGate(muro, articulo);
+
+  function textoUsd(centavos: number): string {
+    return (centavos / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  }
+
+  function textoMonto(sats: number, centavos: number | null | undefined): string {
+    const texto = `${sats.toLocaleString('en-US')} sats`;
+    return centavos ? `${texto} · ${textoUsd(centavos)}` : texto;
+  }
+
+  // Dark modules Tostado on Blanco cálido, read from the brand tokens.
+  async function codigoQr(texto: string): Promise<string> {
+    const estilo = getComputedStyle(document.documentElement);
+    const oscuro = estilo.getPropertyValue('--tostado').trim() || '#2A1912';
+    const claro = estilo.getPropertyValue('--blanco-calido').trim() || '#FFFAF4';
+    return QRCode.toDataURL(texto, { margin: 1, width: 200, color: { dark: oscuro, light: claro } });
+  }
+
+  function iniciarGate(muro: HTMLElement, articulo: HTMLElement): void {
+    const slug = muro.dataset.slug ?? '';
+    const dentro = <T extends HTMLElement>(selector: string) => muro.querySelector<T>(selector);
+    const cerrado = articulo.querySelector<HTMLElement>('[data-gate-cerrado]');
+    const pastilla = articulo.querySelector<HTMLElement>('[data-gate-pastilla]');
+    const precioLinea = dentro('[data-gate-precio]');
+    const cerradoTexto = dentro('[data-gate-cerrado-texto]');
+    const usd = dentro('[data-gate-usd]');
+    const pendiente = dentro('[data-gate-pendiente]');
+    const qr = dentro<HTMLImageElement>('[data-gate-qr]');
+    const monto = dentro('[data-gate-monto]');
+    const factura = dentro('[data-gate-factura]');
+    const copiar = dentro<HTMLButtonElement>('[data-gate-copiar]');
+    const cuenta = dentro('[data-gate-cuenta]');
+    const simular = dentro<HTMLButtonElement>('[data-gate-simular]');
+    const fallar = dentro<HTMLButtonElement>('[data-gate-fallar]');
+    const motivo = dentro('[data-gate-motivo]');
+    const pedir = dentro<HTMLButtonElement>('[data-gate-pedir]');
+    const estadoTexto = dentro('[data-gate-estado-texto]');
+    const aviso = dentro('[data-gate-error]');
+
+    let cobro: string | null = null;
+    let vence = 0;
+    let sondeo: number | undefined;
+    let reloj: number | undefined;
+    let consultando = false;
+    let venciendo = false;
+    let observandoLectura = false;
+
+    // Funnel events: fire and forget, never shown to the reader.
+    function enviar(nombre: string): void {
+      fetch('/api/evento/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, objeto: slug, ruta: location.pathname }),
+        keepalive: true,
+      }).catch(() => {});
+    }
+
+    function decir(texto: string): void {
+      if (estadoTexto) estadoTexto.textContent = texto;
+    }
+
+    function error(texto: string | null): void {
+      if (!aviso) return;
+      aviso.textContent = texto ?? '';
+      aviso.hidden = !texto;
+    }
+
+    function ocupado(on: boolean): void {
+      for (const boton of [pedir, simular, fallar]) if (boton) boton.disabled = on;
+    }
+
+    function pintarArticulo(estado: 'bloqueado' | 'desbloqueado' | 'leyendo'): void {
+      articulo.dataset.gateEstado = estado;
+      if (!pastilla) return;
+      pastilla.textContent =
+        estado === 'bloqueado' ? (pastilla.dataset.precio ?? '') : estado === 'desbloqueado' ? 'Desbloqueado' : 'Leyendo';
+    }
+
+    function pintarUsd(centavos: number | null | undefined): void {
+      if (!usd) return;
+      usd.hidden = !centavos;
+      usd.textContent = centavos ? `· ${textoUsd(centavos)}` : '';
+    }
+
+    function detenerPendiente(): void {
+      clearInterval(sondeo);
+      clearInterval(reloj);
+      sondeo = undefined;
+      reloj = undefined;
+    }
+
+    function mostrar(paso: Paso, texto: string): void {
+      muro.dataset.paso = paso;
+      decir(texto);
+      if (precioLinea) precioLinea.hidden = paso !== 'inicio';
+      if (cerradoTexto) cerradoTexto.hidden = paso !== 'inicio';
+      if (pendiente) pendiente.hidden = paso !== 'pendiente';
+      if (motivo) motivo.hidden = paso !== 'fallida';
+      if (pedir) {
+        pedir.hidden = !['inicio', 'vencida', 'fallida'].includes(paso);
+        pedir.textContent =
+          paso === 'vencida'
+            ? (pedir.dataset.textoVencida ?? '')
+            : paso === 'fallida'
+              ? (pedir.dataset.textoFallida ?? '')
+              : (pedir.dataset.textoInicio ?? '');
+      }
+      if (paso !== 'pendiente') detenerPendiente();
+    }
+
+    function pintarCuenta(): number {
+      const restante = Math.max(0, Math.ceil((vence - Date.now()) / 1000));
+      if (cuenta) cuenta.textContent = `${Math.floor(restante / 60)}:${String(restante % 60).padStart(2, '0')}`;
+      return restante;
+    }
+
+    // Starts the countdown and the 3-second poll for one pending invoice.
+    function vigilar(id: string): void {
+      detenerPendiente();
+      cobro = id;
+      venciendo = false;
+      reloj = window.setInterval(() => {
+        // At zero the server decides whether the invoice is vencida.
+        if (pintarCuenta() === 0 && !venciendo) {
+          venciendo = true;
+          void consultar();
+        }
+      }, 1000);
+      sondeo = window.setInterval(() => {
+        if (document.visibilityState === 'visible') void consultar();
+      }, SONDEO_MS);
+    }
+
+    function aplicar(datos: Respuesta): void {
+      switch (datos.estado) {
+        case 'pendiente':
+          vence = Date.now() + (datos.segundosRestantes ?? 0) * 1000;
+          venciendo = false;
+          pintarCuenta();
+          return;
+        case 'pagada':
+          void cobrado(datos.token ?? '', true);
+          return;
+        case 'vencida':
+          mostrar('vencida', MENSAJE_VENCIDA);
+          return;
+        case 'fallida':
+          if (motivo) motivo.textContent = datos.motivo ?? '';
+          mostrar('fallida', 'El pago no se completó.');
+          return;
+      }
+    }
+
+    async function adoptar(datos: Respuesta): Promise<void> {
+      if (!datos.id || !datos.factura) throw new Error('Respuesta incompleta.');
+      if (factura) factura.textContent = datos.factura;
+      if (monto) monto.textContent = textoMonto(datos.precioSats ?? 0, datos.precioUsdCentavos);
+      if (qr) qr.src = await codigoQr(datos.factura);
+      if (copiar) copiar.textContent = 'Copiar factura';
+      vence = Date.now() + (datos.segundosRestantes ?? 0) * 1000;
+      mostrar('pendiente', 'Esperando el pago. Esta página se actualiza sola.');
+      pintarCuenta();
+      vigilar(datos.id);
+    }
+
+    async function consultar(): Promise<void> {
+      if (!cobro || consultando) return;
+      consultando = true;
+      try {
+        const r = await fetch(`/api/cobro/${cobro}/`, { cache: 'no-store' });
+        if (r.status === 404) {
+          cobro = null;
+          mostrar('inicio', SIN_COMPRAR);
+          error('No encontramos esa factura. Pedí otra.');
+          return;
+        }
+        if (r.ok) aplicar((await r.json()) as Respuesta);
+      } catch {
+        // Offline for a moment: the next poll tries again.
+      } finally {
+        consultando = false;
+      }
+    }
+
+    // Reading unlocked: the first scroll starts the observers, so loading the page is not reading yet.
+    function observarLectura(): void {
+      if (observandoLectura || !cerrado || !('IntersectionObserver' in window)) return;
+      observandoLectura = true;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!cerrado) return;
+          const observadorTexto = new IntersectionObserver((entradas) => {
+            if (!entradas.some((e) => e.isIntersecting)) return;
+            pintarArticulo('leyendo');
+            observadorTexto.disconnect();
+          });
+          observadorTexto.observe(cerrado);
+          const fin = cerrado.querySelector('[data-gate-fin]');
+          if (fin) {
+            const observadorFin = new IntersectionObserver((entradas, o) => {
+              if (!entradas.some((e) => e.isIntersecting)) return;
+              enviar('leyo_completa');
+              o.disconnect();
+            });
+            observadorFin.observe(fin);
+          }
+        },
+        { once: true, passive: true },
+      );
+    }
+
+    // The locked text goes into the page only now, from the server, with the reader's pass.
+    async function abrir(html: string, enfocar: boolean): Promise<void> {
+      if (!cerrado) return;
+      cerrado.innerHTML = html;
+      const fin = document.createElement('span');
+      fin.dataset.gateFin = '';
+      fin.setAttribute('aria-hidden', 'true');
+      cerrado.append(fin);
+      error(null);
+      pintarArticulo('desbloqueado');
+      // Tell the Cacao Travel widget the reader now holds a token it can pass along.
+      document.dispatchEvent(new CustomEvent('cacao:desbloqueada', { detail: { slug } }));
+      observarLectura();
+      if (enfocar) {
+        cerrado.tabIndex = -1;
+        // Focus without scrolling: the page must not jump under the reader.
+        cerrado.focus({ preventScroll: true });
+      }
+    }
+
+    // Stores the pass, then opens the story. `recibo` shows "Pago recibido" first.
+    async function cobrado(token: string, recibo: boolean): Promise<void> {
+      if (recibo) {
+        mostrar('pagada', 'Pago recibido.');
+        await new Promise((resolver) => setTimeout(resolver, PAUSA_RECIBO_MS));
+      }
+      if (!aceptarPase(slug, token)) {
+        mostrar('inicio', SIN_COMPRAR);
+        error(MENSAJE_RED);
+        return;
+      }
+      const html = await traerCerrado(slug);
+      if (html === null) {
+        mostrar('inicio', SIN_COMPRAR);
+        error(MENSAJE_RED);
+        return;
+      }
+      await abrir(html, true);
+    }
+
+    async function pedirFactura(): Promise<void> {
+      ocupado(true);
+      error(null);
+      try {
+        const r = await fetch('/api/cobro/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug }),
+        });
+        const datos = ((await r.json().catch(() => ({}))) ?? {}) as Respuesta;
+        if (!r.ok) {
+          error(datos.error ?? MENSAJE_FACTURA);
+          return;
+        }
+        if (datos.estado === 'pagada') {
+          // Already paid from this browser: no receipt, the story opens.
+          await cobrado(datos.token ?? '', false);
+          return;
+        }
+        await adoptar(datos);
+      } catch {
+        error(MENSAJE_RED);
+      } finally {
+        ocupado(false);
+      }
+    }
+
+    async function accionDemo(accion: 'pagar' | 'fallar'): Promise<void> {
+      if (!cobro) return;
+      ocupado(true);
+      error(null);
+      try {
+        const r = await fetch(`/api/cobro/${cobro}/${accion}/`, { method: 'POST' });
+        const datos = ((await r.json().catch(() => ({}))) ?? {}) as Respuesta;
+        if (r.ok && datos.estado === 'pagada') {
+          await cobrado(datos.token ?? '', true);
+          return;
+        }
+        if (r.ok && datos.estado === 'fallida') {
+          aplicar(datos);
+          return;
+        }
+        if (datos.estado === 'vencida') {
+          mostrar('vencida', MENSAJE_VENCIDA);
+          error(datos.error ?? null);
+          return;
+        }
+        error(datos.error ?? MENSAJE_RED);
+      } catch {
+        error(MENSAJE_RED);
+      } finally {
+        ocupado(false);
+      }
+    }
+
+    async function alCargar(): Promise<void> {
+      // A Cacao Travel booking hands over a reading pass in the fragment. Keep it, then drop it from the address bar.
+      const pase = new URLSearchParams(location.hash.slice(1)).get('pase');
+      if (pase) {
+        history.replaceState(null, '', location.pathname + location.search);
+        aceptarPase(slug, pase);
+      }
+      enviar('vista_historia');
+
+      if (tokenDe(slug)) {
+        try {
+          const html = await traerCerrado(slug);
+          if (html !== null) {
+            await abrir(html, false);
+            return;
+          }
+        } catch {
+          // The pass is kept; the server check below decides.
+        }
+      }
+
+      // No pass, or the server refused the stored one: ask whether this browser has paid for the story.
+      try {
+        const r = await fetch('/api/desbloquear/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug }),
+        });
+        const datos = ((await r.json().catch(() => ({}))) ?? {}) as Respuesta;
+        if (r.status === 503) {
+          mostrar('sin-base', SIN_BASE);
+          return;
+        }
+        if (r.status === 402) {
+          pintarUsd(datos.precioUsdCentavos);
+          return;
+        }
+        if (!r.ok || !datos.token || !aceptarPase(slug, datos.token)) {
+          error(MENSAJE_RED);
+          return;
+        }
+        const html = await traerCerrado(slug);
+        if (html === null) {
+          error(MENSAJE_RED);
+          return;
+        }
+        await abrir(html, false);
+      } catch {
+        error(MENSAJE_RED);
+      }
+    }
+
+    pedir?.addEventListener('click', () => void pedirFactura());
+    simular?.addEventListener('click', () => void accionDemo('pagar'));
+    fallar?.addEventListener('click', () => void accionDemo('fallar'));
+    copiar?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(factura?.textContent ?? '');
+        if (copiar) copiar.textContent = 'Factura copiada';
+      } catch {
+        error('No pudimos copiar la factura. Seleccionála y copiala a mano.');
+      }
+    });
+    // Back on the tab: refresh at once instead of waiting for the next tick.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && cobro && muro.dataset.paso === 'pendiente') void consultar();
+    });
+
+    // The wall counts as seen once it is on screen.
+    if ('IntersectionObserver' in window) {
+      const observadorMuro = new IntersectionObserver((entradas, o) => {
+        if (!entradas.some((e) => e.isIntersecting)) return;
+        enviar('vio_muro');
+        o.disconnect();
+      });
+      observadorMuro.observe(muro);
+    }
+
+    void alCargar();
+  }
+</script>

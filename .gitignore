@@ -8,6 +8,7 @@ playwright-report/
 
 .vercel
 .env*
+!.env.example
 .hojas/
 travel/node_modules/
 travel/dist/

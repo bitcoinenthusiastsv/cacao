@@ -45,18 +45,6 @@ export function tokenDe(slug: string, ahora: number = Date.now()): string | null
   return g && g.expira > ahora ? g.token : null;
 }
 
-/** Asks the server for an unlock token. Throws if the server refuses. */
-export async function desbloquear(slug: string): Promise<void> {
-  const r = await fetch('/api/desbloquear/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ slug }),
-  });
-  if (!r.ok) throw new Error('No se pudo desbloquear.');
-  const { token, expira } = (await r.json()) as Guardado;
-  guardar(slug, { token, expira });
-}
-
 /** Stores a pass that arrived from a Cacao Travel booking. Its expiry is read from the payload. */
 export function aceptarPase(slug: string, token: string): boolean {
   try {

@@ -1,0 +1,108 @@
+---
+// Admin activity: what readers did with the stories in the period, from the shared events table.
+import Panel from './_panel.astro';
+import { hayBase, leerError } from '../../lib/servidor/bd';
+import { actividadPanel, fechaDia, leerRango, type ActividadPanel } from '../../lib/servidor/admin';
+import { sesionDeCookies } from '../../lib/servidor/admin-sesion';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (!sesionDeCookies(Astro.cookies)) return Astro.redirect('/admin/entrar/');
+
+const rango = leerRango({
+  desde: Astro.url.searchParams.get('desde'),
+  hasta: Astro.url.searchParams.get('hasta'),
+});
+
+let actividad: ActividadPanel | null = null;
+let error: string | null = null;
+if (hayBase()) {
+  try {
+    actividad = await actividadPanel(rango);
+  } catch (e) {
+    error = leerError(e).mensaje;
+  }
+}
+---
+
+<Panel titulo="Actividad" seccion="actividad" rango={rango}>
+  <h2 class="seccion-titulo">Actividad de lectura</h2>
+
+  {!hayBase() && <p class="vacio">La base de datos no está configurada.</p>}
+  {error && <p class="error" role="alert">{error}</p>}
+
+  {
+    actividad && (
+      <>
+        <p class="nota">
+          {actividad.total} {actividad.total === 1 ? 'evento' : 'eventos'} de Cacao Media en el período.
+          Lectores cuenta sesiones distintas del navegador.
+        </p>
+
+        <section class="bloque" aria-labelledby="por-historia-titulo">
+          <h3 id="por-historia-titulo" class="seccion-titulo">Por historia</h3>
+          {actividad.historias.length === 0 ? (
+            <p class="vacio">Sin actividad de lectura en este período.</p>
+          ) : (
+            <div class="tabla-caja">
+              <table class="tabla">
+                <caption>Lectores por historia, de más a menos aperturas</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Historia</th>
+                    <th scope="col">Abrieron</th>
+                    <th scope="col">Llegaron al muro</th>
+                    <th scope="col">Leyeron hasta el final</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {actividad.historias.map((h) => (
+                    <tr>
+                      <th scope="row">
+                        <a href={`/historias/${h.slug}/`}>{h.titulo}</a>
+                      </th>
+                      <td class="numero" data-etiqueta="Abrieron">{h.abrieron}</td>
+                      <td class="numero" data-etiqueta="Llegaron al muro">{h.muro}</td>
+                      <td class="numero" data-etiqueta="Leyeron hasta el final">{h.leyeron}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section class="bloque" aria-labelledby="por-dia-titulo">
+          <h3 id="por-dia-titulo" class="seccion-titulo">Eventos por día</h3>
+          {actividad.dias.length === 0 ? (
+            <p class="vacio">Sin eventos en este período.</p>
+          ) : (
+            <div class="tabla-caja">
+              <table class="tabla">
+                <caption>Eventos guardados por día, el más reciente primero</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Día</th>
+                    {Object.values(actividad.etiquetas).map((texto) => (
+                      <th scope="col">{texto}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {actividad.dias.map((d) => (
+                    <tr>
+                      <th scope="row">{fechaDia(d.dia)}</th>
+                      {Object.entries(actividad.etiquetas).map(([nombre, texto]) => (
+                        <td class="numero" data-etiqueta={texto}>{d.eventos[nombre] ?? 0}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </>
+    )
+  }
+</Panel>

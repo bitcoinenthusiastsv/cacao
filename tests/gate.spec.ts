@@ -1,8 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { expect, test, type Page } from '@playwright/test';
 
 const PAGA = '/historias/la-ola-que-cambio-un-pueblo/';
+const OTRA_PAGA = '/historias/lo-que-nadie-te-cuenta-del-tunco/';
 const GRATIS = '/historias/como-pedir-un-cafe-de-altura/';
-const CLAVE = 'cacao-gate:la-ola-que-cambio-un-pueblo';
+const SLUG = 'la-ola-que-cambio-un-pueblo';
+const CLAVE = `cacao-gate:${SLUG}`;
 const DIA = 24 * 60 * 60 * 1000;
 
 const TRAVEL = 'https://cacao-travel.vercel.app';
@@ -15,35 +18,115 @@ const TOUR = {
   precio: 45000,
   url: `${TRAVEL}/experiencias/prueba/`,
   foto: `${TRAVEL}/fotos/prueba.jpg`,
-  historias: ['la-ola-que-cambio-un-pueblo'],
+  historias: [SLUG],
 };
 
-test('paid story starts locked', async ({ page }) => {
+// A sentence that only exists after the gate in this story.
+const FRASE_CERRADA = 'Una moneda que llegó por la misma carretera';
+
+const muro = (page: Page) => page.locator('[data-gate-muro]');
+const cerrado = (page: Page) => page.locator('[data-gate-cerrado]');
+
+/** Asks for an invoice from the gate and returns its id. */
+async function pedirFactura(page: Page): Promise<string> {
+  const respuesta = page.waitForResponse((r) => r.url().endsWith('/api/cobro/') && r.request().method() === 'POST');
+  await page.locator('[data-gate-pedir]').click();
+  const datos = (await (await respuesta).json()) as { id: string };
+  await expect(muro(page)).toHaveAttribute('data-paso', 'pendiente');
+  return datos.id;
+}
+
+/** Full simulated payment through the gate: invoice, "Simular pago", story open. */
+async function pagarHistoria(page: Page): Promise<void> {
+  await pedirFactura(page);
+  await page.locator('[data-gate-simular]').click();
+  await expect(cerrado(page)).toBeVisible();
+}
+
+/** Service-role client for steps a reader cannot take (expiring an invoice). Run with --env-file=.env.local. */
+function servicio() {
+  const url = process.env.SUPABASE_URL;
+  const clave = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !clave) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY: correr con --env-file=.env.local.');
+  return createClient(url, clave, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+test('paid story starts locked with its price and the unlock button', async ({ page }) => {
   await page.goto(PAGA);
   await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'bloqueado');
-  await expect(page.locator('[data-gate-cerrado]')).toBeHidden();
-  await expect(page.locator('[data-gate-muro]')).toBeVisible();
+  await expect(cerrado(page)).toBeHidden();
+  await expect(muro(page)).toBeVisible();
+  await expect(muro(page)).toHaveAttribute('data-paso', 'inicio');
   await expect(page.locator('[data-gate-pastilla]')).toHaveText('120 sats');
-  await expect(page.locator('[data-gate-muro]')).toContainText('Modo demo');
+  await expect(page.locator('[data-gate-pedir]')).toHaveText('Desbloquear por 120 sats');
+  // The USD value comes from the server's price, beside the sats.
+  await expect(page.locator('[data-gate-usd]')).toBeVisible();
+  await expect(page.locator('[data-gate-usd]')).toHaveText(/^· \$\d+\.\d{2}$/);
+  await expect(muro(page)).toContainText('Modo demo');
 });
 
-test('unlocking reveals the story and survives a reload', async ({ page }) => {
+test('the invoice shows a QR, the amount and a countdown', async ({ page }) => {
   await page.goto(PAGA);
-  await page.locator('[data-gate-boton]').click();
-  await expect(page.locator('[data-gate-cerrado]')).toBeVisible();
-  await expect(page.locator('[data-gate-muro]')).toBeHidden();
+  await pedirFactura(page);
+  await expect(page.locator('[data-gate-qr]')).toHaveAttribute('alt', 'Código QR de la factura');
+  await expect(page.locator('[data-gate-qr]')).toHaveAttribute('src', /^data:image\/png/);
+  await expect(page.locator('[data-gate-factura]')).toHaveText(/^lnsim1[0-9a-f]{40}$/);
+  await expect(page.locator('[data-gate-monto]')).toHaveText(/^120 sats · \$\d+\.\d{2}$/);
+  await expect(page.locator('[data-gate-cuenta]')).toHaveText(/^[0-5]:[0-5]\d$/);
+  await expect(page.getByRole('button', { name: 'Copiar factura' })).toBeVisible();
+  await expect(page.locator('[data-gate-estado-texto]')).toHaveText('Esperando el pago. Esta página se actualiza sola.');
+  await expect(page.locator('[data-gate-estado-texto]')).toHaveAttribute('aria-live', 'polite');
+  await expect(page.getByText('Pago simulado (modo demo)')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Simular pago', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Simular pago fallido' })).toBeVisible();
+});
+
+test('paying opens the story without a scroll jump', async ({ page }) => {
+  await page.goto(PAGA);
+  await pedirFactura(page);
+  const simular = page.locator('[data-gate-simular]');
+  // Bring the demo button into view first, so the click itself does not scroll the page.
+  await simular.scrollIntoViewIfNeeded();
+  const antes = await page.evaluate(() => window.scrollY);
+  await simular.click();
+  await expect(cerrado(page)).toBeVisible();
+  const despues = await page.evaluate(() => window.scrollY);
+  expect(Math.abs(despues - antes)).toBeLessThan(5);
+  await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'desbloqueado');
+  await expect(page.locator('[data-gate-pastilla]')).toHaveText('Desbloqueado');
+});
+
+test('the unlock lasts seven days and survives a reload', async ({ page }) => {
+  await page.goto(PAGA);
+  await pagarHistoria(page);
 
   const expira = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)!).expira, CLAVE);
   expect(expira - Date.now()).toBeGreaterThan(6.9 * DIA);
   expect(expira - Date.now()).toBeLessThanOrEqual(7 * DIA);
 
   await page.reload();
-  await expect(page.locator('[data-gate-cerrado]')).toBeVisible();
+  await expect(cerrado(page)).toBeVisible();
+});
+
+test('a second visit in the same browser opens the story without paying again', async ({ page }) => {
+  await page.goto(PAGA);
+  await pagarHistoria(page);
+
+  // Only the cookie is left: the stored pass is gone.
+  await page.evaluate(() => localStorage.clear());
+  const pedidos: string[] = [];
+  page.on('request', (r) => {
+    if (r.method() === 'POST' && r.url().includes('/api/cobro/')) pedidos.push(r.url());
+  });
+  await page.goto(PAGA);
+  await expect(cerrado(page)).toBeVisible();
+  await expect(muro(page)).toBeHidden();
+  expect(pedidos).toEqual([]);
 });
 
 test('reading the unlocked part sets the state to leyendo', async ({ page }) => {
   await page.goto(PAGA);
-  await page.locator('[data-gate-boton]').click();
+  await pagarHistoria(page);
   await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'desbloqueado');
   await expect(page.locator('[data-gate-pastilla]')).toHaveText('Desbloqueado');
   await page.mouse.wheel(0, 800);
@@ -51,72 +134,145 @@ test('reading the unlocked part sets the state to leyendo', async ({ page }) => 
   await expect(page.locator('[data-gate-pastilla]')).toHaveText('Leyendo');
 });
 
-test('unlocking does not make the page jump', async ({ page }) => {
+test('the failed path explains itself and the reader can try again', async ({ page }) => {
   await page.goto(PAGA);
-  const boton = page.locator('[data-gate-boton]');
-  // Bring the button into view first, so the click itself does not scroll the page.
-  await boton.scrollIntoViewIfNeeded();
-  const antes = await page.evaluate(() => window.scrollY);
-  await boton.click();
-  await expect(page.locator('[data-gate-cerrado]')).toBeVisible();
-  const despues = await page.evaluate(() => window.scrollY);
-  expect(Math.abs(despues - antes)).toBeLessThan(5);
+  await pedirFactura(page);
+  await page.locator('[data-gate-fallar]').click();
+  await expect(muro(page)).toHaveAttribute('data-paso', 'fallida');
+  await expect(page.locator('[data-gate-estado-texto]')).toHaveText('El pago no se completó.');
+  await expect(page.locator('[data-gate-motivo]')).toContainText('no se completó');
+  await expect(page.locator('[data-gate-pedir]')).toHaveText('Intentar de nuevo');
+  await expect(cerrado(page)).toBeHidden();
+
+  await page.locator('[data-gate-pedir]').click();
+  await expect(muro(page)).toHaveAttribute('data-paso', 'pendiente');
+  await page.locator('[data-gate-simular]').click();
+  await expect(cerrado(page)).toBeVisible();
 });
 
-test('an expired unlock locks the story again', async ({ page }) => {
+test('an expired invoice reads vencida and a new one can be asked for', async ({ page }) => {
   await page.goto(PAGA);
+  const id = await pedirFactura(page);
+  const { error } = await servicio()
+    .from('media_cobros')
+    .update({ expira_en: new Date(Date.now() - 1000).toISOString() })
+    .eq('id', id);
+  expect(error).toBeNull();
+
+  // The page polls every 3 seconds; the server closes the invoice on the next look.
+  await expect(muro(page)).toHaveAttribute('data-paso', 'vencida', { timeout: 15_000 });
+  await expect(page.locator('[data-gate-estado-texto]')).toHaveText('La factura venció. No la pagués.');
+  await expect(page.locator('[data-gate-pedir]')).toHaveText('Pedir otra factura');
+  await expect(cerrado(page)).toBeHidden();
+
+  await page.locator('[data-gate-pedir]').click();
+  await expect(muro(page)).toHaveAttribute('data-paso', 'pendiente');
+});
+
+test('a different browser stays locked and cannot read the first invoice', async ({ page, browser }) => {
+  await page.goto(PAGA);
+  const id = await pedirFactura(page);
+  await page.locator('[data-gate-simular]').click();
+  await expect(cerrado(page)).toBeVisible();
+
+  const otra = await browser.newContext({ baseURL: 'http://localhost:4321' });
+  try {
+    const pagina = await otra.newPage();
+    await pagina.goto(PAGA);
+    await expect(muro(pagina)).toBeVisible();
+    await expect(cerrado(pagina)).toBeHidden();
+    expect((await otra.request.get(`/api/cobro/${id}/`)).status()).toBe(404);
+    expect((await otra.request.post(`/api/cobro/${id}/pagar/`)).status()).toBe(404);
+    expect((await otra.request.post('/api/desbloquear/', { data: { slug: SLUG } })).status()).toBe(402);
+  } finally {
+    await otra.close();
+  }
+});
+
+test('an expired stored pass is renewed from the cookie', async ({ page }) => {
+  await page.goto(PAGA);
+  await pagarHistoria(page);
   await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ token: 'viejo', expira: Date.now() - 1000 })), CLAVE);
   await page.reload();
-  await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'expirado');
-  await expect(page.locator('[data-gate-cerrado]')).toBeHidden();
-  await expect(page.locator('[data-gate-vencido]')).toBeVisible();
-  await expect(page.locator('[data-gate-boton]')).toHaveText('Desbloquear de nuevo');
-  await expect(page.locator('[data-gate-pastilla]')).toHaveText('Expirado');
-
-  await page.locator('[data-gate-boton]').click();
-  await expect(page.locator('[data-gate-cerrado]')).toBeVisible();
+  await expect(cerrado(page)).toBeVisible();
+  await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'desbloqueado');
 });
 
-// A sentence that only exists after the gate in this story.
-const FRASE_CERRADA = 'Una moneda que llegó por la misma carretera';
-
-test('the locked text is not in the page and the server refuses to hand it out without a token', async ({ page, request }) => {
+test('the locked text is not in the page and the server refuses it without a valid pass', async ({ page, request }) => {
   const fuente = await (await request.get(PAGA)).text();
   expect(fuente).not.toContain(FRASE_CERRADA);
 
-  const api = '/api/contenido/la-ola-que-cambio-un-pueblo/';
+  const api = `/api/contenido/${SLUG}/`;
   expect((await request.get(api)).status()).toBe(401);
   expect((await request.get(api, { headers: { Authorization: 'Bearer abc.def' } })).status()).toBe(401);
 
-  // A real token, but issued for a different story, does not open this one.
-  const otra = await request.post('/api/desbloquear/', { data: { slug: 'lo-que-nadie-te-cuenta-del-tunco' } });
-  const { token } = await otra.json();
-  expect((await request.get(api, { headers: { Authorization: `Bearer ${token}` } })).status()).toBe(401);
+  // A real pass for a different story does not open this one.
+  await page.goto(OTRA_PAGA);
+  await pagarHistoria(page);
+  const otra = await page.evaluate(() => localStorage.getItem('cacao-gate:lo-que-nadie-te-cuenta-del-tunco'));
+  const tokenOtra = (JSON.parse(otra!) as { token: string }).token;
+  expect((await request.get(api, { headers: { Authorization: `Bearer ${tokenOtra}` } })).status()).toBe(401);
 
   // Tampering with the payload breaks the signature.
-  const [, firma] = token.split('.');
-  const falso = Buffer.from(JSON.stringify({ tipo: 'pago', slugs: ['la-ola-que-cambio-un-pueblo'], exp: Date.now() + 1e9 })).toString('base64url');
+  const [, firma] = tokenOtra.split('.');
+  const falso = Buffer.from(JSON.stringify({ tipo: 'pago', slugs: [SLUG], exp: Date.now() + 1e9 })).toString('base64url');
   expect((await request.get(api, { headers: { Authorization: `Bearer ${falso}.${firma}` } })).status()).toBe(401);
 
-  // The right token gets the text.
-  const buena = await (await request.post('/api/desbloquear/', { data: { slug: 'la-ola-que-cambio-un-pueblo' } })).json();
+  // The right pass gets the text.
+  await page.goto(PAGA);
+  await pagarHistoria(page);
+  const buena = (await page.evaluate((k) => JSON.parse(localStorage.getItem(k)!), CLAVE)) as { token: string };
   const r = await request.get(api, { headers: { Authorization: `Bearer ${buena.token}` } });
   expect(r.status()).toBe(200);
   expect((await r.json()).html).toContain(FRASE_CERRADA);
 });
 
-test('a free story cannot be asked for through the unlock API', async ({ request }) => {
+test('the unlock API answers 402 without access and never gives a free story', async ({ request }) => {
+  const sinAcceso = await request.post('/api/desbloquear/', { data: { slug: SLUG } });
+  expect(sinAcceso.status()).toBe(402);
+  expect((await sinAcceso.json()).error).toBe('Esta historia se desbloquea pagando su factura.');
+
   expect((await request.post('/api/desbloquear/', { data: { slug: 'como-pedir-un-cafe-de-altura' } })).status()).toBe(404);
   expect((await request.post('/api/desbloquear/', { data: { slug: '../../etc/passwd' } })).status()).toBe(404);
+});
+
+test('the invoice route refuses a free story and an unknown one', async ({ request }) => {
+  expect((await request.post('/api/cobro/', { data: { slug: 'como-pedir-un-cafe-de-altura' } })).status()).toBe(404);
+  expect((await request.post('/api/cobro/', { data: { slug: '../../etc/passwd' } })).status()).toBe(404);
+});
+
+test('the events route answers 204 to anything, so the page never breaks', async ({ request }) => {
+  const valido = await request.post('/api/evento/', { data: { nombre: 'vio_muro', objeto: SLUG, ruta: PAGA } });
+  expect(valido.status()).toBe(204);
+  expect((await request.post('/api/evento/', { data: { nombre: 'pago' } })).status()).toBe(204);
+  expect((await request.post('/api/evento/', { data: 'no es json' })).status()).toBe(204);
+});
+
+test('opening a paid story sends the first funnel event', async ({ page }) => {
+  const evento = page.waitForRequest((r) => r.url().endsWith('/api/evento/') && (r.postData() ?? '').includes('vista_historia'));
+  await page.goto(PAGA);
+  expect((await evento).postDataJSON()).toMatchObject({ nombre: 'vista_historia', objeto: SLUG });
 });
 
 test('a device that lies about its expiry is corrected by the server', async ({ page }) => {
   await page.goto(PAGA);
   await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ token: 'inventado.firma', expira: Date.now() + 1e9 })), CLAVE);
   await page.reload();
-  await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'bloqueado');
-  await expect(page.locator('[data-gate-muro]')).toBeVisible();
+  await expect(muro(page)).toHaveAttribute('data-paso', 'inicio');
+  await expect(muro(page)).toBeVisible();
+  await expect(cerrado(page)).toBeHidden();
   expect(await page.evaluate((k) => localStorage.getItem(k), CLAVE)).toBeNull();
+});
+
+test('without a database the gate says payments are not available and stays closed', async ({ page }) => {
+  await page.route('**/api/desbloquear/', (r) =>
+    r.fulfill({ status: 503, json: { error: 'Los pagos no están disponibles en este momento.' } }),
+  );
+  await page.goto(PAGA);
+  await expect(muro(page)).toHaveAttribute('data-paso', 'sin-base');
+  await expect(page.locator('[data-gate-estado-texto]')).toHaveText('Los pagos no están disponibles en este momento.');
+  await expect(page.locator('[data-gate-pedir]')).toBeHidden();
+  await expect(cerrado(page)).toBeHidden();
 });
 
 test('an unlocked story passes the reader token to its Cacao Travel experience', async ({ page }) => {
@@ -125,25 +281,25 @@ test('an unlocked story passes the reader token to its Cacao Travel experience',
   await page.goto(PAGA);
   const enlace = page.locator('[data-widget-travel] .wt-boleto');
   await expect(enlace).toHaveAttribute('href', TOUR.url);
-  await page.locator('[data-gate-boton]').click();
+  await pagarHistoria(page);
   await expect(enlace).toHaveAttribute('href', /#lector=/);
   await expect(page.locator('.wt__lector')).toBeVisible();
 });
 
 test('unlocking one story does not unlock another', async ({ page }) => {
   await page.goto(PAGA);
-  await page.locator('[data-gate-boton]').click();
-  await page.goto('/historias/lo-que-nadie-te-cuenta-del-tunco/');
-  await expect(page.locator('[data-gate-cerrado]')).toBeHidden();
+  await pagarHistoria(page);
+  await page.goto(OTRA_PAGA);
+  await expect(cerrado(page)).toBeHidden();
 });
 
-test('a failed unlock explains itself', async ({ page }) => {
-  await page.route('**/api/desbloquear/', (r) => r.abort());
+test('a failed invoice request explains itself', async ({ page }) => {
+  await page.route('**/api/cobro/', (r) => r.abort());
   await page.goto(PAGA);
-  await page.locator('[data-gate-boton]').click();
+  await page.locator('[data-gate-pedir]').click();
   await expect(page.locator('[data-gate-error]')).toBeVisible();
-  await expect(page.locator('[data-gate-error]')).toContainText('No pudimos desbloquear');
-  await expect(page.locator('[data-gate-muro]')).toBeVisible();
+  await expect(page.locator('[data-gate-error]')).toContainText('No pudimos');
+  await expect(muro(page)).toBeVisible();
 });
 
 test('the story opens even when the browser blocks storage', async ({ page }) => {
@@ -153,14 +309,14 @@ test('the story opens even when the browser blocks storage', async ({ page }) =>
     };
   });
   await page.goto(PAGA);
-  await page.locator('[data-gate-boton]').click();
-  await expect(page.locator('[data-gate-cerrado]')).toBeVisible();
+  await pagarHistoria(page);
+  await expect(cerrado(page)).toBeVisible();
 });
 
 test('free story has no wall', async ({ page }) => {
   await page.goto(GRATIS);
   await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'gratis');
-  await expect(page.locator('[data-gate-muro]')).toHaveCount(0);
+  await expect(muro(page)).toHaveCount(0);
   await expect(page.locator('[data-gate-pastilla]')).toHaveText('Gratis');
 });
 
@@ -169,7 +325,6 @@ test('a reading pass is removed from the address bar on a free story', async ({ 
   await expect(page.locator('article[data-historia]')).toHaveAttribute('data-gate-estado', 'gratis');
   expect(page.url()).not.toContain('pase');
 });
-
 
 test('the Travel widget renders what the Cacao Travel API returns', async ({ page }) => {
   await page.route(`${TRAVEL}/api/tours.json`, (r) => r.fulfill({ json: { tours: [TOUR] } }));
@@ -222,3 +377,11 @@ for (const ruta of ['/', '/cronicas/', '/archivo/', '/acerca/', PAGA]) {
     expect(desborde).toBeLessThanOrEqual(0);
   });
 }
+
+test('the gate with an open invoice has no horizontal scroll at 320px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto(PAGA);
+  await pedirFactura(page);
+  const desborde = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(desborde).toBeLessThanOrEqual(0);
+});

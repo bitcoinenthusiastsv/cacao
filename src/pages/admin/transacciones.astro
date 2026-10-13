@@ -1,0 +1,141 @@
+---
+// Admin transactions: the invoices of the period, newest first, 50 per page.
+import Panel from './_panel.astro';
+import { hayBase, leerError } from '../../lib/servidor/bd';
+import {
+  ESTADOS,
+  ETIQUETA_ESTADO,
+  FILAS_POR_PAGINA,
+  cobrosPagina,
+  fechaHora,
+  leerEstado,
+  leerPagina,
+  leerRango,
+  sats,
+  usd,
+  type PaginaCobros,
+} from '../../lib/servidor/admin';
+import { sesionDeCookies } from '../../lib/servidor/admin-sesion';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (!sesionDeCookies(Astro.cookies)) return Astro.redirect('/admin/entrar/');
+
+const rango = leerRango({
+  desde: Astro.url.searchParams.get('desde'),
+  hasta: Astro.url.searchParams.get('hasta'),
+});
+const estado = leerEstado(Astro.url.searchParams.get('estado'));
+const pedida = leerPagina(Astro.url.searchParams.get('pagina'));
+
+let pagina: PaginaCobros | null = null;
+let error: string | null = null;
+if (hayBase()) {
+  try {
+    pagina = await cobrosPagina(rango, { pagina: pedida, estado });
+  } catch (e) {
+    error = leerError(e).mensaje;
+  }
+}
+
+const ocultos: Record<string, string> = estado ? { estado } : {};
+const enlacePagina = (n: number): string => {
+  const params = new URLSearchParams({ desde: rango.desde, hasta: rango.hasta, pagina: String(n) });
+  if (estado) params.set('estado', estado);
+  return `/admin/transacciones/?${params.toString()}`;
+};
+---
+
+<Panel titulo="Transacciones" seccion="transacciones" rango={rango} ocultos={ocultos}>
+  <h2 class="seccion-titulo">Transacciones</h2>
+
+  {!hayBase() && <p class="vacio">La base de datos no está configurada.</p>}
+  {error && <p class="error" role="alert">{error}</p>}
+
+  {
+    hayBase() && (
+      <form class="filtro" method="get" action="/admin/transacciones/">
+        <input type="hidden" name="desde" value={rango.desde} />
+        <input type="hidden" name="hasta" value={rango.hasta} />
+        <div class="campo">
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado">
+            <option value="" selected={!estado}>Todos</option>
+            {ESTADOS.map((e) => (
+              <option value={e} selected={estado === e}>{ETIQUETA_ESTADO[e]}</option>
+            ))}
+          </select>
+        </div>
+        <button class="boton" type="submit">Filtrar</button>
+      </form>
+    )
+  }
+
+  {
+    pagina && pagina.total === 0 && (
+      <p class="vacio bloque">No hay facturas en este período{estado ? ' con ese estado' : ''}.</p>
+    )
+  }
+
+  {
+    pagina && pagina.total > 0 && (
+      <section class="bloque" aria-live="polite">
+        <p class="nota">
+          {pagina.total} {pagina.total === 1 ? 'factura' : 'facturas'} en el período. Página {pagina.pagina} de{' '}
+          {pagina.paginas}, {FILAS_POR_PAGINA} por página.
+        </p>
+        <div class="tabla-caja">
+          <table class="tabla">
+            <caption>Facturas, de la más nueva a la más vieja</caption>
+            <thead>
+              <tr>
+                <th scope="col">Creada</th>
+                <th scope="col">Historia</th>
+                <th scope="col">Lector</th>
+                <th scope="col">Monto</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Pagada</th>
+                <th scope="col">Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagina.filas.map((f) => (
+                <tr>
+                  <th scope="row">{fechaHora(f.creado)}</th>
+                  <td data-etiqueta="Historia">
+                    <a href={`/historias/${f.slug}/`}>{f.titulo}</a>
+                  </td>
+                  <td data-etiqueta="Lector">{f.lector}</td>
+                  <td class="numero" data-etiqueta="Monto">
+                    {sats(f.sats)} <span class="cifra__usd">{usd(f.usd)}</span>
+                  </td>
+                  <td data-etiqueta="Estado">
+                    <span class={`chip chip--${f.estado}`}>{ETIQUETA_ESTADO[f.estado]}</span>
+                  </td>
+                  <td data-etiqueta="Pagada">{f.pagada ? fechaHora(f.pagada) : ''}</td>
+                  <td data-etiqueta="Motivo">{f.motivo ?? ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {pagina.paginas > 1 && (
+          <nav class="paginas" aria-label="Páginas de facturas">
+            {pagina.pagina > 1 ? (
+              <a href={enlacePagina(pagina.pagina - 1)} rel="prev">Anterior</a>
+            ) : (
+              <span aria-disabled="true">Anterior</span>
+            )}
+            <span>Página {pagina.pagina} de {pagina.paginas}</span>
+            {pagina.pagina < pagina.paginas ? (
+              <a href={enlacePagina(pagina.pagina + 1)} rel="next">Siguiente</a>
+            ) : (
+              <span aria-disabled="true">Siguiente</span>
+            )}
+          </nav>
+        )}
+      </section>
+    )
+  }
+</Panel>

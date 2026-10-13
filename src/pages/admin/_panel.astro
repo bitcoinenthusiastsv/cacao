@@ -1,0 +1,101 @@
+---
+// Shared frame of the admin pages. The underscore keeps Astro from routing this file as a page.
+import '@fontsource-variable/bricolage-grotesque/wght.css';
+import '@fontsource/jetbrains-mono/latin-500.css';
+import '../../styles/global.css';
+import './_admin.css';
+import Logo from '../../components/Logo.astro';
+import type { Rango } from '../../lib/servidor/admin';
+
+type Seccion = 'resumen' | 'transacciones' | 'actividad';
+
+interface Props {
+  /** Heading of the page, shown in the tab title. */
+  titulo: string;
+  /** Undefined on the sign-in page: no navigation and no sign-out button there. */
+  seccion?: Seccion;
+  rango?: Rango;
+  /** Other search params the date form must keep, such as the invoice state filter. */
+  ocultos?: Record<string, string>;
+}
+const { titulo, seccion, rango, ocultos = {} } = Astro.props;
+
+const SECCIONES = [
+  { id: 'resumen', etiqueta: 'Resumen', ruta: '/admin/' },
+  { id: 'transacciones', etiqueta: 'Transacciones', ruta: '/admin/transacciones/' },
+  { id: 'actividad', etiqueta: 'Actividad', ruta: '/admin/actividad/' },
+] as const;
+---
+
+<!doctype html>
+<html lang="es-SV">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{titulo}: Panel de Cacao Media</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <div class="panel">
+      <header class="panel__cabecera">
+        <a class="panel__logo" href="/admin/" aria-label="Panel de Cacao Media, inicio"><Logo altura={24} /></a>
+        <h1 class="panel__titulo">Panel de Cacao Media</h1>
+        {
+          seccion && (
+            <form class="panel__salir" method="post" action="/api/admin/salir/">
+              <button class="boton boton--oscuro" type="submit">Salir</button>
+            </form>
+          )
+        }
+      </header>
+
+      {
+        seccion && (
+          <nav class="panel__nav" aria-label="Secciones del panel">
+            <ul>
+              {SECCIONES.map((s) => (
+                <li>
+                  <a href={s.ruta} aria-current={seccion === s.id ? 'page' : undefined}>{s.etiqueta}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+
+      {
+        rango && (
+          <form class="rango" method="get" action={Astro.url.pathname}>
+            <fieldset class="rango__campos">
+              <legend class="rango__leyenda">Período</legend>
+              <div class="campo">
+                <label for="desde">Desde</label>
+                <input id="desde" name="desde" type="date" value={rango.desde} />
+              </div>
+              <div class="campo">
+                <label for="hasta">Hasta</label>
+                <input id="hasta" name="hasta" type="date" value={rango.hasta} />
+              </div>
+              {Object.entries(ocultos).map(([nombre, valor]) => (
+                <input type="hidden" name={nombre} value={valor} />
+              ))}
+              <button class="boton" type="submit">Aplicar</button>
+            </fieldset>
+          </form>
+        )
+      }
+
+      {rango?.aviso && <p class="aviso" role="status">{rango.aviso}</p>}
+
+      <main id="contenido" tabindex="-1" class="panel__principal">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  body { background: var(--pulpa); color: var(--tostado); }
+</style>

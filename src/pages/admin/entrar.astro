@@ -1,0 +1,48 @@
+---
+// Sign-in page for the admin panel: the key form, and the demo button when PUBLIC_DEMO is 1.
+import Panel from './_panel.astro';
+import { claveAdminConfigurada, demoActiva, sesionDeCookies } from '../../lib/servidor/admin-sesion';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (sesionDeCookies(Astro.cookies)) return Astro.redirect('/admin/');
+
+// Only these codes are shown; the query text itself is never printed.
+const MENSAJES: Record<string, string> = {
+  clave: 'La clave no es correcta.',
+  desactivado: 'El acceso con clave no está activado en este servidor.',
+  demo: 'El modo de demostración no está activo.',
+};
+const codigo = Astro.url.searchParams.get('error') ?? '';
+const error = Object.hasOwn(MENSAJES, codigo) ? MENSAJES[codigo] : null;
+
+const claveActiva = claveAdminConfigurada() !== undefined;
+const demo = demoActiva();
+---
+
+<Panel titulo="Entrar">
+  <div class="entrar">
+    <h2 class="seccion-titulo">Entrar</h2>
+
+    {error && <p class="error" role="alert">{error}</p>}
+
+    <form class="entrar__bloque" method="post" action="/api/admin/entrar/">
+      <div class="campo">
+        <label for="clave">Clave del panel</label>
+        <input id="clave" name="clave" type="password" autocomplete="current-password" required disabled={!claveActiva} />
+      </div>
+      <button class="boton" type="submit" disabled={!claveActiva}>Entrar</button>
+      {!claveActiva && <p class="nota">El acceso con clave no está activado en este servidor.</p>}
+    </form>
+
+    {
+      demo && (
+        <form class="entrar__bloque" method="post" action="/api/admin/entrar/">
+          <input type="hidden" name="modo" value="demo" />
+          <p>Modo demostración: los datos son de muestra y no se cobra nada.</p>
+          <button class="boton boton--oscuro" type="submit">Entrar al panel de demostración</button>
+        </form>
+      )
+    }
+  </div>
+</Panel>
