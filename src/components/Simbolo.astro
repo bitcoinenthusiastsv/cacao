@@ -1,0 +1,26 @@
+---
+// Split cacao bean. Colorways are fixed by the brandbook: "claro" sits on light
+// grounds (Principal), "oscuro" on dark grounds (Noche).
+interface Props {
+  tamano?: number;
+  fondo?: 'claro' | 'oscuro';
+  decorativo?: boolean;
+}
+const { tamano = 32, fondo = 'claro', decorativo = false } = Astro.props;
+const izquierda = fondo === 'claro' ? '#2A1912' : '#F5EDE3';
+---
+
+<svg
+  width={tamano}
+  height={tamano}
+  viewBox="0 0 100 100"
+  xmlns="http://www.w3.org/2000/svg"
+  role={decorativo ? undefined : 'img'}
+  aria-label={decorativo ? undefined : 'Símbolo de Cacao Media'}
+  aria-hidden={decorativo ? 'true' : undefined}
+>
+  <g transform="rotate(30 50 50)">
+    <path d="M50 14.3 A40 40 0 0 0 50 85.7 Z" fill={izquierda} transform="translate(-2.5 0)"></path>
+    <path d="M50 14.3 A40 40 0 0 1 50 85.7 Z" fill="#D9902F" transform="translate(2.5 0)"></path>
+  </g>
+</svg>

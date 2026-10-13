@@ -1,0 +1,35 @@
+/* Header row with the account link and the cart. Pills match the cart pill.
+   The row never wraps: on phones the logo shrinks and the pills tighten (see globals.css). */
+.fila {
+  flex-wrap: nowrap;
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.enlace {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 44px;
+  max-width: 7.5rem;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .acciones {
+    margin-left: 0;
+  }
+}

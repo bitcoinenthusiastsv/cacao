@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import Feed from '../../components/Feed.astro';
+import { SECCIONES, type Seccion } from '../../lib/secciones';
+import { historiasDeSeccion } from '../../lib/historias';
+
+export function getStaticPaths() {
+  return SECCIONES.map((s) => ({ params: { seccion: s.ruta }, props: { seccion: s } }));
+}
+
+interface Props {
+  seccion: Seccion;
+}
+const { seccion } = Astro.props;
+const historias = await historiasDeSeccion(seccion.id);
+---
+
+<Base titulo={seccion.plural} descripcion={seccion.descripcion} seccion={seccion.id}>
+  <div class="contenedor">
+    <header class="banda">
+      <p class="etiqueta">Sección</p>
+      <h1 class="banda__titulo">{seccion.plural}</h1>
+      <p class="banda__bajada">{seccion.descripcion}</p>
+    </header>
+  </div>
+  <Feed historias={historias} promos={false} />
+</Base>
+
+<style>
+  .banda {
+    display: grid;
+    gap: 16px;
+    margin-top: 20px;
+    padding: clamp(28px, 6vw, 72px);
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-radius: var(--radio);
+  }
+
+  .banda__titulo {
+    font-size: var(--t-display);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+
+  .banda__bajada {
+    max-width: 34ch;
+  }
+</style>

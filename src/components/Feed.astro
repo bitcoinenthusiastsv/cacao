@@ -1,0 +1,44 @@
+---
+import type { Historia } from '../lib/historias';
+import EntradaFeed from './EntradaFeed.astro';
+import PromoGate from './PromoGate.astro';
+import PromoBoletin from './PromoBoletin.astro';
+
+interface Props {
+  historias: Historia[];
+  promos?: boolean;
+}
+const { historias, promos = true } = Astro.props;
+---
+
+<div class="feed contenedor">
+  {historias.length === 0 && <p class="feed__vacio">Todavía no hay historias aquí.</p>}
+  {
+    historias.map((historia, i) => (
+      <>
+        <EntradaFeed historia={historia} destacada={i === 0} />
+        {promos && i === 1 && (
+          <div class="feed__promo">
+            <PromoGate />
+          </div>
+        )}
+        {promos && i === 3 && (
+          <div class="feed__promo">
+            <PromoBoletin />
+          </div>
+        )}
+      </>
+    ))
+  }
+</div>
+
+<style>
+  .feed__vacio {
+    padding-block: clamp(28px, 5vw, 56px);
+    border-top: 1.5px solid var(--tostado);
+  }
+
+  .feed__promo {
+    margin-block: clamp(28px, 5vw, 56px);
+  }
+</style>

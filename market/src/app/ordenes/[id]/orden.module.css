@@ -1,0 +1,348 @@
+/* The order screen: header, actions, timeline, lines, dispute, review and chat.
+   Colours only through the brand variables. No shadows, no gradients. */
+.orden {
+  display: grid;
+  gap: 32px;
+  max-width: 46rem;
+  min-width: 0;
+}
+
+/* A back link tall enough to tap. */
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+}
+
+.cabecera {
+  display: grid;
+  gap: 10px;
+}
+
+.parte {
+  font-weight: 600;
+}
+
+/* A job's reminder: who pays and when, always in view while the job is agreed or done. */
+.recordatorio {
+  padding: 14px 16px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+/* Sats before payment are an estimate; the note sits under the price tag. */
+.aproximado {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.motivo {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bloque {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.bloque h3 {
+  font-size: 1.125rem;
+}
+
+/* Actions: one block per step, stacked. */
+.accion {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.confirmacion {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+}
+
+.pregunta {
+  font-weight: 600;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.disclosure {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  min-width: 0;
+  width: 100%;
+}
+
+.formulario {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.campoGrupo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.conjunto {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--blanco);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.opcion input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--tostado);
+}
+
+.codigoEntrada {
+  max-width: 14ch;
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.campoTexto {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  color: var(--tostado);
+  resize: vertical;
+}
+
+.contador {
+  justify-self: end;
+  font-size: 0.8125rem;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Delivery code: the one large mono block on the page. */
+.codigo {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.codigoNumero {
+  font-family: var(--mono);
+  font-size: clamp(2.25rem, 12vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  overflow-wrap: normal;
+}
+
+/* Timeline: an ordered list, each step carries its label in text. */
+.cronologia {
+  display: grid;
+  gap: 8px;
+}
+
+.paso {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px 10px 16px;
+  border-left: 4px solid var(--tostado);
+  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+  background: var(--blanco);
+}
+
+.hecho {
+  opacity: 1;
+}
+
+.actual {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.pendiente,
+.omitido {
+  border-left-style: dashed;
+  border-left-color: var(--chocolate);
+}
+
+.lateral {
+  background: var(--arena);
+  border-left-color: var(--criollo);
+}
+
+.pasoSituacion {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pasoEtiqueta {
+  font-weight: 700;
+}
+
+.pasoFecha {
+  font-size: 0.8125rem;
+}
+
+/* Lines and totals. */
+.lineas {
+  display: grid;
+  gap: 8px;
+}
+
+.linea {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+}
+
+.lineaNombre {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.totales {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.datos {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.datos > div {
+  display: grid;
+  gap: 4px;
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Chat */
+.chat {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.registro {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  max-height: 60vh;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 4px;
+  border-radius: var(--radio-chico);
+}
+
+.mensaje {
+  display: grid;
+  gap: 4px;
+  justify-self: start;
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+}
+
+.mio {
+  justify-self: end;
+  background: var(--mazorca);
+}
+
+.autor {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.texto {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.hora {
+  font-size: 0.75rem;
+  justify-self: end;
+}
+
+@media (min-width: 820px) {
+  .registro {
+    max-height: 420px;
+  }
+}
+
+/* The send button is disabled while the composer is empty. The shared disabled style is dashed,
+   which reads as an empty outline, so this one keeps a solid edge and muted text. */
+.enviar:disabled {
+  border-style: solid;
+  color: var(--chocolate);
+}

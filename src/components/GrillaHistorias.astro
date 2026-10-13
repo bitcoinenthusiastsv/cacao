@@ -1,0 +1,35 @@
+---
+import TarjetaHistoria from './TarjetaHistoria.astro';
+import type { Historia } from '../lib/historias';
+
+interface Props {
+  titulo: string;
+  historias: Historia[];
+}
+const { titulo, historias } = Astro.props;
+---
+
+{
+  historias.length > 0 && (
+    <section class="grilla contenedor">
+      <h2>{titulo}</h2>
+      <div class="grilla__celdas">
+        {historias.map((h) => <TarjetaHistoria historia={h} />)}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .grilla {
+    margin-top: clamp(40px, 7vw, 88px);
+    padding-top: 20px;
+    border-top: 1.5px solid var(--tostado);
+  }
+  h2 { font-size: var(--t-h1); font-weight: 800; margin-bottom: clamp(20px, 3vw, 36px); }
+  .grilla__celdas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: clamp(28px, 4vw, 44px) clamp(20px, 3vw, 32px);
+  }
+</style>

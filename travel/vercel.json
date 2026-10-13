@@ -1,0 +1,29 @@
+{
+  "framework": "astro",
+  "buildCommand": "npm run build",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/api/tours.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    },
+    {
+      "source": "/fotos/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
+}

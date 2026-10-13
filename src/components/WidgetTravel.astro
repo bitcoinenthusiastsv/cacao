@@ -1,0 +1,248 @@
+---
+// Cacao Travel inside Cacao Media. Nothing about the experiences lives in this site: the widget
+// calls Cacao Travel's public API in the reader's browser and renders what comes back.
+// With `historia` it shows only experiences that qualify for that story (see `califica` below);
+// without it, the first `limite`.
+import { TRAVEL_API, TRAVEL_URL } from '../lib/travel';
+
+interface Props {
+  historia?: string;
+  /** Place of the story. Lets it match experiences by location. */
+  lugar?: string;
+  /** Section of the story: decides how far the widget reaches beyond explicit links. */
+  seccion?: 'cronica' | 'guia' | 'cultura' | 'cafe';
+  limite?: number;
+}
+const { historia, lugar, seccion, limite = 3 } = Astro.props;
+---
+
+<section
+  class:list={['wt', historia ? 'wt--historia' : 'wt--inicio contenedor']}
+  data-widget-travel
+  data-api={TRAVEL_API}
+  data-widget-historia={historia}
+  data-widget-lugar={lugar}
+  data-widget-seccion={seccion}
+  data-limite={limite}
+  aria-label="Cacao Travel"
+  hidden
+>
+  <header class="wt__cabeza">
+    <a class="wt__marca" href={`${TRAVEL_URL}/`}><b>cacao</b>travel</a>
+    <p>{historia ? 'Experiencias para ir a verlo.' : 'Experiencias en El Salvador, con precio en sats.'}</p>
+    {historia && <p class="wt__lector">Desbloqueaste esta historia: tenés 10% de descuento en su experiencia.</p>}
+    <a class="pastilla wt__todas" href={`${TRAVEL_URL}/`}>Ver todas las experiencias</a>
+  </header>
+  <div class="wt__celdas" data-widget-celdas></div>
+</section>
+
+<style is:global>
+  /* Global on purpose: the cards are created by the script, so scoped styles would not reach them. */
+  .wt[hidden] { display: none; }
+  .wt { margin-top: clamp(48px, 8vw, 104px); }
+  .wt--historia {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin: clamp(32px, 5vw, 56px) auto 0;
+  }
+  .wt__cabeza {
+    display: grid;
+    gap: 6px 24px;
+    align-items: end;
+    padding-top: 20px;
+    margin-bottom: clamp(16px, 2.5vw, 28px);
+    border-top: 8px solid var(--tostado);
+  }
+  .wt__marca { font-size: clamp(2rem, 4.4vw, 3.5rem); font-weight: 400; letter-spacing: -0.03em; line-height: 0.95; text-decoration: none; }
+  .wt__marca b { font-weight: 800; }
+  .wt__marca:hover { color: inherit; text-decoration: underline; }
+  .wt__cabeza p { color: var(--tinta-suave); }
+  .wt__lector { display: none; font-weight: 800; color: var(--criollo) !important; }
+  .wt[data-widget-lector] .wt__lector { display: block; }
+  .wt__todas { justify-self: start; white-space: normal; background: var(--tostado); color: var(--pulpa); }
+  @media (min-width: 800px) {
+    .wt--inicio .wt__cabeza { grid-template-columns: auto 1fr auto; }
+    .wt--inicio .wt__todas { justify-self: end; }
+  }
+  .wt--historia .wt__marca { font-size: var(--t-h1); }
+
+  .wt__celdas { display: grid; gap: clamp(20px, 3vw, 32px); }
+  .wt--inicio .wt__celdas { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+
+  /* A ticket, same as on Cacao Travel: photo, name, then a perforated stub with the price. */
+  .wt-boleto {
+    --muesca: 20px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-width: 0;
+    background: var(--tostado);
+    color: var(--pulpa);
+    border-radius: var(--radio);
+    text-decoration: none;
+  }
+  .wt-boleto:hover { color: var(--pulpa); }
+  .wt-boleto img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radio) var(--radio) 0 0; }
+  .wt-boleto__cuerpo { display: grid; gap: 8px; align-content: start; padding: 18px 22px 20px; }
+  .wt-boleto__cuerpo .etiqueta, .wt-boleto__talon .etiqueta { color: var(--arena-oscura); }
+  .wt-boleto strong { font-size: var(--t-h2); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .wt-boleto:hover strong { text-decoration: underline; }
+  .wt-boleto__talon {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 12px;
+    padding: 16px 22px 18px;
+    border-top: 2px dashed var(--chocolate);
+  }
+  .wt-boleto__talon::before,
+  .wt-boleto__talon::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--muesca) / -2 - 1px);
+    width: var(--muesca);
+    height: var(--muesca);
+    border-radius: 50%;
+    background: var(--pulpa);
+  }
+  .wt-boleto__talon::before { left: calc(var(--muesca) / -2); }
+  .wt-boleto__talon::after { right: calc(var(--muesca) / -2); }
+  .wt-boleto__precio { font-family: var(--mono); font-size: 1.25rem; font-weight: 500; color: var(--mazorca); }
+
+  @media (min-width: 640px) {
+    .wt--historia .wt-boleto { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); grid-template-rows: 1fr auto; }
+    .wt--historia .wt-boleto img { grid-row: 1 / 3; height: 100%; aspect-ratio: auto; border-radius: var(--radio) 0 0 var(--radio); }
+    .wt--historia .wt-boleto__talon::before { display: none; }
+    .wt--historia .wt-boleto__talon::after { top: calc(var(--muesca) / -2 - 1px); }
+  }
+</style>
+
+<script>
+  import { tokenDe } from '../lib/gate';
+
+  interface TourApi {
+    id: string;
+    titulo: string;
+    lugar: string;
+    categoria: string;
+    duracion: string;
+    nivel: string;
+    precio: number;
+    url: string;
+    foto: string;
+    historias: string[];
+  }
+
+  const plano = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+  // Which experiences go under a story. First rule that applies:
+  // 1. Experiences that list the story in `historias`: up to 2.
+  // 2. Else, for a crónica or guía: experiences in the story's place, up to 2.
+  // 3. Else, for a café: experiences with categoria "Café" in the story's place, up to 1.
+  // 4. Else nothing.
+  // "Same place" means one normalised place name contains the other ("Coatepeque" matches
+  // "Lago de Coatepeque"). An empty place never matches.
+  function califica(tours: TourApi[], slug: string, lugar: string, seccion: string): TourApi[] {
+    const enlazados = tours.filter((t) => t.historias.includes(slug));
+    if (enlazados.length > 0) return enlazados.slice(0, 2);
+
+    const aqui = plano(lugar);
+    const enLugar = (t: TourApi) => {
+      const alla = plano(t.lugar);
+      return aqui !== '' && alla !== '' && (alla.includes(aqui) || aqui.includes(alla));
+    };
+    if (seccion === 'cronica' || seccion === 'guia') return tours.filter(enLugar).slice(0, 2);
+    if (seccion === 'cafe') return tours.filter((t) => t.categoria === 'Café' && enLugar(t)).slice(0, 1);
+    return [];
+  }
+
+  const etiqueta = (texto: string, clase = 'etiqueta') => {
+    const el = document.createElement('span');
+    el.className = clase;
+    el.textContent = texto;
+    return el;
+  };
+
+  // Only addresses on Cacao Travel's own origin. Compared as parsed origins, so a look-alike host such
+  // as "https://cacao-travel.vercel.app.evil.com" fails; an unparsable URL fails too.
+  function enOrigen(url: string, origen: string): boolean {
+    try {
+      return new URL(url).origin === origen;
+    } catch {
+      return false;
+    }
+  }
+
+  // Everything from the API goes in through textContent or validated URLs, never as HTML.
+  function boleto(t: TourApi, origen: string): HTMLAnchorElement | null {
+    if (!enOrigen(t.url, origen) || !enOrigen(t.foto, origen)) return null;
+    const a = document.createElement('a');
+    a.className = 'wt-boleto';
+    a.href = t.url;
+
+    const img = document.createElement('img');
+    img.src = t.foto;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.width = 1600;
+    img.height = 1000;
+
+    const cuerpo = document.createElement('span');
+    cuerpo.className = 'wt-boleto__cuerpo';
+    const titulo = document.createElement('strong');
+    titulo.textContent = t.titulo;
+    cuerpo.append(etiqueta(`${t.lugar} · ${t.duracion} · ${t.nivel}`), titulo);
+
+    const talon = document.createElement('span');
+    talon.className = 'wt-boleto__talon';
+    const precio = etiqueta(`${Number(t.precio).toLocaleString('en-US')} sats`, 'wt-boleto__precio');
+    precio.dataset.widgetPrecio = '';
+    talon.append(precio, etiqueta('Ver la experiencia'));
+
+    a.append(img, cuerpo, talon);
+    return a;
+  }
+
+  for (const widget of document.querySelectorAll<HTMLElement>('[data-widget-travel]')) {
+    const celdas = widget.querySelector<HTMLElement>('[data-widget-celdas]');
+    const api = widget.dataset.api;
+    if (!celdas || !api) continue;
+    try {
+      const r = await fetch(api);
+      if (!r.ok) continue;
+      const { tours } = (await r.json()) as { tours: TourApi[] };
+      const slug = widget.dataset.widgetHistoria;
+      const elegidos = slug
+        ? califica(tours, slug, widget.dataset.widgetLugar ?? '', widget.dataset.widgetSeccion ?? '')
+        : tours.slice(0, Number(widget.dataset.limite) || 3);
+      const origen = new URL(api).origin;
+      const tarjetas = elegidos.flatMap((t) => {
+        const a = boleto(t, origen);
+        return a ? [{ a, tour: t, destino: a.href }] : [];
+      });
+      if (tarjetas.length === 0) continue;
+      celdas.append(...tarjetas.map((x) => x.a));
+      widget.hidden = false;
+
+      // Only experiences that list this story give a discount, so only their links get the token.
+      // The token rides in the URL fragment, which browsers do not send to servers; Cacao Travel
+      // verifies its signature.
+      if (slug) {
+        const conDescuento = tarjetas.filter((x) => x.tour.historias.includes(slug));
+        const firmarEnlaces = () => {
+          const token = tokenDe(slug);
+          for (const x of tarjetas) {
+            x.a.href = token && x.tour.historias.includes(slug)
+              ? `${x.destino}#lector=${encodeURIComponent(token)}`
+              : x.destino;
+          }
+          widget.toggleAttribute('data-widget-lector', Boolean(token) && conDescuento.length > 0);
+        };
+        firmarEnlaces();
+        document.addEventListener('cacao:desbloqueada', firmarEnlaces);
+      }
+    } catch {
+      // Cacao Travel unreachable: the story reads fine without the widget.
+    }
+  }
+</script>

@@ -1,0 +1,65 @@
+---
+// One section's latest stories on the home page, tinted with the section colour.
+import TarjetaHistoria from './TarjetaHistoria.astro';
+import type { Historia } from '../lib/historias';
+import type { Seccion } from '../lib/secciones';
+
+interface Props {
+  seccion: Seccion;
+  historias: Historia[];
+}
+const { seccion, historias } = Astro.props;
+---
+
+{
+  historias.length > 0 && (
+    <section class="riel contenedor" data-seccion={seccion.id}>
+      <header class="riel__cabeza">
+        <h2>
+          <a href={`/${seccion.ruta}/`}>{seccion.plural}</a>
+        </h2>
+        <p>{seccion.descripcion}</p>
+        <a class="pastilla" href={`/${seccion.ruta}/`}>
+          Ver todo en {seccion.plural}
+        </a>
+      </header>
+      <div class="riel__celdas">
+        {historias.map((h) => <TarjetaHistoria historia={h} />)}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .riel {
+    margin-top: clamp(48px, 8vw, 104px);
+    padding-top: 20px;
+    border-top: 8px solid var(--acento);
+  }
+  .riel__cabeza {
+    display: grid;
+    gap: 8px 24px;
+    align-items: end;
+    margin-bottom: clamp(20px, 3vw, 36px);
+  }
+  h2 {
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+  h2 a { text-decoration: none; }
+  h2 a:hover { color: inherit; text-decoration: underline; }
+  .riel__cabeza p { color: var(--tinta-suave); max-width: 32ch; }
+  .riel__cabeza .pastilla { justify-self: start; white-space: normal; }
+  .riel__celdas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: clamp(28px, 4vw, 44px) clamp(20px, 3vw, 32px);
+  }
+
+  @media (min-width: 800px) {
+    .riel__cabeza { grid-template-columns: auto 1fr auto; }
+    .riel__cabeza .pastilla { justify-self: end; }
+  }
+</style>

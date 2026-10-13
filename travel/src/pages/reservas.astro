@@ -1,0 +1,308 @@
+---
+import Base from '../layouts/Base.astro';
+import { MEDIA_URL } from '../lib/tours';
+---
+
+<Base titulo="Mis reservas" descripcion="Tus reservas de muestra, guardadas solo en este navegador.">
+  <div class="contenedor pagina">
+    <header class="cabecera-pagina">
+      <h1 tabindex="-1" data-titulo>Mis reservas</h1>
+      <p class="bajada">Las reservas se guardan solo en este navegador. No hay cuentas ni cobros: el catálogo es de muestra.</p>
+    </header>
+
+    <noscript>
+      <p class="sin-js">Esta página necesita JavaScript para leer tus reservas.</p>
+    </noscript>
+
+    <div class="tickets" data-reservas data-media={MEDIA_URL}></div>
+
+    <div class="vacio" data-vacio hidden>
+      <p>Todavía no reservaste nada.</p>
+      <a class="boton" href="/#experiencias">Ver las experiencias</a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .pagina { display: grid; gap: clamp(28px, 4vw, 44px); padding-block: 0 clamp(56px, 8vw, 96px); min-width: 0; }
+  .cabecera-pagina { display: grid; gap: 14px; padding-top: clamp(24px, 5vw, 56px); min-width: 0; }
+  h1 { font-size: var(--t-h1); line-height: 1; letter-spacing: -0.03em; max-width: 16ch; overflow-wrap: anywhere; }
+  .bajada { max-width: 60ch; color: var(--arena); }
+  .sin-js { color: var(--arena); }
+
+  .tickets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: clamp(18px, 2.5vw, 28px);
+    min-width: 0;
+  }
+
+  .vacio {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding: clamp(24px, 4vw, 40px);
+    background: var(--chocolate);
+    border-radius: var(--radio);
+    min-width: 0;
+  }
+  .vacio p { font-size: 1.25rem; font-weight: 700; color: var(--arena); }
+  .vacio[hidden] { display: none; }
+
+  /* Tickets are built by the script below, so their rules are global inside the list. */
+  [data-reservas] :global(.ticket) {
+    display: grid;
+    min-width: 0;
+    background: var(--pulpa);
+    color: var(--tostado);
+    border-radius: var(--radio);
+  }
+  [data-reservas] :global(.ticket__cuerpo) { display: grid; gap: 16px; padding: 22px 24px 24px; min-width: 0; }
+  [data-reservas] :global(.ticket__etiqueta) { color: var(--tinta-suave); }
+  [data-reservas] :global(.ticket__titulo) { font-size: var(--t-h2); line-height: 1.1; overflow-wrap: anywhere; }
+  [data-reservas] :global(.ticket__titulo a:hover) { color: var(--criollo); }
+  [data-reservas] :global(.ticket__lugar) { font-size: 0.9375rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
+
+  [data-reservas] :global(.ticket__datos),
+  [data-reservas] :global(.ticket__filas) { margin: 0; display: grid; gap: 12px; min-width: 0; }
+  [data-reservas] :global(.ticket__datos > div),
+  [data-reservas] :global(.ticket__filas > div) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 12px;
+    min-width: 0;
+  }
+  [data-reservas] :global(dt) { font-size: 0.8125rem; font-weight: 600; color: var(--tinta-suave); }
+  [data-reservas] :global(dd) { margin: 0; font-weight: 700; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+  [data-reservas] :global(.ticket__codigo) {
+    font-family: var(--mono);
+    font-size: 1.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+  [data-reservas] :global(.monto) {
+    font-family: var(--mono);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  [data-reservas] :global(.monto--grande) { font-size: 1.5rem; letter-spacing: -0.03em; }
+  [data-reservas] :global(.ticket__subtitulo) { color: var(--tinta-suave); }
+
+  /* Stub: dashed perforation with a notch (24px circle) at each end, as in the booking box. */
+  [data-reservas] :global(.ticket__talon) {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    padding: 20px 24px 22px;
+    border-top: 2px dashed var(--arena-oscura);
+    min-width: 0;
+  }
+  [data-reservas] :global(.ticket__talon)::before,
+  [data-reservas] :global(.ticket__talon)::after {
+    content: '';
+    position: absolute;
+    top: -11px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--tostado);
+  }
+  [data-reservas] :global(.ticket__talon)::before { left: -12px; }
+  [data-reservas] :global(.ticket__talon)::after { right: -12px; }
+
+  [data-reservas] :global(.ticket__lecturas) {
+    display: grid;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1.5px solid var(--arena);
+    min-width: 0;
+  }
+  [data-reservas] :global(.ticket__lista) { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; min-width: 0; }
+  [data-reservas] :global(.ticket__lista a) { font-weight: 700; overflow-wrap: anywhere; }
+  [data-reservas] :global(.ticket__lista a:hover) { color: var(--criollo); }
+
+  [data-reservas] :global(.ticket__pie) { padding: 16px 24px 22px; }
+  [data-reservas] :global(.quitar) {
+    font: 600 0.9375rem/1 var(--fuente);
+    padding: 0.75em 1.1em;
+    border: 1.5px solid var(--tostado);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tostado);
+    cursor: pointer;
+  }
+  [data-reservas] :global(.quitar:hover) { background: var(--arena); }
+</style>
+
+<script>
+  const CLAVE = 'ct-reservas';
+
+  interface Reserva {
+    codigo: string;
+    tour: Record<string, unknown>;
+    fecha?: unknown;
+    personas?: unknown;
+    subtotal?: unknown;
+    descuento?: unknown;
+    total?: unknown;
+    reparto?: unknown;
+    lecturas?: unknown;
+    pase?: unknown;
+  }
+
+  const texto = (v: unknown): string => (typeof v === 'string' ? v : '');
+  const sats = (n: unknown): string => `${Number(n).toLocaleString('en-US')} sats`;
+  const esObjeto = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+  const esValida = (v: unknown): v is Reserva => esObjeto(v) && texto(v.codigo) !== '' && esObjeto(v.tour);
+
+  // Story links must point at the Cacao Media site from the config. Unparsable links are skipped.
+  function esDeMedia(url: string, media: string): boolean {
+    try {
+      return new URL(url).origin === new URL(media).origin;
+    } catch {
+      return false;
+    }
+  }
+
+  function leer(): unknown[] {
+    try {
+      const datos: unknown = JSON.parse(localStorage.getItem(CLAVE) ?? '[]');
+      return Array.isArray(datos) ? datos : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function guardar(lista: unknown[]) {
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(lista));
+    } catch {
+      // Sin almacenamiento disponible: los cambios quedan solo en esta vista.
+    }
+  }
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, clase = '', contenido = ''): HTMLElementTagNameMap[K] {
+    const nodo = document.createElement(tag);
+    if (clase) nodo.className = clase;
+    if (contenido) nodo.textContent = contenido;
+    return nodo;
+  }
+
+  function fila(lista: HTMLElement, nombre: string, valor: string, clase = '') {
+    const grupo = el('div');
+    grupo.append(el('dt', '', nombre), el('dd', clase, valor));
+    lista.append(grupo);
+  }
+
+  function fechaLarga(f: unknown): string {
+    if (typeof f !== 'string') return '';
+    const d = new Date(`${f}T12:00:00`);
+    return Number.isNaN(d.getTime())
+      ? f
+      : d.toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function boleto(r: Reserva, media: string, alOlvidar: () => void): HTMLElement {
+    const tour = r.tour;
+    const articulo = el('article', 'ticket');
+    const cuerpo = el('div', 'ticket__cuerpo');
+
+    cuerpo.append(el('p', 'dato ticket__etiqueta', 'Reserva de muestra confirmada'));
+
+    const titulo = el('h2', 'ticket__titulo');
+    const nombre = texto(tour.titulo) || 'Experiencia';
+    const id = texto(tour.id);
+    if (id) {
+      const enlace = el('a', '', nombre);
+      enlace.href = `/experiencias/${encodeURIComponent(id)}/`;
+      titulo.append(enlace);
+    } else {
+      titulo.textContent = nombre;
+    }
+    cuerpo.append(titulo);
+
+    const lugar = [texto(tour.lugar), texto(tour.duracion)].filter(Boolean).join(' · ');
+    if (lugar) cuerpo.append(el('p', 'ticket__lugar', lugar));
+
+    const datos = el('dl', 'ticket__datos');
+    fila(datos, 'Código', r.codigo, 'ticket__codigo');
+    fila(datos, 'Fecha', fechaLarga(r.fecha));
+    fila(datos, 'Personas', String(r.personas ?? ''));
+    cuerpo.append(datos);
+
+    const talon = el('div', 'ticket__talon');
+    const totales = el('dl', 'ticket__filas');
+    fila(totales, 'Subtotal', sats(r.subtotal), 'monto');
+    if (Number(r.descuento) > 0) fila(totales, 'Descuento lector', `−${sats(r.descuento)}`, 'monto');
+    fila(totales, 'Total', sats(r.total), 'monto monto--grande');
+    talon.append(totales);
+
+    const rep: Record<string, unknown> = esObjeto(r.reparto) ? r.reparto : {};
+    talon.append(el('p', 'dato ticket__subtitulo', 'Cómo se reparte'));
+    const reparto = el('dl', 'ticket__filas');
+    fila(reparto, 'Operador', sats(rep.operador), 'monto');
+    fila(reparto, 'Cacao Travel', sats(rep.plataforma), 'monto');
+    if (Number(rep.autor) > 0) fila(reparto, 'Autor de la historia', sats(rep.autor), 'monto');
+    talon.append(reparto);
+
+    const lecturas = (Array.isArray(r.lecturas) ? r.lecturas : []).filter(esObjeto);
+    const items = lecturas.filter((l) => texto(l.slug) !== '' && esDeMedia(texto(l.url), media));
+    let bloque: HTMLElement | null = null;
+    if (items.length > 0) {
+      bloque = el('div', 'ticket__lecturas');
+      bloque.append(el('p', 'dato ticket__subtitulo', 'Tu reserva desbloquea estas historias en Cacao Media por 30 días'));
+      const lista = el('ul', 'ticket__lista');
+      const pase = texto(r.pase);
+      for (const item of items) {
+        // Bookings made before titles were saved have none: fall back to the slug words.
+        const palabras = texto(item.slug).replace(/-/g, ' ');
+        const nombreHistoria = texto(item.titulo).trim() || palabras.charAt(0).toUpperCase() + palabras.slice(1);
+        const enlace = el('a', '', nombreHistoria);
+        enlace.href = texto(item.url) + (pase ? `#pase=${encodeURIComponent(pase)}` : '');
+        const li = el('li');
+        li.append(enlace);
+        lista.append(li);
+      }
+      bloque.append(lista);
+    }
+
+    const pie = el('div', 'ticket__pie');
+    const olvidar = el('button', 'quitar', 'Quitar de este navegador');
+    olvidar.type = 'button';
+    olvidar.addEventListener('click', alOlvidar);
+    pie.append(olvidar);
+
+    articulo.append(cuerpo, talon);
+    if (bloque) articulo.append(bloque);
+    articulo.append(pie);
+    return articulo;
+  }
+
+  const contenedor = document.querySelector<HTMLElement>('[data-reservas]')!;
+  const vacio = document.querySelector<HTMLElement>('[data-vacio]')!;
+  const titulo = document.querySelector<HTMLElement>('[data-titulo]')!;
+  const crudas = leer();
+  const media = contenedor.dataset.media ?? '';
+
+  function pintar() {
+    const validas = crudas.filter(esValida);
+    contenedor.replaceChildren(...validas.map((r) => boleto(r, media, () => olvidar(r))));
+    vacio.hidden = validas.length > 0;
+  }
+
+  function olvidar(r: Reserva) {
+    const i = crudas.indexOf(r);
+    if (i === -1) return;
+    crudas.splice(i, 1);
+    guardar(crudas);
+    pintar();
+    titulo.focus();
+  }
+
+  pintar();
+</script>

@@ -1,0 +1,24 @@
+---
+// Horizontal logo: symbol is 1.15x the letter height, gap 0.22x. Never below 120px wide.
+import Simbolo from './Simbolo.astro';
+interface Props {
+  fondo?: 'claro' | 'oscuro';
+  /** Font size of the wordmark in px. */
+  altura?: number;
+}
+const { fondo = 'claro', altura = 34 } = Astro.props;
+---
+
+<span class="logo" style={`font-size:${altura}px`} data-fondo={fondo}>
+  <Simbolo tamano={Math.round(altura * 1.15)} fondo={fondo} decorativo />
+  <span class="logo__letras"><b>cacao</b>media</span>
+</span>
+
+<style>
+  .logo { display: inline-flex; align-items: center; gap: 0.22em; line-height: 1; color: var(--tostado); }
+  /* Sized in em so the symbol keeps its 1.15x ratio when the logo is scaled in CSS. */
+  .logo :global(svg) { flex: none; width: 1.15em; height: 1.15em; }
+  .logo[data-fondo='oscuro'] { color: var(--pulpa); }
+  .logo__letras { font-weight: 400; letter-spacing: -0.03em; }
+  .logo__letras b { font-weight: 800; }
+</style>

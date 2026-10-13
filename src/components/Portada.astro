@@ -1,0 +1,100 @@
+---
+// Lead story. Two halves with a thin gap between them, like the split bean in the logo:
+// the photo is one half, the story in its section colour is the other.
+import { fechaCorta, fechaIso, precio } from '../lib/formato';
+import { urlHistoria, type Historia } from '../lib/historias';
+import { seccionPorId } from '../lib/secciones';
+
+interface Props {
+  historia: Historia;
+}
+const { historia } = Astro.props;
+const d = historia.data;
+const seccion = seccionPorId(d.seccion);
+const url = urlHistoria(historia);
+---
+
+<article class="portada contenedor" data-seccion={d.seccion}>
+  <a class="portada__foto" href={url} tabindex="-1" aria-hidden="true">
+    <img src={d.portada} alt="" width="1600" height="1000" fetchpriority="high" />
+  </a>
+  <div class="portada__texto">
+    <p class="etiqueta">
+      <a href={`/${seccion.ruta}/`}>{seccion.singular}</a> · {d.lugar}
+    </p>
+    <h2><a href={url}>{d.titulo}</a></h2>
+    <p class="portada__bajada">{d.bajada}</p>
+    <p class="etiqueta">
+      <time datetime={fechaIso(d.fecha)}>{fechaCorta(d.fecha)}</time> · {d.minutos} min · {
+        d.gratis ? 'Gratis' : precio(d.precio)
+      }
+    </p>
+    <a class="portada__boton" href={url} tabindex="-1" aria-hidden="true">Leer historia</a>
+  </div>
+</article>
+
+<style>
+  .portada {
+    --corte: 8px;
+    --filo: 6px;
+    display: grid;
+    gap: var(--corte);
+    margin-top: 20px;
+  }
+  .portada__foto {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radio) var(--radio) var(--filo) var(--filo);
+  }
+  .portada__foto img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+  .portada__texto {
+    display: grid;
+    align-content: end;
+    justify-items: start;
+    gap: 16px;
+    min-width: 0;
+    padding: clamp(24px, 4vw, 48px);
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-radius: var(--filo) var(--filo) var(--radio) var(--radio);
+  }
+  h2 {
+    font-size: clamp(2.25rem, 4.4vw, 4rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+  .portada__texto a { color: inherit; text-decoration: none; }
+  .portada__texto a:hover { text-decoration: underline; }
+  .portada__bajada { font-size: 1.25rem; line-height: 1.4; max-width: 30ch; }
+  .portada__boton {
+    display: inline-flex;
+    padding: 0.8em 1.4em;
+    border-radius: 999px;
+    background: var(--pulpa);
+    color: var(--tostado) !important;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .portada__boton:hover { background: var(--tostado); color: var(--pulpa) !important; text-decoration: none !important; }
+
+  @media (min-width: 900px) {
+    .portada { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+    .portada__foto { border-radius: var(--radio) var(--filo) var(--filo) var(--radio); }
+    .portada__foto img { aspect-ratio: auto; min-height: min(68vh, 620px); }
+    .portada__texto { border-radius: var(--filo) var(--radio) var(--radio) var(--filo); }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .portada__foto img { transition: transform 0.5s ease; }
+    .portada:hover .portada__foto img { transform: scale(1.03); }
+  }
+</style>

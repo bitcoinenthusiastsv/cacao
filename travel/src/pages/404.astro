@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base titulo="No encontramos esa página">
+  <div class="perdido contenedor">
+    <p class="dato">Error 404</p>
+    <h1>Esta página no existe.</h1>
+    <p>Puede que el enlace esté viejo o mal escrito.</p>
+    <a class="boton" href="/#experiencias">Ver las experiencias</a>
+  </div>
+</Base>
+
+<style>
+  .perdido { display: grid; gap: 18px; justify-items: start; padding-block: clamp(64px, 12vw, 160px); }
+  h1 { font-size: var(--t-display); line-height: 0.9; max-width: 12ch; }
+  p { color: var(--arena); }
+</style>

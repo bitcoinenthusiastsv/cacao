@@ -1,0 +1,115 @@
+/* Payment screen. Colours only through the brand tokens; no shadows, no gradients. */
+
+.pago {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+.cabecera {
+  display: grid;
+  gap: 6px;
+}
+
+.cabecera h1 {
+  margin: 0;
+}
+
+.negocio,
+.cotizacion,
+.nota {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.cuenta {
+  margin: 0;
+  font-weight: 600;
+}
+
+.digitos {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.estado {
+  padding: 14px 16px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-weight: 600;
+}
+
+.alerta {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--criollo);
+  color: var(--pulpa);
+  font-weight: 600;
+}
+
+.copiado {
+  min-height: 1.5em;
+  margin: 0;
+  font-weight: 600;
+}
+
+.bloque {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.bloque h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  text-align: center;
+}
+
+/* Never narrower than 240px on a phone, never wider than the column. */
+.qr {
+  display: block;
+  width: min(280px, 100%);
+  min-width: 240px;
+  height: auto;
+  border-radius: var(--radio-chico);
+}
+
+.acciones {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.acciones > a,
+.acciones > button {
+  width: 100%;
+}
+
+.campos {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.textoLargo {
+  min-height: 96px;
+  padding-block: 10px;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+
+.campos input,
+.textoLargo {
+  font-family: var(--mono);
+  font-size: 1rem;
+}

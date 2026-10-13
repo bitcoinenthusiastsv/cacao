@@ -1,0 +1,201 @@
+/* Cart screen. Colours only through the brand tokens; no shadows, no gradients. */
+
+.cargando,
+.estado {
+  margin: 0;
+  font-weight: 600;
+}
+
+.carrito {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.alerta {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--criollo);
+  color: var(--pulpa);
+}
+
+.alerta p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.alerta button {
+  background: var(--pulpa);
+  color: var(--tostado);
+  border-color: var(--pulpa);
+}
+
+.negocio {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.negocioTitulo {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.lineas {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linea {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding-top: 16px;
+  border-top: 2px solid var(--arena);
+}
+
+.linea:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.fotoCaja {
+  min-width: 0;
+}
+
+.cuerpo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nombre {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.unidad,
+.nota {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.aviso {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 4px;
+}
+
+/* The count sits between the stepper buttons; the global stepper styles only cover inputs. */
+.controles output {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5ch;
+  padding: 0 4px;
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.subtotal {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.quitar {
+  justify-self: start;
+  min-height: var(--alto-toque);
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--criollo);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.resumen {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.modo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.modo legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-weight: 600;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--alto-toque);
+  padding: 0 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--pulpa);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.opcion:has(input:checked) {
+  background: var(--mazorca);
+}
+
+.opcion input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--tostado);
+}
+
+.error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--criollo);
+  color: var(--pulpa);
+  font-weight: 600;
+}
+
+.accion button {
+  width: 100%;
+}

@@ -1,0 +1,66 @@
+/* The section switch: one segmented control with three equal columns. It stays one row down to
+   320px. The small line under each name hides below 360px, where the names need the room. */
+/* The same 20px under the switch on every page that shows it. */
+.nav {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.lista {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--blanco);
+}
+
+.item {
+  min-width: 0;
+}
+
+.puerta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--alto-toque);
+  padding: 6px 4px;
+  border-radius: 999px;
+  color: var(--tostado);
+  text-align: center;
+  text-decoration: none;
+}
+
+.puerta[aria-current='page'] {
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+/* The name never breaks inside a word ("Supermercado" is the longest). Its size scales with the
+   screen so it fits the column down to 320px. */
+.nombre {
+  font-size: clamp(0.75rem, 3.4vw, 0.9375rem);
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.linea {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 359px) {
+  .linea {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .puerta {
+    transition: background-color 0.15s, color 0.15s;
+  }
+}
