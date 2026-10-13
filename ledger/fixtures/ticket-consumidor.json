@@ -1,0 +1,7 @@
+{
+  "cliente": "consumidor",
+  "lineas": [
+    { "descripcion": "Café americano", "cantidad": 2, "precio": "1.13" },
+    { "descripcion": "Pan de maíz", "cantidad": 1, "precio": "2.26" }
+  ]
+}
