@@ -443,7 +443,7 @@ project_id = "sxlbkarwsitgplqbtgju"
 [remotes.produccion.auth]
 site_url = "https://cacao-market.vercel.app"
 # The email link returns to /auth/confirmar, with the destination as a query parameter.
-additional_redirect_urls = ["https://cacao-market.vercel.app/**"]
+additional_redirect_urls = ["https://cacao-market.vercel.app/**", "https://cacao-pay.vercel.app/**"]
 
 # Demo accounts are shared by everyone who opens the demo, and every sign-in is made by the
 # server from the same address, so the per-hour and per-address limits are raised.
