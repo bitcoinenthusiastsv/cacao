@@ -73,12 +73,13 @@
   border-radius: var(--radio-chico);
 }
 
+/* Figures never break inside a number: the size follows the tile, so "$23,940.28" fits a phone. */
 .cifraNumero {
   font-family: var(--mono);
-  font-size: 1.75rem;
+  font-size: clamp(1.125rem, 4.6vw, 1.75rem);
   font-weight: 700;
   line-height: 1.1;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .frase {

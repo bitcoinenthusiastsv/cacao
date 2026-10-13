@@ -4,7 +4,7 @@ import { connection } from 'next/server';
 
 import { VistaDestinatario } from '@/componentes/VistaDestinatario';
 import { ActualizarEnvio } from '@/componentes/ActualizarEnvio';
-import { esEstadoFinal } from '@/componentes/textosEnvio';
+import { esEstadoFinal, saludoDestinatario } from '@/componentes/textosEnvio';
 import { esCodigo, normalizarCodigo } from '@/lib/transferencias';
 import { rastreo } from '@/servidor/transferencias';
 
@@ -40,7 +40,7 @@ export default async function PaginaRastreo(props: PageProps<'/t/[codigo]'>) {
       </p>
 
       <VistaDestinatario
-        saludo={`${envio.destinatarioNombre}, te mandaron dinero`}
+        saludo={saludoDestinatario(envio.destinatarioNombre)}
         envio={envio}
       />
 

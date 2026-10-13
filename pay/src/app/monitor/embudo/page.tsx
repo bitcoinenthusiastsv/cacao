@@ -94,7 +94,9 @@ function EmbudoContenido({ pasos }: { pasos: PasoEmbudo[] }) {
                   ? 'Primer paso del embudo.'
                   : siguio === null
                     ? 'Nadie llegó al paso anterior en este período.'
-                    : `${siguio} de cada 100 sesiones del paso anterior llegaron a este paso.`}
+                    : siguio > 100
+                      ? 'Este paso tiene más sesiones que el anterior. Revisá cómo se registran los eventos.'
+                      : `${siguio} de cada 100 sesiones del paso anterior llegaron a este paso.`}
               </p>
             </li>
           );
