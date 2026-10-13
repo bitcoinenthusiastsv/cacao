@@ -1,0 +1,16 @@
+/* Header entry for the account: an outlined pill, Tostado on Arena. */
+.enlace {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 44px;
+  max-width: 7.5rem;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

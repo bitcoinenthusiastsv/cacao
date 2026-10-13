@@ -1,0 +1,32 @@
+/* Home page blocks. Colours come from the brand variables only. */
+.inicio {
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+
+.bloque {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bloque h2 {
+  font-size: clamp(1.25rem, 3.5vw, 1.5rem);
+}
+
+.puntos {
+  display: grid;
+  gap: 10px;
+  padding-left: 1.25em;
+  list-style: disc;
+}
+
+.puntos li {
+  padding-left: 0.25em;
+}
+
+.pie {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}

@@ -1,0 +1,110 @@
+/* Quote preview. Panel on Blanco, text Tostado. The receiving line sits on Mazorca, Tostado text. */
+.cotizador {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Two selects side by side from 360px; stacked on the narrowest screens. */
+.fila {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 360px) {
+  .fila {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.aviso,
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  font-weight: 600;
+}
+
+.aviso {
+  background: var(--arena);
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.error {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.lineas {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  min-width: 0;
+  border-top: 2px solid var(--tostado);
+}
+
+.lineas > div {
+  display: grid;
+  gap: 4px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--arena);
+  min-width: 0;
+}
+
+@media (min-width: 480px) {
+  .lineas > div {
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 12px;
+  }
+}
+
+.lineas dt {
+  font-weight: 600;
+}
+
+.lineas dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lineas dd .dato {
+  font-size: 1rem;
+}
+
+.nota {
+  display: block;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* The line that matters most: what arrives. */
+.recibe {
+  margin-inline: -16px;
+  padding-inline: 16px;
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.grande {
+  font-size: 1.5rem;
+  font-weight: 700;
+}

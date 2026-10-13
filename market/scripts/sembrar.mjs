@@ -694,6 +694,105 @@ async function resumen(negocioDe, ids) {
   console.log(`  Lucía y Diego con negocio: ${sinNegocio} (deben ser 0)`);
 }
 
+// Cacao Pay transfers, sent by Lucía (6) and Diego (9). Each one ends in the state named here. The fee
+// and the recipient amount are worked out with integers, as the database does, so it accepts them.
+const TARIFAS_PAY = {
+  lightning: { fijo: 0, bps: 50 },
+  cuenta: { fijo: 99, bps: 100 },
+  efectivo: { fijo: 199, bps: 150 },
+};
+const TASA_EUR_USD = 1.08; // the same rate the migration stores in pay_tasas
+const SATS_POR_USD = 100000000 / COTIZACION; // one BTC is 1e8 sats
+
+// Fields: remitente (user number), nombre, contacto (phone or email), origen and destino (currencies),
+// monto (cents of the origin currency), entrega, nota, estado (where it ends), motivo (for fallida).
+// Sats transfers always start in USD.
+const TRANSFERENCIAS = [
+  { clave: 'sembrar-pay-01', remitente: 6, nombre: 'Mamá Marta', contacto: '+503 7712 3456', origen: 'USD', monto: 4000, destino: 'USD', entrega: 'efectivo', nota: 'Para las compras de la semana.', estado: 'creada' },
+  { clave: 'sembrar-pay-02', remitente: 6, nombre: 'Tío Rubén', contacto: 'ruben@ejemplo.sv', origen: 'EUR', monto: 12000, destino: 'USD', entrega: 'cuenta', nota: 'Para pagar la luz de la casa.', estado: 'procesando' },
+  { clave: 'sembrar-pay-03', remitente: 6, nombre: 'Abuela Chela', contacto: '+503 7788 9900', origen: 'USD', monto: 2500, destino: 'SATS', entrega: 'lightning', nota: '', estado: 'completada' },
+  { clave: 'sembrar-pay-04', remitente: 6, nombre: 'Mamá Marta', contacto: '+503 7712 3456', origen: 'EUR', monto: 6000, destino: 'USD', entrega: 'efectivo', nota: 'Para la colegiatura.', estado: 'fallida', motivo: 'El punto de pago cerró antes de recibir el envío.' },
+  { clave: 'sembrar-pay-05', remitente: 6, nombre: 'Tío Rubén', contacto: 'ruben@ejemplo.sv', origen: 'USD', monto: 1500, destino: 'USD', entrega: 'cuenta', nota: '', estado: 'cancelada' },
+  { clave: 'sembrar-pay-06', remitente: 6, nombre: 'Abuela Chela', contacto: '+503 7788 9900', origen: 'USD', monto: 1000, destino: 'SATS', entrega: 'lightning', nota: 'Para la luz.', estado: 'completada' },
+  { clave: 'sembrar-pay-07', remitente: 9, nombre: 'Rosa', contacto: '+503 7000 0002', origen: 'USD', monto: 500, destino: 'SATS', entrega: 'lightning', nota: 'Te pago la compra de la semana.', estado: 'completada' },
+  { clave: 'sembrar-pay-08', remitente: 9, nombre: 'Hermano Luis', contacto: '+503 7600 1122', origen: 'EUR', monto: 3000, destino: 'USD', entrega: 'cuenta', nota: '', estado: 'creada' },
+];
+
+// The recipient amount in integers: BigInt with the rate scaled by 1e8, so no float can round it differently.
+function calcularTransferencia(t) {
+  const { fijo, bps } = TARIFAS_PAY[t.entrega];
+  const comision = fijo + Math.floor((t.monto * bps + 9999) / 10000);
+  const neto = t.monto - comision;
+  const tasa = t.destino === 'SATS' ? SATS_POR_USD : t.origen === 'EUR' ? TASA_EUR_USD : 1;
+  const escala = BigInt(Math.round(tasa * 1e8));
+  const divisor = t.destino === 'SATS' ? 100n * 100000000n : 100000000n;
+  return { comision, tasa, destino: Number((BigInt(neto) * escala) / divisor) };
+}
+
+// Creates one transfer and moves it to its state. Each step runs only when the transfer is not there yet,
+// so a second run changes nothing.
+async function sembrarTransferencia(t, ids) {
+  const remitente = ids[t.remitente];
+  const { comision, tasa, destino } = calcularTransferencia(t);
+  const existe = await unico('pay_transferencias', 'id', { remitente_id: remitente, clave_idempotencia: t.clave });
+  const fila = await rpc('pay_crear_transferencia', {
+    p_remitente: remitente,
+    p_destinatario_nombre: t.nombre,
+    p_destinatario_contacto: t.contacto,
+    p_moneda_origen: t.origen,
+    p_monto_origen: t.monto,
+    p_moneda_destino: t.destino,
+    p_entrega: t.entrega,
+    p_tasa: tasa,
+    p_tasa_fuente: t.destino === 'SATS' ? 'Precio del BTC de demostración' : t.origen === 'EUR' ? 'Tasa fija de demostración' : 'Sin conversión',
+    p_comision: comision,
+    p_monto_destino: destino,
+    p_nota: t.nota,
+    p_clave: t.clave,
+  });
+
+  let estado = fila.estado;
+  if (t.estado === 'cancelada') {
+    if (estado === 'creada') await rpc('pay_cancelar', { p_transferencia: fila.id, p_actor: remitente });
+    return !existe;
+  }
+  if (t.estado === 'creada') return !existe;
+  if (estado === 'creada') {
+    await rpc('pay_procesar', { p_transferencia: fila.id, p_actor: remitente });
+    estado = 'procesando';
+  }
+  if (t.estado === 'completada' && estado === 'procesando') {
+    await rpc('pay_completar', { p_transferencia: fila.id, p_actor: null });
+  }
+  if (t.estado === 'fallida' && estado === 'procesando') {
+    await rpc('pay_fallar', { p_transferencia: fila.id, p_actor: null, p_motivo: t.motivo });
+  }
+  return !existe;
+}
+
+// Returns how many transfers this run created.
+async function sembrarTransferencias(ids) {
+  let nuevas = 0;
+  for (const t of TRANSFERENCIAS) {
+    if (await sembrarTransferencia(t, ids)) nuevas++;
+  }
+  return nuevas;
+}
+
+async function resumenPay(ids, nuevas) {
+  const { data: filas, error } = await s
+    .from('pay_transferencias')
+    .select('estado, destinatario_id')
+    .in('remitente_id', [ids[6], ids[9]])
+    .like('clave_idempotencia', 'sembrar-pay-%');
+  if (error) throw error;
+  const cuenta = {};
+  for (const f of filas) cuenta[f.estado] = (cuenta[f.estado] ?? 0) + 1;
+  const porEstado = Object.entries(cuenta).map(([e, n]) => `${e} ${n}`).join(', ') || 'ninguna';
+  console.log(`  Pay, transferencias: ${filas.length} (nuevas: ${nuevas}), por estado: ${porEstado}`);
+  console.log(`  Pay, con destinatario registrado: ${filas.filter((f) => f.destinatario_id).length}`);
+}
+
 async function main() {
   const ids = await asegurarUsuarios();
   const categoriaDe = await asegurarCategorias();
@@ -715,7 +814,10 @@ async function main() {
     await sembrarCotizacion(c, ids, servicioDe);
   }
 
+  const nuevasPay = await sembrarTransferencias(ids);
+
   await resumen(negocioDe, ids);
+  await resumenPay(ids, nuevasPay);
 }
 
 main().catch((error) => {
