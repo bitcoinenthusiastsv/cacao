@@ -21,6 +21,8 @@ Este repositorio contiene cinco productos hechos en El Salvador para que el dine
 
 Media, Market y Pay comparten una base de datos (las migraciones viven en `market/supabase/`). Todos los pagos son simulados: no se mueve dinero real. Lo que sigue en este documento describe Cacao Media y Cacao Travel; los otros tres tienen su `README.md` en su carpeta.
 
+Para retomar el trabajo en otra computadora (instalar, correr, probar, publicar y lo que quedó pendiente), leé [docs/operacion.md](docs/operacion.md).
+
 ## La idea
 
 - **Pago por historia, no suscripción.** Cada historia de pago cuesta 120 sats. Con tarjeta, un cobro tan chico no tiene sentido porque las comisiones superan el precio. Con bitcoin por Lightning, pagar una sola historia sí es práctico.
