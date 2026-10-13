@@ -9,6 +9,9 @@ const raiz = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // The host was adding a trailing slash and Next was taking it off, so a page
+  // redirected forever and never opened. vercel.json keeps the slash off.
+  skipTrailingSlashRedirect: true,
   turbopack: {
     root: raiz,
   },
