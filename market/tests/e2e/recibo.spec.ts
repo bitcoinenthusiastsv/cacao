@@ -87,7 +87,7 @@ test('el comprobante de una orden pagada: totales, partes y el aviso; un extrañ
     await expect(recibo.getByText('2 × $3.50 por libra')).toBeVisible();
     await expect(recibo.getByText(/^\$7\.00 · [\d,]+ sats$/).last()).toBeVisible();
     await expect(
-      recibo.getByText('Este comprobante no es un documento tributario. La factura electrónica (DTE) la emite el vendedor.'),
+      recibo.getByText(/Este comprobante no es un documento tributario\. La factura electrónica \(DTE\) la emite el vendedor/),
     ).toBeVisible();
 
     // Printing shows the receipt alone: the button and the navigation are hidden.
