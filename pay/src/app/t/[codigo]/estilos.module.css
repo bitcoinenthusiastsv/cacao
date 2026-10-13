@@ -1,0 +1,14 @@
+.pagina {
+  display: grid;
+  gap: 24px;
+}
+
+.codigo {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pie {
+  font-size: 1rem;
+  line-height: 1.5;
+}

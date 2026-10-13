@@ -177,3 +177,19 @@ describe('cotizar: precio de bitcoin ausente', () => {
     expect(ok(cotizar({ ...base, entrega: 'cuenta', usdBtc: null })).montoDestino).toBe(9_801);
   });
 });
+
+describe('cotizar: origen de la tasa euro-dólar', () => {
+  it('usa la fuente que llega de la base de datos', () => {
+    const c = ok(
+      cotizar({ monedaOrigen: 'EUR', montoOrigenCentavos: 10_000, entrega: 'cuenta', tarifas: TARIFAS, eurUsd: 1.08, fuenteEurUsd: 'Tasa del día', usdBtc: null, fuenteBtc: FUENTE }),
+    );
+    expect(c.tasaFuente).toBe('Tasa del día');
+  });
+
+  it('usa la misma fuente en euros a sats', () => {
+    const c = ok(
+      cotizar({ monedaOrigen: 'EUR', montoOrigenCentavos: 10_000, entrega: 'lightning', tarifas: TARIFAS, eurUsd: 1.08, fuenteEurUsd: 'Tasa del día', usdBtc: 100_000, fuenteBtc: FUENTE }),
+    );
+    expect(c.tasaFuente).toBe(`Tasa del día; ${FUENTE}`);
+  });
+});

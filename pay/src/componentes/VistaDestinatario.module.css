@@ -1,0 +1,69 @@
+/* Tracking and recipient view. Large type on purpose: the state is at least 18px and the amount
+   at least 28px at every width. Mono is set here, not with the .dato class, so its size is not
+   overridden by the global one. */
+.vista {
+  display: grid;
+  gap: 24px;
+}
+
+.saludo {
+  font-size: clamp(2rem, 7vw, 2.75rem);
+}
+
+.etiqueta {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.monto {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.cifra {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+  font-size: clamp(2.25rem, 12vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.dolares {
+  font-size: 1.125rem;
+}
+
+.entrega {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.estado {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.texto {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.tiempo {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.pasos {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}

@@ -1,0 +1,125 @@
+import type { FormEvent, RefObject } from 'react';
+
+import estilos from './estilos.module.css';
+
+/** Step 2: who receives the money and how to reach them. */
+export function PasoDestinatario({
+  tituloRef,
+  nombre,
+  onNombre,
+  nombreRef,
+  errorNombre,
+  contacto,
+  onContacto,
+  contactoRef,
+  errorContacto,
+  nota,
+  onNota,
+  onVolver,
+  onSeguir,
+}: {
+  tituloRef: RefObject<HTMLHeadingElement | null>;
+  nombre: string;
+  onNombre: (valor: string) => void;
+  nombreRef: RefObject<HTMLInputElement | null>;
+  errorNombre: string | null;
+  contacto: string;
+  onContacto: (valor: string) => void;
+  contactoRef: RefObject<HTMLInputElement | null>;
+  errorContacto: string | null;
+  nota: string;
+  onNota: (valor: string) => void;
+  onVolver: () => void;
+  onSeguir: (evento: FormEvent<HTMLFormElement>) => void;
+}) {
+  // A phone gets the fixed +503 in front; an email has none.
+  const esCorreo = contacto.includes('@');
+
+  return (
+    <form className={estilos.formulario} onSubmit={onSeguir} noValidate>
+      <h2 ref={tituloRef} tabIndex={-1} className={estilos.titulo}>
+        Destinatario
+      </h2>
+
+      <div className={estilos.grupo}>
+        <label htmlFor="envio-nombre" className="campo-etiqueta">
+          Cómo se llama quien recibe
+        </label>
+        <input
+          id="envio-nombre"
+          ref={nombreRef}
+          className="campo"
+          type="text"
+          autoComplete="off"
+          value={nombre}
+          onChange={(e) => onNombre(e.target.value)}
+          aria-invalid={errorNombre ? true : undefined}
+          aria-describedby={errorNombre ? 'envio-nombre-error' : undefined}
+        />
+        {errorNombre && (
+          <p id="envio-nombre-error" role="alert" className={estilos.error}>
+            {errorNombre}
+          </p>
+        )}
+      </div>
+
+      <div className={estilos.grupo}>
+        <label htmlFor="envio-contacto" className="campo-etiqueta">
+          Su celular o su correo
+        </label>
+        <div className={esCorreo ? undefined : estilos.contacto}>
+          {!esCorreo && <span className={estilos.prefijo}>+503</span>}
+          <input
+            id="envio-contacto"
+            ref={contactoRef}
+            className="campo"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            value={contacto}
+            onChange={(e) => onContacto(e.target.value)}
+            aria-invalid={errorContacto ? true : undefined}
+            aria-describedby={errorContacto ? 'envio-contacto-error' : 'envio-contacto-ayuda'}
+          />
+        </div>
+        <p id="envio-contacto-ayuda" className={estilos.ayuda}>
+          Son 8 números de El Salvador, o un correo. Con el celular o el correo le avisamos y, si tiene cuenta, lo ve en
+          Recibidos.
+        </p>
+        {errorContacto && (
+          <p id="envio-contacto-error" role="alert" className={estilos.error}>
+            {errorContacto}
+          </p>
+        )}
+      </div>
+
+      <div className={estilos.grupo}>
+        <label htmlFor="envio-nota" className="campo-etiqueta">
+          Nota para quien recibe (opcional)
+        </label>
+        <textarea
+          id="envio-nota"
+          className={`campo ${estilos.area}`}
+          rows={3}
+          maxLength={200}
+          value={nota}
+          onChange={(e) => onNota(e.target.value)}
+          aria-describedby="envio-nota-contador"
+        />
+        <p id="envio-nota-contador" className={estilos.ayuda}>
+          {`${Array.from(nota).length} de 200 caracteres`}
+        </p>
+      </div>
+
+      <div className={estilos.acciones}>
+        <button type="button" className={estilos.enlaceVolver} onClick={onVolver}>
+          Volver al monto
+        </button>
+        <button type="submit" className="boton">
+          Seguir
+        </button>
+      </div>
+    </form>
+  );
+}

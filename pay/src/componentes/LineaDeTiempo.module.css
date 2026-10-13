@@ -1,0 +1,67 @@
+/* Timeline of a transfer. Done steps are filled, the current one is Mazorca, the rest are dashed.
+   The words Listo, En curso and Pendiente say the same thing without colour. */
+.lista {
+  display: grid;
+}
+
+.paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: 22px;
+}
+
+.paso:last-child {
+  padding-bottom: 0;
+}
+
+/* The line that joins the markers. */
+.paso:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 13px;
+  width: 2px;
+  background: var(--tostado);
+}
+
+.marca {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--tostado);
+  border-radius: 50%;
+  background: var(--blanco);
+}
+
+.listo .marca {
+  background: var(--tostado);
+}
+
+.enCurso .marca {
+  background: var(--mazorca);
+}
+
+.pendiente .marca {
+  border-style: dashed;
+}
+
+.fin .marca {
+  border-color: var(--criollo);
+  background: var(--criollo);
+}
+
+.titulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.detalle {
+  font-size: 1rem;
+}
+
+.pendiente .titulo {
+  font-weight: 600;
+}

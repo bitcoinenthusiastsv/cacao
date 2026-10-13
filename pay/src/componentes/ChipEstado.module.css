@@ -1,0 +1,44 @@
+/* Transfer state chips. Each pair follows the brand rules: Tostado on the light colours,
+   Pulpa on the dark ones. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Sin enviar: waiting for the sender, so the outline is dashed. */
+.creada {
+  background: var(--blanco);
+  color: var(--tostado);
+  border-style: dashed;
+}
+
+.procesando {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.completada {
+  background: var(--grano-fresco);
+  border-color: var(--grano-fresco);
+  color: var(--pulpa);
+}
+
+.fallida {
+  background: var(--criollo);
+  border-color: var(--criollo);
+  color: var(--pulpa);
+}
+
+.cancelada {
+  background: var(--chocolate);
+  border-color: var(--chocolate);
+  color: var(--pulpa);
+}
