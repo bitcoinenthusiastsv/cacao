@@ -1,0 +1,334 @@
+/* One transfer: header, actions, timeline, money, recipient and receipt. Brand variables only.
+   The receipt prints black on white. */
+.envio {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
+.encabezado {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.encabezado h1 {
+  overflow-wrap: anywhere;
+}
+
+.compartir {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  min-width: 0;
+}
+
+.compartir a {
+  justify-self: start;
+  min-height: var(--alto-toque);
+  display: inline-flex;
+  align-items: center;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+
+.bloque {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.bloque h2 {
+  font-size: clamp(1.2rem, 3.5vw, 1.4rem);
+}
+
+.nota {
+  display: block;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* Timeline: an ordered list, each step carries its state word. */
+.tiempo {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lineaTiempo {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 3px solid var(--tostado);
+}
+
+.paso {
+  display: grid;
+  gap: 4px;
+  padding: 0 0 16px 16px;
+  min-width: 0;
+}
+
+.rotulo {
+  justify-self: start;
+  padding: 2px 10px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.textoPaso {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hecho .rotulo {
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.enCurso .rotulo {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.pendiente .rotulo {
+  background: var(--arena);
+  color: var(--tostado);
+  border-style: dashed;
+}
+
+.final .rotulo {
+  background: var(--criollo);
+  border-color: var(--criollo);
+  color: var(--pulpa);
+}
+
+.plazo {
+  font-weight: 600;
+}
+
+.suma {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.datos {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+.datos > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Actions */
+.acciones {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bloqueAcciones {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.confirmacion {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--arena);
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.simulacion {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  min-width: 0;
+}
+
+.simulacion h2 {
+  font-size: 1.1rem;
+}
+
+.simulacion > p {
+  font-size: 0.9375rem;
+}
+
+.formularioFallo {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.exito {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.resultado {
+  min-width: 0;
+}
+
+/* Receipt on the screen: a panel. Printed: only this block, in black on white. */
+.comprobante {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px;
+  border: 2px dashed var(--tostado);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.comprobanteCabecera {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--tostado);
+}
+
+.datosComprobante {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+}
+
+.datosComprobante > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datosComprobante dt {
+  font-weight: 600;
+}
+
+.datosComprobante dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.pieComprobante {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.noImprimir {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.volver {
+  min-height: var(--alto-toque);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+@media (min-width: 480px) {
+  .paso {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+  }
+
+  .datos > div,
+  .datosComprobante > div {
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  /* Only the receipt prints: the rest of the page is hidden and takes no room. */
+  :global(body) {
+    visibility: hidden;
+    background: #fff;
+  }
+
+  :global(.principal) {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .comprobante {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    visibility: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .comprobante,
+  .comprobante * {
+    visibility: visible;
+    background: #fff !important;
+    color: #000 !important;
+    border-color: #000 !important;
+    box-shadow: none !important;
+  }
+
+  .noImprimir {
+    display: none;
+  }
+}

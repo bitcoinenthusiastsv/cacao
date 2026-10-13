@@ -1,0 +1,36 @@
+.pagina {
+  display: grid;
+  gap: 24px;
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+  max-width: 28rem;
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+}
+
+.ayuda {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* The code is typed in capitals and spaced for reading. */
+.codigo {
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}

@@ -1,0 +1,79 @@
+/* Transfer list. Brand variables only; Tostado on Blanco and Arena. */
+.lista {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.encabezado {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bloque {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.bloque h2 {
+  font-size: clamp(1.2rem, 3.5vw, 1.4rem);
+}
+
+.tarjetas {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tarjeta {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.tarjeta p {
+  overflow-wrap: anywhere;
+}
+
+.tarjetaCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+/* The code is a link: a finger-size target, in the mono face. */
+.codigo {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--tostado);
+  overflow-wrap: anywhere;
+}
+
+.cifras {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fecha {
+  font-size: 0.9375rem;
+}
+
+.paginas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}

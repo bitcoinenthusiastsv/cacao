@@ -1,0 +1,94 @@
+/* Recipient pages. Brand variables only; Tostado on Arena and Blanco. */
+.pagina {
+  display: grid;
+  gap: 24px;
+}
+
+.lista {
+  display: grid;
+  gap: 12px;
+}
+
+/* One card is one link, so the whole card is the tap target. */
+.tarjeta {
+  display: grid;
+  gap: 6px;
+  min-height: var(--alto-toque);
+  padding: 18px 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+  text-decoration: none;
+}
+
+.tarjeta:hover {
+  background: var(--pulpa);
+}
+
+.de {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.monto {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.dolares {
+  font-size: 1rem;
+}
+
+.fecha {
+  font-size: 1rem;
+}
+
+.datos {
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.definiciones {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.definiciones > div {
+  display: grid;
+  gap: 2px;
+}
+
+.definiciones dt {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.definiciones dd {
+  margin: 0;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.definiciones .codigo {
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  letter-spacing: 0.02em;
+}
+
+.nota {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  font-weight: 600;
+}

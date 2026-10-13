@@ -60,10 +60,13 @@ export function cotizar(entrada: {
   entrega: Entrega;
   tarifas: Record<Entrega, Tarifa>;
   eurUsd: number;
+  /** Source label of eurUsd, as stored in pay_tasas. Defaults to the demo label. */
+  fuenteEurUsd?: string;
   usdBtc: number | null;
   fuenteBtc: string;
 }): Cotizacion | { error: string } {
   const { monedaOrigen, montoOrigenCentavos, entrega, tarifas, eurUsd, usdBtc, fuenteBtc } = entrada;
+  const fuenteEur = entrada.fuenteEurUsd ?? FUENTE_EUR_USD;
 
   if (
     !Number.isInteger(montoOrigenCentavos) ||
@@ -99,10 +102,10 @@ export function cotizar(entrada: {
   if (monedaDestino === 'SATS') {
     const satsPorUsd = 100_000_000 / (usdBtc as number);
     tasa = monedaOrigen === 'USD' ? satsPorUsd : eurUsd * satsPorUsd;
-    tasaFuente = monedaOrigen === 'USD' ? fuenteBtc : `${FUENTE_EUR_USD}; ${fuenteBtc}`;
+    tasaFuente = monedaOrigen === 'USD' ? fuenteBtc : `${fuenteEur}; ${fuenteBtc}`;
   } else if (monedaOrigen === 'EUR') {
     tasa = eurUsd;
-    tasaFuente = FUENTE_EUR_USD;
+    tasaFuente = fuenteEur;
   } else {
     tasa = 1;
     tasaFuente = 'Misma moneda: no hay conversión';

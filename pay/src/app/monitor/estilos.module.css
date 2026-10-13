@@ -1,0 +1,216 @@
+/* Monitor. Brand variables only: Tostado on Arena and Blanco, Pulpa on Tostado. No shadows. */
+.marco {
+  display: grid;
+  gap: 20px;
+}
+
+.subnav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.subnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  padding: 0 14px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  color: var(--tostado);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.subnav a[aria-current='page'] {
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+.seccion {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.encabezadoSeccion {
+  display: grid;
+  gap: 6px;
+}
+
+.leyenda {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+
+.filtroCampo {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.cifrasResumen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cifra {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+}
+
+.cifraNumero {
+  font-family: var(--mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.frase {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.exito {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--grano-fresco);
+  color: var(--pulpa);
+  font-weight: 600;
+}
+
+.formulario {
+  display: grid;
+  gap: 14px;
+}
+
+/* Funnel steps: the number and the share are text; the bar only repeats them. */
+.pasosEmbudo {
+  display: grid;
+  gap: 16px;
+}
+
+.paso {
+  display: grid;
+  gap: 8px;
+}
+
+.pasoCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-weight: 700;
+}
+
+.pasoCifra {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.barra {
+  height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--arena);
+}
+
+.barraRelleno {
+  height: 100%;
+  background: var(--mazorca);
+}
+
+.pasoDetalle {
+  font-size: 0.9375rem;
+}
+
+/* Detail of one transfer. */
+.datos {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.datos > div {
+  display: grid;
+  gap: 2px;
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.codigoTitulo {
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  letter-spacing: 0.02em;
+}
+
+.historial {
+  display: grid;
+  gap: 10px;
+}
+
+.historial li {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--arena);
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  font-weight: 600;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+@media (min-width: 720px) {
+  .cifrasResumen {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,198 @@
+/* Sender's flow. Brand variables only. Text pairs: Tostado on Arena, Blanco and Mazorca. */
+.asistente {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.paso {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+.formulario {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: clamp(1.25rem, 3.5vw, 1.5rem);
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+/* Three ways of delivery as radio cards. Each card is one label, at least 44px tall. */
+.entregas {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.entregas legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.tarjeta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-height: var(--alto-toque);
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  color: var(--tostado);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.tarjeta:has(input:checked) {
+  background: var(--mazorca);
+}
+
+.tarjeta:has(input:disabled) {
+  background: var(--arena);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.radio {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--tostado);
+}
+
+.tarjetaTexto {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The quote: a panel with the four lines and the receiving line in Mazorca. */
+.cotizacion {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+}
+
+.subtitulo {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  min-width: 0;
+}
+
+/* Back links are buttons or links with the same look: text, not a pill. */
+.enlaceVolver {
+  appearance: none;
+  min-height: var(--alto-toque);
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--tostado);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.area {
+  min-height: 96px;
+  padding: 10px 14px;
+  resize: vertical;
+}
+
+/* The fixed +503 sits in front of the field; the field takes what follows it. */
+.contacto {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.prefijo {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  padding: 0 12px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.resumen {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.datosFinales {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+}
+
+.datosFinales > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datosFinales dt {
+  font-weight: 600;
+}
+
+.datosFinales dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.recordatorio {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}

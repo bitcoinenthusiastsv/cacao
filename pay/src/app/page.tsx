@@ -37,7 +37,7 @@ export default function Inicio() {
           <li>Cada envío tiene un código para seguirlo.</li>
         </ul>
         <div>
-          <Boton href="/enviar">Enviar dinero</Boton>
+          <Boton href="/enviar">Enviar dinero</Boton> <Boton href="/rastrear" variante="secundario">Seguir un envío</Boton>
         </div>
       </section>
 

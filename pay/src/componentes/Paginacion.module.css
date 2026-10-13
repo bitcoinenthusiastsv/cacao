@@ -1,0 +1,18 @@
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.posicion {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+}
+
+/* A page that does not exist in that direction: shown, not clickable. */
+.inactivo {
+  opacity: 0.5;
+  cursor: default;
+}
