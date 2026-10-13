@@ -65,9 +65,13 @@ function pagina(titulo: string, prefijo: string, cuerpo: string): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapar(titulo)} · cacaoledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${prefijo}estilo.css">
 </head>
 <body>
+<div class="hoja">
 <header class="cabecera">
 <p class="marca"><a href="${prefijo}index.html">cacao<span>ledger</span></a></p>
 <p class="lema">Cobrar y declarar</p>
@@ -80,7 +84,9 @@ function pagina(titulo: string, prefijo: string, cuerpo: string): string {
 <main class="contenido">
 ${cuerpo}
 </main>
+</div>
 <footer class="pie">
+<p class="pie__gigante" aria-hidden="true"><b>cacao</b>ledger</p>
 <p>Cacao, la empresa, y los otros productos</p>
 <ul>${enlaces}</ul>
 </footer>

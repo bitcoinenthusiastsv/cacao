@@ -16,8 +16,8 @@
 
   --canal: 16px;
   --ancho: 1120px;
-  --radio: 16px;
-  --radio-chico: 10px;
+  --radio: 28px;
+  --radio-chico: 14px;
   --alto-toque: 44px;
   --barra-alto: 64px;
 }
@@ -34,7 +34,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--arena);
+  background: var(--tostado);
   color: var(--tostado);
   font-family: var(--fuente);
   font-size: 1rem;
@@ -159,6 +159,13 @@ main:focus {
   top: 8px;
 }
 
+/* Pulpa sheet: demo ribbon, header, and main on a warm ground with rounded bottom corners. */
+.hoja {
+  background: var(--pulpa);
+  margin-inline: clamp(0px, 1.5vw, 20px);
+  border-radius: 0 0 var(--radio) var(--radio);
+}
+
 .cinta {
   padding: 6px var(--canal);
   background: var(--tostado);
@@ -171,8 +178,8 @@ main:focus {
 
 /* Header */
 .cabecera {
-  background: var(--arena);
-  border-bottom: 2px solid var(--tostado);
+  background: var(--pulpa);
+  border-bottom: 1.5px solid var(--tostado);
 }
 
 .cabecera__fila {
@@ -355,10 +362,10 @@ main:focus {
   gap: 8px;
   min-height: var(--alto-toque);
   padding: 0 20px;
-  border: 2px solid var(--tostado);
+  border: 0;
   border-radius: 999px;
-  background: var(--tostado);
-  color: var(--pulpa);
+  background: var(--mazorca);
+  color: var(--tostado);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.2;
@@ -368,12 +375,14 @@ main:focus {
 }
 
 .boton--secundario {
+  border: 2px solid var(--tostado);
   background: transparent;
   color: var(--tostado);
 }
 
 .boton:not(:disabled):hover {
-  background: var(--chocolate);
+  background: var(--tostado);
+  color: var(--pulpa);
 }
 
 .boton--secundario:not(:disabled):hover {
@@ -385,6 +394,28 @@ main:focus {
   color: var(--tostado);
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Giant wordmark on the Tostado ground, before the group block. */
+.marca-gigante {
+  margin: 0;
+  padding: clamp(28px, 5vw, 56px) clamp(0px, 1.5vw, 20px) clamp(12px, 2vw, 24px);
+  font-size: clamp(3rem, 16vw, 12rem);
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  color: var(--chocolate);
+  overflow: hidden;
+}
+
+.marca-gigante b {
+  font-weight: 800;
+}
+
+@media (min-width: 640px) {
+  .marca-gigante {
+    white-space: nowrap;
+  }
 }
 
 .chips {

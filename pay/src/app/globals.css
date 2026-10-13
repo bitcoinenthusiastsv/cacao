@@ -1,6 +1,6 @@
-/* CacaoPay: a remittance counter on kraft paper. The page ground is Arena and the panels are
-   Blanco calido. Brand colours are used only through these variables. No shadows, no gradients.
-   Text pairs: Tostado on light grounds, Pulpa on dark ones. */
+/* CacaoPay: Pulpa sheet on a Tostado ground, aligned with Cacao Media Brandbook v1.0. Brand colours
+   only through these variables. No shadows, no gradients. Text pairs: Tostado on light grounds,
+   Pulpa on dark ones. */
 :root {
   --pulpa: #f5ede3;
   --tostado: #2a1912;
@@ -16,8 +16,8 @@
 
   --canal: 16px;
   --ancho: 1120px;
-  --radio: 16px;
-  --radio-chico: 10px;
+  --radio: 28px;
+  --radio-chico: 14px;
   --alto-toque: 44px;
   --barra-alto: 64px;
 }
@@ -34,7 +34,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--arena);
+  background: var(--tostado);
   color: var(--tostado);
   font-family: var(--fuente);
   font-size: 1rem;
@@ -154,6 +154,13 @@ main:focus {
   top: 8px;
 }
 
+/* Pulpa sheet: demo ribbon, header, and main on a Tostado ground. */
+.hoja {
+  background: var(--pulpa);
+  margin-inline: clamp(0px, 1.5vw, 20px);
+  border-radius: 0 0 var(--radio) var(--radio);
+}
+
 /* The demo ribbon. Mono text, Pulpa on Tostado. */
 .cinta {
   padding: 6px var(--canal);
@@ -167,8 +174,8 @@ main:focus {
 
 /* Header */
 .cabecera {
-  background: var(--arena);
-  border-bottom: 2px solid var(--tostado);
+  background: var(--pulpa);
+  border-bottom: 1.5px solid var(--tostado);
 }
 
 .cabecera__fila {
@@ -280,6 +287,26 @@ main:focus {
 
 .principal {
   padding-block: 24px calc(var(--barra-alto) + 40px + env(safe-area-inset-bottom));
+}
+
+/* Tostado ground below the sheet: giant wordmark, then Grupo Cacao. */
+.zona-grupo {
+  overflow: hidden;
+}
+
+.marca-gigante {
+  margin: 0;
+  padding-block: clamp(32px, 6vw, 56px) clamp(8px, 2vw, 16px);
+  font-size: clamp(3rem, 16vw, 12rem);
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  color: var(--chocolate);
+}
+
+.marca-gigante b {
+  font-weight: 800;
 }
 
 /* Buttons */

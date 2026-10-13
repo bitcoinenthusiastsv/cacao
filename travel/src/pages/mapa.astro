@@ -65,7 +65,7 @@ const categorias = CATEGORIAS.filter((c) => puntos.some((p) => p.categoria === c
 <style>
   .cabeza { padding-block: clamp(24px, 5vw, 64px) 20px; display: grid; gap: 12px; }
   .cabeza h1 { font-size: var(--t-h1); }
-  .cabeza p { color: var(--arena); max-width: 60ch; }
+  .cabeza p { color: var(--tinta-suave); max-width: 60ch; }
 
   .mapa-seccion { display: grid; gap: clamp(16px, 2.5vw, 24px); padding-bottom: clamp(48px, 7vw, 96px); min-width: 0; }
 
@@ -81,7 +81,7 @@ const categorias = CATEGORIAS.filter((c) => puntos.some((p) => p.categoria === c
     border: 1.5px solid var(--chocolate);
     border-radius: 999px;
     background: transparent;
-    color: var(--pulpa);
+    color: var(--tostado);
     font: 600 0.9375rem/1 var(--fuente);
     cursor: pointer;
   }
@@ -144,7 +144,7 @@ const categorias = CATEGORIAS.filter((c) => puntos.some((p) => p.categoria === c
   .mapa :global(.leaflet-control-attribution a) { color: var(--pulpa); }
 
   .lateral { display: grid; gap: 12px; min-width: 0; }
-  .cuenta { font-size: 0.9375rem; color: var(--arena); }
+  .cuenta { font-size: 0.9375rem; color: var(--tinta-suave); }
   .vacio { padding: 20px; background: var(--chocolate); border-radius: var(--radio-chico); color: var(--pulpa); }
 
   .lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }

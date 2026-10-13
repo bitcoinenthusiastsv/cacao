@@ -6,58 +6,74 @@
 <title>Cacao</title>
 <meta name="description" content="Cacao es la empresa y la plataforma. Desde aquí entrás a Media, Travel, Market, Pay y Ledger.">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#2A1912">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/estilo.css">
 </head>
 <body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<div class="hoja">
 <header class="cabecera">
 <p class="logo">
 <svg viewBox="0 0 100 100" aria-hidden="true">
 <g transform="rotate(30 50 50)">
-<path d="M50 14.3 A40 40 0 0 0 50 85.7 Z" fill="#F5EDE3" transform="translate(-2.5 0)"></path>
+<path d="M50 14.3 A40 40 0 0 0 50 85.7 Z" fill="#2A1912" transform="translate(-2.5 0)"></path>
 <path d="M50 14.3 A40 40 0 0 1 50 85.7 Z" fill="#D9902F" transform="translate(2.5 0)"></path>
 </g>
 </svg>
 <span>cacao</span>
 </p>
-<p class="lugar">San Salvador</p>
+<p class="lugar">13.69°N · San Salvador</p>
 </header>
 
-<main>
-<section class="entrada">
+<main id="contenido">
+<section class="hero">
 <p class="etiqueta">Empresa matriz</p>
-<h1>cacao</h1>
-<p class="bajada">La empresa y la plataforma. Historias, viajes, mercado, remesas y facturas viven en la misma casa. Desde aquí entrás a cada una.</p>
+<h1>Dos mitades.<br>Una casa.</h1>
+<p class="bajada">El grano partido era moneda en Cuscatlán. Hoy Cacao es la empresa: una mitad mueve el dinero y la otra cuenta el lugar. Desde aquí entrás a cada producto.</p>
 </section>
 
-<section class="circuito" aria-labelledby="como">
-<h2 id="como">Cómo se conectan</h2>
+<section class="mitades" aria-labelledby="casa">
+<h2 id="casa" class="solo-lectores">Las dos mitades</h2>
+<article>
+<p class="etiqueta">El dinero</p>
+<h3>Llega, se gasta y se declara.</h3>
+<p>Pay muestra la comisión, el cambio y lo que llega. Ledger deja la venta con su factura. Cada uno abre por su lado.</p>
+</article>
+<article>
+<p class="etiqueta">El lugar</p>
+<h3>Se cuenta y se vive.</h3>
+<p>Media abre una historia por 120 sats. Travel pone precio a la experiencia. Market es el puesto: producto local u oficio, pagado en sats.</p>
+</article>
+</section>
+
+<section class="indice" aria-labelledby="como">
+<h2 id="como">Cómo circula</h2>
 <ol>
-<li><b>Llega.</b> Con Pay mandás dinero y ves la comisión, el cambio y lo que llega.</li>
-<li><b>Se gasta.</b> En Market comprás algo local o acordás un oficio.</li>
-<li><b>Se declara.</b> Ledger deja la venta con su factura electrónica.</li>
-<li><b>Se cuenta.</b> Media abre las historias de aquí. Cada una, por 120 sats.</li>
-<li><b>Se vive.</b> Travel pone precio en sats a las experiencias.</li>
+<li><b>Llega.</b> Con Pay ves cada centavo antes de confirmar.</li>
+<li><b>Se gasta.</b> En Market comprás algo de aquí o acordás un oficio.</li>
+<li><b>Se declara.</b> Ledger escribe la factura de esa venta.</li>
+<li><b>Se cuenta.</b> Media cobra 120 sats por la historia, no por el mes.</li>
+<li><b>Se vive.</b> Travel deja el precio en sats, al lado del lugar.</li>
 </ol>
 </section>
 
-<section class="puertas" aria-labelledby="productos">
-<h2 id="productos">Los cinco productos</h2>
-<ul>
-<li><a href="https://cacao-media.vercel.app"><span class="marca"><b>cacao</b>media</span><span>Historias de El Salvador, grano a grano</span></a></li>
-<li><a href="https://cacao-travel.vercel.app"><span class="marca"><b>cacao</b>travel</span><span>Experiencias en El Salvador, con precio en sats</span></a></li>
-<li><a href="https://cacao-market.vercel.app"><span class="marca"><b>cacao</b>market</span><span>Productos y servicios locales, pagados en sats</span></a></li>
-<li><a href="https://cacao-pay.vercel.app"><span class="marca"><b>cacao</b>pay</span><span>Mandá dinero a El Salvador y mirá cada centavo</span></a></li>
-<li><a href="https://cacao-ledger.vercel.app"><span class="marca"><b>cacao</b>ledger</span><span>Cobrá y declará: la venta y su factura electrónica</span></a></li>
-</ul>
-</section>
+<nav class="puertas" aria-label="Productos">
+<a href="https://cacao-media.vercel.app"><span class="marca"><b>cacao</b>media</span><span>Historias de El Salvador, grano a grano</span></a>
+<a href="https://cacao-travel.vercel.app"><span class="marca"><b>cacao</b>travel</span><span>Experiencias en El Salvador, con precio en sats</span></a>
+<a href="https://cacao-market.vercel.app"><span class="marca"><b>cacao</b>market</span><span>Productos y servicios locales, pagados en sats</span></a>
+<a href="https://cacao-pay.vercel.app"><span class="marca"><b>cacao</b>pay</span><span>Mandá dinero a El Salvador y mirá cada centavo</span></a>
+<a href="https://cacao-ledger.vercel.app"><span class="marca"><b>cacao</b>ledger</span><span>Cobrá y declará: la venta y su factura electrónica</span></a>
+</nav>
 </main>
+</div>
 
-<footer>
-<p>Estás en Cacao. Los pagos de toda la plataforma son simulados: no se mueve dinero real.</p>
+<footer class="pie">
+<p class="gigante" aria-hidden="true">cacao</p>
+<p>Estás en la empresa. Los pagos de toda la casa son simulados: no se mueve dinero real.</p>
 </footer>
 </body>
 </html>

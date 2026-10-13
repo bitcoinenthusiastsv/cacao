@@ -5,7 +5,7 @@
   background: var(--tostado);
   color: var(--pulpa);
   /* On phones the fixed tab bar covers the bottom of the screen: keep the last link above it. */
-  padding-block: 32px calc(var(--barra-alto) + 24px + env(safe-area-inset-bottom));
+  padding-block: 8px calc(var(--barra-alto) + 24px + env(safe-area-inset-bottom));
 }
 
 /* The focus ring sits on the dark band, so it is Pulpa here (the global ring is Tostado). */
@@ -62,7 +62,7 @@
   height: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radio-chico);
   color: var(--pulpa);
   text-decoration: none;
   overflow-wrap: anywhere;

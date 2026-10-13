@@ -219,15 +219,15 @@ const datos = [
 </Base>
 
 <style>
-  .migas { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; font-size: 0.875rem; color: var(--arena-oscura); }
+  .migas { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; font-size: 0.875rem; color: var(--tinta-suave); }
   .migas a:hover { color: var(--mazorca); }
 
   .exp__cabeza { display: grid; gap: 10px; padding-block: 16px clamp(18px, 3vw, 28px); }
   h1 { font-size: clamp(1.875rem, 4.4vw, 3.25rem); line-height: 1; letter-spacing: -0.03em; max-width: 24ch; overflow-wrap: anywhere; }
-  .exp__bajada { font-size: 1.125rem; line-height: 1.45; max-width: 60ch; color: var(--arena); }
+  .exp__bajada { font-size: 1.125rem; line-height: 1.45; max-width: 60ch; color: var(--tinta-suave); }
 
   .exp__foto img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radio-chico); }
-  .exp__foto figcaption { margin-top: 8px; font-size: 0.8125rem; color: var(--arena-oscura); overflow-wrap: anywhere; }
+  .exp__foto figcaption { margin-top: 8px; font-size: 0.8125rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
   @media (min-width: 900px) {
     .exp__foto img { aspect-ratio: 21 / 9; }
   }
@@ -241,28 +241,28 @@ const datos = [
   .exp__info { min-width: 0; display: grid; gap: clamp(28px, 4vw, 44px); }
 
   .ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 0; }
-  .ficha > div { padding: 14px 16px; background: var(--chocolate); border-radius: var(--radio-chico); }
+  .ficha > div { padding: 14px 16px; background: var(--chocolate); border-radius: var(--radio-chico); color: var(--pulpa); }
   .ficha dt { font-size: 0.75rem; font-weight: 600; color: var(--arena-oscura); }
   .ficha dd { margin: 2px 0 0; font-weight: 800; }
 
   .bloque h2 { font-size: var(--t-h2); margin-bottom: 12px; }
   .prosa { max-width: 44rem; }
-  .prosa :global(p) { margin-block: 0 1em; line-height: 1.6; color: var(--arena); }
+  .prosa :global(p) { margin-block: 0 1em; line-height: 1.6; color: var(--tinta-suave); }
   .prosa :global(h2:not(:first-child)) { margin-top: 1.6em; }
   .prosa :global(ol),
-  .prosa :global(ul) { padding-left: 1.3em; margin-block: 0 1em; color: var(--arena); }
+  .prosa :global(ul) { padding-left: 1.3em; margin-block: 0 1em; color: var(--tinta-suave); }
   .prosa :global(li) { margin: 0.45em 0; }
   .prosa :global(li::marker) { color: var(--mazorca); font-family: var(--mono); }
 
   .listas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 8px; }
-  .listas > div { padding: clamp(16px, 2.2vw, 24px); background: var(--chocolate); border-radius: var(--radio-chico); }
+  .listas > div { padding: clamp(16px, 2.2vw, 24px); background: var(--chocolate); border-radius: var(--radio-chico); color: var(--pulpa); }
   .listas ul { margin: 0; padding-left: 1.2em; font-size: 1rem; }
   .listas li { margin: 0.4em 0; }
 
   .condiciones { margin: 0; display: grid; }
   .condiciones > div { display: grid; gap: 2px; padding-block: 12px; border-top: 1.5px solid var(--chocolate); }
   .condiciones dt { font-weight: 800; }
-  .condiciones dd { margin: 0; color: var(--arena); font-size: 1rem; }
+  .condiciones dd { margin: 0; color: var(--tinta-suave); font-size: 1rem; }
 
   /* Booking box, built like a ticket: choices on the body, total on the stub. */
   .reserva { --muesca: 22px; background: var(--pulpa); color: var(--tostado); border-radius: var(--radio); display: grid; }
@@ -309,7 +309,7 @@ const datos = [
     width: var(--muesca);
     height: var(--muesca);
     border-radius: 50%;
-    background: var(--tostado);
+    background: var(--pulpa);
   }
   .reserva__talon::before { left: calc(var(--muesca) / -2); }
   .reserva__talon::after { right: calc(var(--muesca) / -2); }
@@ -346,7 +346,7 @@ const datos = [
     margin-top: clamp(16px, 2.5vw, 28px);
   }
   /* Reading cards are built by the script below, so they are styled globally. */
-  .lecturas :global(.lectura) { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; padding: 10px; background: var(--chocolate); border-radius: var(--radio-chico); text-decoration: none; }
+  .lecturas :global(.lectura) { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; padding: 10px; background: var(--chocolate); border-radius: var(--radio-chico); color: var(--pulpa); text-decoration: none; }
   .lecturas :global(.lectura img) { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; }
   .lecturas :global(.lectura strong) { display: block; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
   .lecturas :global(.lectura span) { display: block; font-size: 0.8125rem; color: var(--arena-oscura); margin-bottom: 2px; }
