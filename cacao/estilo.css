@@ -1,4 +1,4 @@
-/* Cacao, the company page. Brandbook v1.0: a split poster. No shadows, no gradients. */
+/* Cacao, the company page. Brandbook v1.0: one split poster. No shadows, no gradients. */
 :root {
   --tostado: #2a1912;
   --chocolate: #5a3221;
@@ -8,7 +8,8 @@
   --arena: #e6d8c6;
   --fuente: "Bricolage Grotesque", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
-  --canal: clamp(20px, 3vw, 40px);
+  --margen: clamp(22px, 4vw, 64px);
+  --gutter: clamp(116px, 10vw, 152px);
 }
 
 * { box-sizing: border-box; }
@@ -18,7 +19,7 @@ body {
   background: var(--tostado);
   color: var(--tostado);
   font-family: var(--fuente);
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   line-height: 1.35;
 }
 p { margin: 0; }
@@ -46,100 +47,152 @@ a { color: inherit; text-decoration: none; }
   white-space: nowrap;
 }
 
-.cabecera {
+.poster {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-inline: clamp(0px, 1.5vw, 20px);
-  padding: 18px var(--canal);
+  flex-direction: column;
+  min-height: 100svh;
   background: var(--pulpa);
+}
+
+.fondo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+}
+.fondo-lugar { left: 0; background: var(--pulpa); }
+.fondo-dinero { right: 0; background: var(--tostado); }
+
+.cabecera {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 22px var(--margen) 0;
 }
 .logo {
   display: flex;
   align-items: center;
   gap: 0.22em;
   margin: 0;
-  font-size: clamp(1.7rem, 3vw, 2.1rem);
+  font-size: clamp(1.6rem, 2.4vw, 2rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
 }
 .logo svg { width: 1.15em; height: 1.15em; }
-.lugar {
+.meta {
+  justify-self: end;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: var(--pulpa);
 }
 
-.escenario {
+.cuerpo {
   position: relative;
-  margin-inline: clamp(0px, 1.5vw, 20px);
-  background: var(--pulpa);
-  border-radius: 0 0 28px 28px;
-  overflow: hidden;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  padding-bottom: 36px;
 }
 
 .marca-grande {
-  width: min(240px, 58vw);
-  margin: 28px auto 0;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
+  align-self: end;
+  width: clamp(168px, 14vw, 214px);
+  z-index: 2;
+  pointer-events: none;
 }
 .marca-grande svg { display: block; width: 100%; height: auto; }
-.mitad-izq { animation: abre-izq 1.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.mitad-der { animation: abre-der 1.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.mitad-izq { animation: abre-izq 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.mitad-der { animation: abre-der 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes abre-izq {
   from { transform: translate(0, 0); }
-  to { transform: translate(-16px, 0); }
+  to { transform: translate(-11px, 0); }
 }
 @keyframes abre-der {
   from { transform: translate(0, 0); }
-  to { transform: translate(16px, 0); }
+  to { transform: translate(11px, 0); }
 }
 
-.casa { display: grid; }
-
-.lado { padding: 8px var(--canal) 36px; }
-.lado-dinero {
-  background: var(--tostado);
-  color: var(--pulpa);
+.lado {
+  display: grid;
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  align-content: start;
 }
+.lado-lugar { grid-column: 1; }
+.lado-dinero { grid-column: 2; color: var(--pulpa); }
+
 .grito {
-  max-width: 8ch;
-  font-size: clamp(3.4rem, 6.4vw, 6.6rem);
+  align-self: end;
+  margin: 0;
+  font-size: clamp(3.6rem, 5.8vw, 6.5rem);
   font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 0.88;
+  letter-spacing: -0.055em;
+  line-height: 0.86;
+  white-space: nowrap;
 }
+.lado-lugar .grito {
+  text-align: right;
+  padding-right: var(--gutter);
+}
+.lado-dinero .grito { padding-left: var(--gutter); }
+
 .etiqueta {
-  max-width: 22ch;
-  margin-top: 14px;
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  align-self: start;
+  max-width: 24ch;
+  margin-top: 18px;
+  font-size: clamp(1.02rem, 1.35vw, 1.2rem);
   line-height: 1.35;
 }
-.lado-lugar .etiqueta { color: var(--chocolate); }
-.lado-dinero .etiqueta { color: var(--arena); }
+.lado-lugar .etiqueta {
+  justify-self: end;
+  margin-right: var(--gutter);
+  text-align: right;
+  color: var(--chocolate);
+}
+.lado-dinero .etiqueta {
+  margin-left: var(--gutter);
+  color: var(--arena);
+}
 
 .lado nav {
-  display: grid;
-  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  width: min(26rem, calc(100% - var(--gutter) - var(--margen)));
+  margin-top: 32px;
 }
+.lado-lugar nav { justify-self: end; margin-right: var(--gutter); }
+.lado-dinero nav { justify-self: start; margin-left: var(--gutter); }
 .lado a {
-  display: grid;
-  gap: 2px;
-  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 15px 0;
   border-top: 1.5px solid currentColor;
 }
 .lado a:last-child { border-bottom: 1.5px solid currentColor; }
+.lado-lugar a { text-align: right; }
 .nombre {
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-size: clamp(1.7rem, 2.5vw, 2.35rem);
   font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 1;
 }
 .nombre b { font-weight: 800; }
-.lado a span:last-child { font-size: 1rem; }
+.lado a span:last-child { font-size: 0.98rem; }
 .lado-lugar a span:last-child { color: var(--chocolate); }
 .lado-dinero a span:last-child { color: var(--arena); }
 .lado-lugar a:hover .nombre,
@@ -147,51 +200,22 @@ a { color: inherit; text-decoration: none; }
 .lado-dinero a:hover .nombre,
 .lado-dinero a:focus-visible .nombre { color: var(--mazorca); }
 
-@media (min-width: 860px) {
-  .escenario { min-height: calc(100svh - 74px); }
-  .marca-grande {
-    position: absolute;
-    z-index: 1;
-    left: 50%;
-    top: 50%;
-    width: min(560px, 40vw);
-    margin: 0;
-    transform: translate(-50%, -58%);
-    pointer-events: none;
-  }
-  .casa {
-    grid-template-columns: 1fr 1fr;
-    min-height: calc(100svh - 74px);
-    align-items: stretch;
-  }
-  .lado {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100svh - 74px);
-    padding: 48px var(--canal);
-  }
-  .lado-lugar { padding-right: 24%; }
-  .lado-dinero { padding-left: 24%; }
-  .lado nav { margin-top: 22px; }
-}
-
 .pie {
-  padding: clamp(36px, 6vw, 72px) var(--canal) clamp(28px, 5vw, 56px);
+  padding: clamp(40px, 6vw, 72px) var(--margen) clamp(28px, 5vw, 48px);
   color: var(--pulpa);
   overflow: hidden;
 }
 .frase {
   max-width: 22ch;
-  margin-bottom: 12px;
-  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  margin-bottom: 8px;
+  font-size: clamp(1.35rem, 2.2vw, 1.7rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.05;
 }
 .gigante {
   margin: 0;
-  font-size: clamp(4.5rem, 23vw, 18rem);
+  font-size: clamp(4.5rem, 22vw, 16rem);
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 0.78;
@@ -199,12 +223,46 @@ a { color: inherit; text-decoration: none; }
 }
 .nota {
   max-width: 36rem;
-  margin-top: 16px;
+  margin-top: 14px;
   color: var(--arena);
+}
+
+@media (max-width: 859px) {
+  .poster { display: block; min-height: 0; background: var(--pulpa); }
+  .fondo { display: none; }
+  .cabecera { display: flex; justify-content: space-between; background: var(--pulpa); }
+  .meta { color: var(--tostado); }
+  .cuerpo { display: block; padding-bottom: 0; }
+  .marca-grande {
+    width: min(196px, 52vw);
+    margin: 20px auto 4px;
+  }
+  .lado { display: block; }
+  .lado-dinero { background: var(--tostado); }
+  .grito {
+    padding: 12px var(--margen) 0;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .lado-lugar .grito,
+  .lado-dinero .grito { padding-right: var(--margen); padding-left: var(--margen); text-align: left; }
+  .etiqueta { margin: 12px var(--margen) 0; text-align: left; }
+  .lado-lugar .grito,
+  .lado-dinero .grito,
+  .lado-lugar .etiqueta,
+  .lado-dinero .etiqueta,
+  .lado-lugar nav,
+  .lado-dinero nav { justify-self: start; }
+  .lado-lugar .etiqueta,
+  .lado-dinero .etiqueta { margin-right: var(--margen); margin-left: var(--margen); text-align: left; }
+  .lado nav { margin: 22px var(--margen) 32px; }
+  .lado-lugar nav,
+  .lado-dinero nav { margin-right: var(--margen); margin-left: var(--margen); }
+  .lado a { text-align: left; min-height: 0; flex: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .mitad-izq, .mitad-der { animation: none; }
-  .mitad-izq { transform: translate(-16px, 0); }
-  .mitad-der { transform: translate(16px, 0); }
+  .mitad-izq { transform: translate(-11px, 0); }
+  .mitad-der { transform: translate(11px, 0); }
 }
