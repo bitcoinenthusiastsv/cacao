@@ -1,0 +1,17 @@
+{
+  "formato": "cacaomarket-orden/1",
+  "numero": "1042",
+  "pagadaEn": "2026-10-12T18:22:00.000Z",
+  "lineas": [
+    { "descripcion": "Miel de abeja de Suchitoto, 500 g", "cantidad": 2, "precioCentavos": 650 },
+    { "descripcion": "Café de altura de Suchitoto, 250 g", "cantidad": 1, "precioCentavos": 475 }
+  ],
+  "totalCentavos": 1775,
+  "pago": {
+    "riel": "lightning",
+    "sats": 48051,
+    "tasaUsdPorBtc": "36939.92",
+    "tasaFuente": "Blink receive.lightning: settlementDisplayAmount / settlementAmount",
+    "paymentHash": "6cceee99be38297f789659390dd3f6f042be99fffd2036287a77a99e980436e0"
+  }
+}

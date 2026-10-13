@@ -10,6 +10,9 @@ ni conexión a internet.
 | `ticket-contribuyente.json` | Misma venta a contribuyente: precios netos de $1.00 y $2.00, total $4.52 con IVA. Produce un CCF 03. Incluye un receptor ficticio. |
 | `blink-receive-lightning.json` | Webhook `receive.lightning` de Blink, para el ticket de consumidor. |
 | `blink-receive-lightning-ccf.json` | Segundo webhook de Blink, para el ticket de contribuyente. Otro payment hash, porque cada pago liquida una sola venta. |
+| `blink-receive-lightning-pupusas.json` | Tercer webhook de Blink, por $4.20, para el ticket de pupusas. Es el cobro Lightning que la demostración deja sin documento. |
+| `ticket-consumidor-pupusas.json` | Venta a consumidor final de $4.20 con IVA incluido: pupusas y horchata. |
+| `market-orden-1042.json` | Pedido 1042 de CacaoMarket: dos productos de una tienda de Suchitoto, $17.75, pagados por Lightning. Formato en `docs/importar-market.md`. El pago es un fixture: no hay una orden real detrás. |
 
 ## Cómo se construyeron los webhooks de Blink
 

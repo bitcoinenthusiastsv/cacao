@@ -113,7 +113,7 @@ test("the demo runs under both generations, shows the chain break and exits 0", 
     const r = spawnSync(process.execPath, [CLI, "demo", "--esquemas", gen], { encoding: "utf8", cwd: raizLedger() });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stdout, /Cadena rota en la línea 1/);
-    assert.match(r.stdout, /No: 2 cobros sin documento válido\./);
+    assert.match(r.stdout, /No: 4 cobros sin documento válido\./);
     assert.match(r.stdout, /Fin de la demostración\./);
     assert.doesNotMatch(r.stdout, /ledger-demo-/, "the temporary folder name is scrubbed from the output");
   }

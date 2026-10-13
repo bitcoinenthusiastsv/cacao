@@ -1,7 +1,7 @@
 import type { Atestacion } from "./atestacion.ts";
 import { formatoSats, formatoUsd } from "./dinero.ts";
 import { fechaHoraSalvador } from "./tiempo.ts";
-import type { Ticket } from "./ticket.ts";
+import { totalDeTicket, type Ticket } from "./ticket.ts";
 
 // Daily close. It is an operational control, not a filing: nothing is owed each day, but
 // a rejected document must be sent again within 24 hours, and nothing warns the merchant
@@ -81,6 +81,16 @@ function perteneceAlDia(t: Ticket, fecha: string): boolean {
   return sinResolver && inicio <= fecha;
 }
 
+// Why a paid ticket is still an orphan. A Lightning orphan has no attestation yet, because
+// the attestation is written when the document is built; its sats come from the payment.
+function motivoHuerfano(t: Ticket): string {
+  if (t.dte) return "documento construido, sin transmitir";
+  if (t.pago?.rail === "lightning") {
+    return "sin documento: nunca se construyó, así que aún no hay atestación; los sats son del pago";
+  }
+  return "sin documento: nunca se construyó";
+}
+
 function minutosHasta(ahora: Date, desde: string): number {
   return Math.floor((new Date(desde).getTime() + PLAZO_HORAS * MS_HORA - ahora.getTime()) / 60_000);
 }
@@ -101,7 +111,8 @@ export function clasificarCierre(entrada: EntradaCierre): InformeCierre {
       cliente: t.cliente,
       estado: t.estado,
       rail,
-      usdCentavos: t.pago ? t.pago.montoCentavos : 0,
+      // An open ticket has no payment yet: its total is shown so the group has a value.
+      usdCentavos: t.pago ? t.pago.montoCentavos : totalDeTicket(t).totalCentavos,
       sats,
       fecha: t.pago ? diaDe(t.pago.momento) : diaDe(t.creado),
       numeroControl: t.dte?.numeroControl ?? null,
@@ -112,7 +123,7 @@ export function clasificarCierre(entrada: EntradaCierre): InformeCierre {
     } else if (t.estado === "pagado") {
       grupos.huerfanos.push({
         ...base,
-        motivo: t.dte ? "documento construido, sin transmitir" : "sin documento: nunca se construyó",
+        motivo: motivoHuerfano(t),
       });
     } else if (t.estado === "rechazado") {
       const minutos = t.rechazo ? minutosHasta(ahora, t.rechazo.momento) : 0;
@@ -124,7 +135,7 @@ export function clasificarCierre(entrada: EntradaCierre): InformeCierre {
         vencido: minutos <= 0,
       });
     } else {
-      grupos.abiertos.push({ ...base, usdCentavos: 0, motivo: "creado, sin pago" });
+      grupos.abiertos.push({ ...base, motivo: "creado, sin pago" });
     }
   }
 
@@ -154,18 +165,26 @@ export function clasificarCierre(entrada: EntradaCierre): InformeCierre {
   return { fecha, grupos, totales, pendientes, todosConSello, respuesta };
 }
 
+// Whole hours, or minutes under one hour. Rounds down: "quedan 18 h" means 18 full hours or more.
 function duracion(minutos: number): string {
   const abs = Math.abs(minutos);
-  return `${Math.floor(abs / 60)} h ${String(abs % 60).padStart(2, "0")} min`;
+  if (abs >= 60) return `${Math.floor(abs / 60)} h`;
+  return `${abs} min`;
 }
 
-function montoFila(f: FilaCierre): string {
-  if (f.rail === "sin cobro") return "sin cobro";
+export function montoFila(f: FilaCierre): string {
+  if (f.rail === "sin cobro") return `${formatoUsd(f.usdCentavos)} sin pagar`;
   const usd = formatoUsd(f.usdCentavos);
   return f.rail === "lightning" && f.sats !== null ? `${usd} (${formatoSats(f.sats)}) Lightning` : `${usd} efectivo`;
 }
 
-const ETIQUETAS: Record<Grupo, string> = {
+// The time left on a rejected document, or null for the other groups.
+export function textoPlazo(f: FilaCierre): string | null {
+  if (f.minutosRestantes === undefined) return null;
+  return f.vencido ? `plazo vencido hace ${duracion(f.minutosRestantes)}` : `quedan ${duracion(f.minutosRestantes)}`;
+}
+
+export const ETIQUETAS: Record<Grupo, string> = {
   emitidos: "Emitidos (con sello simulado)",
   huerfanos: "Pagados sin documento válido (huérfanos)",
   plazo: "Con plazo de 24 horas corriendo",
@@ -178,11 +197,13 @@ export function lineasCierre(informe: InformeCierre): string[] {
     const t = informe.totales[g];
     lineas.push(`${ETIQUETAS[g]}: ${t.cantidad}  ${t.cantidad > 0 ? formatoUsd(t.usdCentavos) : ""}`.trimEnd());
     for (const f of informe.grupos[g]) {
-      let plazo = "";
-      if (g === "plazo" && f.minutosRestantes !== undefined) {
-        plazo = f.vencido ? `  plazo vencido (hace ${duracion(f.minutosRestantes)})` : `  quedan ${duracion(f.minutosRestantes)}`;
+      // The time left goes first on a rejected line, where it is easiest to miss.
+      const plazo = textoPlazo(f);
+      if (plazo !== null) {
+        lineas.push(`  ${plazo}  ${f.ticket}  ${f.fecha}  ${montoFila(f)}  ${f.motivo}`);
+      } else {
+        lineas.push(`  ${f.ticket}  ${f.fecha}  ${montoFila(f)}  ${f.motivo}`);
       }
-      lineas.push(`  ${f.ticket}  ${f.fecha}  ${montoFila(f)}  ${f.motivo}${plazo}`);
     }
   }
   lineas.push("");
