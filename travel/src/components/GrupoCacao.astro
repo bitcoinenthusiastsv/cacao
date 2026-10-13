@@ -62,7 +62,7 @@ const { actual, sinTitulo = false } = Astro.props;
     list-style: none;
   }
   .grupo__item { min-width: 0; }
-  /* From 720px the tiles flow in a grid: about three per row, all five in a row on wide screens. */
+  /* From 720px the tiles flow in a grid: about three per row, the company and the products on wide screens. */
   @media (min-width: 720px) {
     .grupo__lista { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px 12px; }
   }
