@@ -1,0 +1,189 @@
+/* Shop pages: summary, application, edit form and the open switch. Brand variables only.
+   Text pairs: Tostado on Arena, Blanco and Mazorca; Pulpa on Tostado and Chocolate. */
+.bloque {
+  display: grid;
+  gap: 24px;
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.formulario h2 {
+  font-size: 1.25rem;
+}
+
+.grupo {
+  display: grid;
+  gap: 8px;
+}
+
+.area {
+  min-height: 112px;
+  padding-block: 10px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+/* Always visible next to the Lightning Address field. */
+.notaPagos {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.panel {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.titulo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.datos {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0 0 8px;
+}
+
+.accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Quotes waiting for an answer: a bordered line that links to the quotes page. */
+.avisoEnlace {
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  font-weight: 700;
+}
+
+.avisoEnlace a {
+  min-height: var(--alto-toque);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Sub-navigation: a row of pills, the current section filled. */
+.subnav {
+  min-width: 0;
+  margin-bottom: 24px;
+  /* Five sections do not fit a 320px phone: the row scrolls inside its own box, never the page. */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.subnav ul {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  width: max-content;
+  /* Room for the focus ring, which the scroll box would otherwise cut off. */
+  padding: 4px 3px;
+}
+
+.subnav li {
+  flex: none;
+}
+
+.subnav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  white-space: nowrap;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.subnav a[aria-current='page'] {
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+/* Open switch: a large pill that reads as on or off. */
+.interruptor {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 20px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.interruptor:disabled {
+  cursor: progress;
+}
+
+.interruptorAbierto {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+.interruptorCerrado {
+  background: var(--chocolate);
+  color: var(--pulpa);
+}
+
+.marcaInterruptor {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid currentColor;
+}
+
+.interruptorAbierto .marcaInterruptor {
+  background: var(--tostado);
+  border-color: var(--tostado);
+}
+
+.interruptorCerrado .marcaInterruptor {
+  background: transparent;
+}

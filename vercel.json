@@ -1,0 +1,41 @@
+{
+  "framework": "astro",
+  "buildCommand": "npm run build",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/api/historias.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    },
+    {
+      "source": "/portadas/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/travel",
+      "destination": "https://cacao-travel.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/travel/(.*)",
+      "destination": "https://cacao-travel.vercel.app/",
+      "permanent": false
+    }
+  ]
+}

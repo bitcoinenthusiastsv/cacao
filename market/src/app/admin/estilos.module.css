@@ -1,0 +1,595 @@
+/* Administration: phone first. Text pairs: Tostado on Pulpa, Arena, Blanco or Mazorca; Pulpa on
+   Tostado, Criollo, Grano fresco or Chocolate. No shadows, no gradients. */
+
+.marco {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+}
+
+.contenido {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
+/* Sub-navigation: scrolls sideways inside its own box, the page itself never does. */
+.subnav {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Room for the focus outline inside the scroll box. */
+  padding: 4px 4px 6px;
+  margin: -4px -4px 0;
+}
+
+.subnavLista {
+  display: flex;
+  gap: 8px;
+  width: max-content;
+}
+
+.subnavEnlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.subnavEnlace[aria-current='page'] {
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+.subnavEnlace:not([aria-current='page']):hover {
+  background: var(--blanco);
+}
+
+.bloque {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.subtitulo {
+  font-size: clamp(1.3rem, 4vw, 1.6rem);
+}
+
+.descripcion {
+  max-width: 40em;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+.leyenda {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 8px;
+}
+
+.vacio {
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+/* Counters on the summary: each one links to its section. */
+.contadores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contador {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 44px;
+  height: 100%;
+  padding: 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  text-decoration: none;
+}
+
+.contador:hover {
+  background: var(--pulpa);
+}
+
+.contadorNumero {
+  font-family: var(--mono);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.contadorTexto {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Circularity metrics: a definition list, one block per figure. */
+.metricas {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.metrica {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+}
+
+.metrica dt {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.metrica dd {
+  margin: 0;
+}
+
+.cifra {
+  font-family: var(--mono);
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.aproximado {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.destacado {
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+/* Shop, dispute and order cards. */
+.grupo {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tarjetaGrande {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.cabeceraTarjeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.nombreTarjeta {
+  font-size: 1.25rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.datos {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.datos > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datos dt {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.textoLargo {
+  white-space: pre-line;
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 12px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--arena);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.estadoAtencion {
+  background: var(--mazorca);
+}
+
+.estadoCerrado {
+  background: var(--chocolate);
+  border-color: var(--chocolate);
+  color: var(--pulpa);
+}
+
+.estadoProblema {
+  background: var(--criollo);
+  border-color: var(--criollo);
+  color: var(--pulpa);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.acciones > * {
+  min-height: 44px;
+}
+
+.confirmacion {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 2px dashed var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--pulpa);
+}
+
+/* Forms (disputes, shop state). */
+.formulario {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.areaTexto {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  color: var(--tostado);
+  resize: vertical;
+}
+
+.opciones {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.opciones legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  cursor: pointer;
+}
+
+.opcion input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--tostado);
+  flex: none;
+}
+
+.explicacion {
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-size: 0.9375rem;
+}
+
+.mensajeOk,
+.mensajeError {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  font-weight: 600;
+}
+
+.mensajeOk {
+  border: 2px solid var(--tostado);
+  background: var(--blanco);
+}
+
+.mensajeError {
+  background: var(--criollo);
+  color: var(--pulpa);
+}
+
+/* Pagination under the order table. */
+.paginacion {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.paginacionFila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.paginacionBoton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.paginacionBoton[aria-disabled='true'] {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+/* Order detail: short lists of facts. */
+.listaLineas {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mensajes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mensaje {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  border: 2px solid var(--arena);
+}
+
+.mensajeAutor {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.detalleClaves {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+
+.enlaceVolver {
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dato {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+/* Phones: stacked cards. Above 720px: the table, and the cards are removed from the layout. */
+.tarjetas {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tarjeta {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  min-width: 0;
+}
+
+.tarjetaTitulo {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.tarjetaDatos {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.tarjetaDato {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tarjetaDato dt {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.tarjetaDato dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.tablaWrap {
+  display: none;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--blanco);
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+}
+
+.tabla th,
+.tabla td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--arena);
+  overflow-wrap: anywhere;
+}
+
+.tabla thead th {
+  border-bottom: 2px solid var(--tostado);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 720px) {
+  .contadores {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .metricas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tarjetas {
+    display: none;
+  }
+
+  .tablaWrap {
+    display: block;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .opciones {
+    grid-auto-flow: column;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .opciones legend {
+    grid-column: 1 / -1;
+  }
+
+  .datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .datos .ancho {
+    grid-column: 1 / -1;
+  }
+}
+
+.monto {
+  display: inline-grid;
+  gap: 2px;
+}
+
+.cifraChica {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Status marks on a card (paused, hidden), next to its title. */
+.marcas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Jobs waiting for payment: the block above the order table. */
+.sinPagarTarjeta {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid var(--criollo);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  min-width: 0;
+}
+
+.filtros {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.filtrosGrupo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filtrosGrupo > p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}

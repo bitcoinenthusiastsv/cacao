@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro';
+import ListaHistorias from '../../components/ListaHistorias.astro';
+import { todasLasHistorias, type Historia } from '../../lib/historias';
+import { slugTag } from '../../lib/secciones';
+
+export async function getStaticPaths() {
+  const historias = await todasLasHistorias();
+  const temas = new Map<string, { nombre: string; historias: Historia[] }>();
+
+  for (const h of historias) {
+    for (const tag of h.data.tags) {
+      const slug = slugTag(tag);
+      let tema = temas.get(slug);
+      if (!tema) {
+        tema = { nombre: tag, historias: [] };
+        temas.set(slug, tema);
+      }
+      if (!tema.historias.includes(h)) tema.historias.push(h);
+    }
+  }
+
+  return [...temas].map(([slug, { nombre, historias }]) => ({
+    params: { tag: slug },
+    props: { nombre, historias },
+  }));
+}
+
+interface Props {
+  nombre: string;
+  historias: Historia[];
+}
+const { nombre, historias } = Astro.props;
+---
+
+<Base titulo={nombre} descripcion={`Historias sobre ${nombre} en Cacao Media.`}>
+  <div class="contenedor pagina">
+    <p class="etiqueta">Tema</p>
+    <h1 class="display">{nombre}</h1>
+    <ListaHistorias historias={historias} />
+    <p class="volver"><a href="/archivo/">Ver todo el archivo</a></p>
+  </div>
+</Base>
+
+<style>
+  .pagina {
+    padding-block: clamp(32px, 6vw, 72px);
+  }
+
+  .display {
+    margin-top: 16px;
+    margin-bottom: 40px;
+    font-size: var(--t-display);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+
+  .volver {
+    margin-top: 32px;
+  }
+</style>

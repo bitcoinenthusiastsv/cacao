@@ -1,0 +1,42 @@
+---
+// Compact card for grids: photo on top, kicker, headline, data line.
+import { fechaCorta, fechaIso, precio } from '../lib/formato';
+import { urlHistoria, type Historia } from '../lib/historias';
+import { seccionPorId } from '../lib/secciones';
+
+interface Props {
+  historia: Historia;
+}
+const { historia } = Astro.props;
+const d = historia.data;
+const seccion = seccionPorId(d.seccion);
+const url = urlHistoria(historia);
+---
+
+<article class="tarjeta" data-seccion={d.seccion}>
+  <a class="tarjeta__foto" href={url} tabindex="-1" aria-hidden="true">
+    <img src={d.portada} alt="" width="1600" height="1000" loading="lazy" />
+  </a>
+  <a class="pastilla" href={`/${seccion.ruta}/`}>{seccion.singular} · {d.lugar}</a>
+  <h3><a href={url}>{d.titulo}</a></h3>
+  <p class="etiqueta">
+    <time datetime={fechaIso(d.fecha)}>{fechaCorta(d.fecha)}</time> · {d.minutos} min · {
+      d.gratis ? 'Gratis' : precio(d.precio)
+    }
+  </p>
+</article>
+
+<style>
+  .tarjeta { display: grid; gap: 12px; justify-items: start; align-content: start; min-width: 0; }
+  .tarjeta__foto { display: block; width: 100%; overflow: hidden; border-radius: var(--radio-chico); }
+  .tarjeta__foto img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  @media (prefers-reduced-motion: no-preference) {
+    .tarjeta__foto img { transition: transform 0.5s ease; }
+    .tarjeta:hover .tarjeta__foto img { transform: scale(1.04); }
+  }
+  .pastilla { white-space: normal; }
+  h3 { font-size: var(--t-h2); font-weight: 800; overflow-wrap: anywhere; }
+  h3 a { text-decoration: none; }
+  h3 a:hover { color: inherit; text-decoration: underline; }
+  .etiqueta { color: var(--tinta-suave); }
+</style>

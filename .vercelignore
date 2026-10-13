@@ -1,0 +1,7 @@
+# Other sites and files the Media build does not need.
+market
+travel
+docs
+tests
+.qa
+*-out

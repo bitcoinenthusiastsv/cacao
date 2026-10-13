@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import { todasLasHistorias, urlHistoria } from '../lib/historias';
+
+// Stories and tours share one list: title, link, and the photo's credit.
+const conCredito = [
+  ...(await todasLasHistorias()).map((h) => ({ url: urlHistoria(h), data: h.data })),
+].filter((x) => x.data.credito);
+---
+
+<Base titulo="Créditos de fotos" descripcion="Autoría y licencias de las fotos de Cacao Media.">
+  <div class="creditos">
+    <h1>Créditos de fotos</h1>
+    <p>
+      Las fotos vienen de Wikimedia Commons y se usan bajo la licencia que indica cada una. Fueron
+      recortadas para el sitio.
+    </p>
+    <ul>
+      {
+        conCredito.map((h) => (
+          <li>
+            <a href={h.url}>{h.data.titulo}</a>
+            <span class="etiqueta">
+              {h.data.creditoUrl ? <a href={h.data.creditoUrl} rel="noopener">{h.data.credito}</a> : h.data.credito}
+              {h.data.licencia && ` · ${h.data.licencia}`}
+              {h.data.lugarFoto && ` · Tomada en ${h.data.lugarFoto}`}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .creditos {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin-inline: auto;
+    padding-block: clamp(32px, 6vw, 72px);
+    display: grid;
+    gap: 24px;
+  }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: grid;
+    gap: 4px;
+    padding-block: 14px;
+    border-top: 1.5px solid var(--tostado);
+  }
+  li > a { font-weight: 600; text-decoration: none; }
+  li > a:hover { text-decoration: underline; }
+  .etiqueta { color: var(--tinta-suave); overflow-wrap: anywhere; }
+</style>

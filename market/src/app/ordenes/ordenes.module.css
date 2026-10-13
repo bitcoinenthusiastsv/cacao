@@ -1,0 +1,132 @@
+/* Order lists for buyers and sellers. Colours only through the brand variables; no shadows. */
+.pagina {
+  display: grid;
+  gap: 28px;
+}
+
+.encabezado {
+  display: grid;
+  gap: 10px;
+}
+
+.grupo {
+  display: grid;
+  gap: 12px;
+}
+
+.lista {
+  display: grid;
+  gap: 12px;
+}
+
+.tarjeta {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tostado);
+  text-decoration: none;
+}
+
+.tarjeta:hover {
+  background: var(--pulpa);
+}
+
+.cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.titulo {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Small tag above the title: what kind of order the card is. */
+.tipo {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.numero {
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.enlaceSeccion {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  color: var(--tostado);
+  font-weight: 700;
+}
+
+.linea {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.totales {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.avisos {
+  display: grid;
+  gap: 8px;
+}
+
+.avisoItem {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+/* Wide screens: two cards side by side. */
+@media (min-width: 820px) {
+  .lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--alto-toque);
+}
+
+.paginacion a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+  color: var(--tostado);
+  font-weight: 700;
+}

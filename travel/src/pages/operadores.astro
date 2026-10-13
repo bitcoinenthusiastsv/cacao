@@ -1,0 +1,650 @@
+---
+import Base from '../layouts/Base.astro';
+import { PARTES } from '../lib/reparto';
+import { CATEGORIAS, ZONAS, DIAS_SEMANA } from '../content.config';
+
+// Day codes are the ones stored in the content collection; these are the labels shown to the operator.
+const ETIQUETA_DIA: Record<string, string> = {
+  lun: 'lun', mar: 'mar', mie: 'mié', jue: 'jue', vie: 'vie', sab: 'sáb', dom: 'dom',
+};
+const NIVELES = ['Fácil', 'Moderado', 'Exigente'] as const;
+const DIAS_INICIALES: string[] = ['sab', 'dom'];
+const porcentaje = (n: number) => `${Math.round(n * 100)}%`;
+// Without a linked story the operator also keeps the author's share.
+const OPERADOR_SIN_HISTORIA = PARTES.operador + PARTES.autor;
+---
+
+<Base titulo="Panel de operadores" descripcion="Publicá una experiencia en Cacao Travel y mirá cuánto recibís por cada reserva.">
+  <div class="contenedor operadores">
+    <header class="operadores__cabeza">
+      <p class="aviso-demo dato">Modo demo: los borradores se guardan solo en este navegador y no se publican.</p>
+      <h1>Publicá tu experiencia</h1>
+      <p class="operadores__bajada">Vos ponés el precio en sats. Cacao Travel te muestra cuánto recibís por cada reserva.</p>
+    </header>
+
+    <div class="operadores__dos">
+      <form class="tarjeta formulario" data-form novalidate>
+        <h2>Datos de la experiencia</h2>
+
+        <div class="campo">
+          <label for="f-titulo">Título</label>
+          <input id="f-titulo" name="titulo" type="text" required maxlength="70" autocomplete="off" aria-describedby="e-titulo" placeholder="Caminata al volcán de Santa Ana" />
+          <p class="campo__error" id="e-titulo" role="alert"></p>
+        </div>
+
+        <div class="campo">
+          <label for="f-lugar">Lugar</label>
+          <input id="f-lugar" name="lugar" type="text" required autocomplete="off" aria-describedby="e-lugar" placeholder="Suchitoto" />
+          <p class="campo__error" id="e-lugar" role="alert"></p>
+        </div>
+
+        <div class="campos-dos">
+          <div class="campo">
+            <label for="f-categoria">Categoría</label>
+            <select id="f-categoria" name="categoria">
+              {CATEGORIAS.map((c) => <option value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div class="campo">
+            <label for="f-zona">Zona</label>
+            <select id="f-zona" name="zona">
+              {ZONAS.map((z) => <option value={z}>{z}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div class="campos-dos">
+          <div class="campo">
+            <label for="f-nivel">Nivel</label>
+            <select id="f-nivel" name="nivel">
+              {NIVELES.map((n) => <option value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div class="campo">
+            <label for="f-duracion">Duración</label>
+            <input id="f-duracion" name="duracion" type="text" required autocomplete="off" aria-describedby="e-duracion" placeholder="4 horas" />
+            <p class="campo__error" id="e-duracion" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="campo">
+          <div class="campos-dos">
+            <div class="campo">
+              <label for="f-min">Grupo mínimo</label>
+              <input id="f-min" name="min" type="number" min="1" max="30" step="1" inputmode="numeric" value="2" required aria-describedby="e-grupo" />
+            </div>
+            <div class="campo">
+              <label for="f-max">Grupo máximo</label>
+              <input id="f-max" name="max" type="number" min="1" max="30" step="1" inputmode="numeric" value="8" required aria-describedby="e-grupo" />
+            </div>
+          </div>
+          <p class="campo__error" id="e-grupo" role="alert"></p>
+        </div>
+
+        <div class="campo">
+          <label for="f-precio">Precio por persona en sats</label>
+          <input id="f-precio" name="precio" type="number" min="1000" step="1000" inputmode="numeric" value="40000" required aria-describedby="e-precio ayuda-precio" />
+          <p class="campo__ayuda" id="ayuda-precio">Mínimo 1,000 sats por persona.</p>
+          <p class="campo__error" id="e-precio" role="alert"></p>
+        </div>
+
+        <fieldset class="campo campo--dias">
+          <legend>Días de salida</legend>
+          <div class="dias">
+            {DIAS_SEMANA.map((d) => (
+              <label class="dia">
+                <input type="checkbox" name="salidas" value={d} checked={DIAS_INICIALES.includes(d)} aria-describedby="e-dias" />
+                <span>{ETIQUETA_DIA[d]}</span>
+              </label>
+            ))}
+          </div>
+          <p class="campo__error" id="e-dias" role="alert"></p>
+        </fieldset>
+
+        <div class="campo">
+          <label for="f-bajada">Descripción corta</label>
+          <textarea id="f-bajada" name="bajada" rows="3" maxlength="140" required aria-describedby="e-bajada c-bajada" placeholder="Una frase que venda la experiencia."></textarea>
+          <p class="campo__ayuda"><span id="c-bajada" data-contador>0/140</span> caracteres</p>
+          <p class="campo__error" id="e-bajada" role="alert"></p>
+        </div>
+
+        <div class="campo">
+          <label for="f-incluye">Qué incluye</label>
+          <textarea id="f-incluye" name="incluye" rows="4" aria-describedby="ayuda-incluye"></textarea>
+          <p class="campo__ayuda" id="ayuda-incluye">Un ítem por línea.</p>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="boton">Guardar borrador</button>
+          <button type="button" class="boton boton--secundario" data-limpiar>Limpiar</button>
+        </div>
+        <p class="estado" data-estado aria-live="polite"></p>
+      </form>
+
+      <aside class="operadores__lado" aria-label="Vista previa y reparto">
+        <section class="lado-bloque" aria-labelledby="titulo-preview">
+          <h2 id="titulo-preview">Así se vería</h2>
+          <article class="preview" data-preview>
+            <div class="preview__foto">
+              <span class="preview__categoria" data-p-categoria>Categoría</span>
+            </div>
+            <div class="preview__cuerpo">
+              <p class="preview__lugar" data-p-lugar>Lugar</p>
+              <h3 data-p-titulo>Título de tu experiencia</h3>
+              <p class="preview__ficha" data-p-ficha>Duración · Nivel · Grupo</p>
+            </div>
+            <div class="preview__talon">
+              <p class="preview__precio">
+                <span>Desde</span>
+                <strong data-p-precio>Precio pendiente</strong>
+                <span>por persona</span>
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <section class="tarjeta" aria-labelledby="titulo-reparto">
+          <h2 id="titulo-reparto">Qué recibís por reserva</h2>
+          <p class="reparto__nota">Cálculo para el precio actual y el grupo máximo.</p>
+          <dl class="reparto" data-reparto data-operador={PARTES.operador} data-plataforma={PARTES.plataforma} data-autor={PARTES.autor}>
+            <div>
+              <dt>Vos (operador) <span>{porcentaje(OPERADOR_SIN_HISTORIA)}</span></dt>
+              <dd data-r-operador>Calculando</dd>
+            </div>
+            <div>
+              <dt>Cacao Travel <span>{porcentaje(PARTES.plataforma)}</span></dt>
+              <dd data-r-plataforma>Calculando</dd>
+            </div>
+            <div class="reparto__total">
+              <dt>Total por reserva</dt>
+              <dd data-r-total>Calculando</dd>
+            </div>
+          </dl>
+          <p class="reparto__explica">Si una historia de Cacao Media trae al viajero, {porcentaje(PARTES.autor)} va para quien la escribió: vos recibís <span data-r-explica-operador>Calculando</span> ({porcentaje(PARTES.operador)}) y el autor <span data-r-explica-autor>Calculando</span>.</p>
+        </section>
+      </aside>
+    </div>
+
+    <section class="tarjeta borradores" aria-labelledby="titulo-borradores">
+      <div class="borradores__cabeza">
+        <h2 id="titulo-borradores">Tus borradores</h2>
+        <button type="button" class="boton boton--secundario" data-descargar>Descargar borradores (JSON)</button>
+      </div>
+      <p class="campo__ayuda" data-vacio>Todavía no guardaste ningún borrador.</p>
+      <ul class="lista-borradores" data-borradores></ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .operadores { padding-bottom: clamp(40px, 6vw, 80px); }
+  .operadores__cabeza { display: grid; gap: 12px; padding-block: 16px clamp(24px, 4vw, 40px); }
+  .aviso-demo { color: var(--arena-oscura); }
+  h1 { font-size: var(--t-h1); max-width: 18ch; }
+  .operadores__bajada { font-size: 1.125rem; line-height: 1.45; max-width: 60ch; color: var(--arena); }
+
+  .operadores__dos { display: grid; gap: clamp(20px, 3vw, 40px); align-items: start; }
+  .operadores__dos > * { min-width: 0; }
+  .operadores__lado { display: grid; gap: clamp(24px, 3vw, 32px); min-width: 0; }
+  .lado-bloque { display: grid; gap: 14px; min-width: 0; }
+  .lado-bloque h2, .operadores__lado h2 { font-size: var(--t-h2); }
+
+  @media (min-width: 960px) {
+    .operadores__dos { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
+    .operadores__lado { position: sticky; top: 20px; }
+  }
+
+  /* Form, reparto and drafts sit on Pulpa cards, like the booking box. */
+  .tarjeta {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+    padding: clamp(18px, 3vw, 28px);
+    background: var(--pulpa);
+    color: var(--tostado);
+    border-radius: var(--radio);
+  }
+  .tarjeta h2 { font-size: var(--t-h2); }
+
+  .campo { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+  .campo > label, .campo legend { padding: 0; font-size: 0.9375rem; font-weight: 600; }
+  .campo input:not([type='checkbox']),
+  .campo select,
+  .campo textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0.7em 0.9em;
+    border: 1.5px solid var(--tinta-suave);
+    border-radius: var(--radio-chico);
+    background: var(--pulpa);
+    color: var(--tostado);
+    font: 600 1rem/1.3 var(--fuente);
+  }
+  .campo textarea { resize: vertical; font-weight: 500; }
+  .campo ::placeholder { color: var(--tinta-suave); opacity: 1; }
+  .campo__ayuda { font-size: 0.8125rem; color: var(--tinta-suave); }
+  .campo__error { font-size: 0.875rem; font-weight: 600; color: var(--criollo); }
+  .campo__error:empty { display: none; }
+  .campos-dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .campo--dias { gap: 8px; }
+
+  .dias { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .dia {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0.5em 0.8em;
+    border: 1.5px solid var(--tinta-suave);
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dia input { width: 18px; height: 18px; margin: 0; accent-color: var(--tostado); }
+  .dia:has(input:checked) { background: var(--tostado); color: var(--pulpa); }
+
+  .acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .operadores .boton { cursor: pointer; border: 0; }
+  .operadores .boton:hover { background: var(--tostado); color: var(--pulpa); }
+  .estado { min-height: 1.5em; font-weight: 600; color: var(--tostado); }
+
+  /* Ticket preview, built like Boleto: photo on top, body, perforation and stub. */
+  .preview {
+    --muesca: 20px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-width: 0;
+    background: var(--pulpa);
+    color: var(--tostado);
+    border-radius: var(--radio-chico);
+  }
+  .preview__foto {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--chocolate);
+    border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  }
+  .preview__categoria {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    padding: 0.35em 0.8em;
+    border-radius: 999px;
+    background: var(--mazorca);
+    color: var(--tostado);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .preview__cuerpo { display: grid; gap: 6px; align-content: start; padding: 16px 18px 18px; }
+  .preview__lugar { font-size: 0.875rem; font-weight: 600; color: var(--tinta-suave); }
+  .preview h3 { font-size: 1.25rem; line-height: 1.15; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .preview__ficha { font-size: 0.875rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
+  .preview__talon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 14px 18px 16px;
+    border-top: 2px dashed var(--arena-oscura);
+  }
+  .preview__talon::before,
+  .preview__talon::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--muesca) / -2 - 1px);
+    width: var(--muesca);
+    height: var(--muesca);
+    border-radius: 50%;
+    background: var(--tostado);
+  }
+  .preview__talon::before { left: calc(var(--muesca) / -2); }
+  .preview__talon::after { right: calc(var(--muesca) / -2); }
+  .preview__precio { display: grid; }
+  .preview__precio span { font-size: 0.75rem; color: var(--tinta-suave); }
+  .preview__precio strong { font-family: var(--mono); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
+  .es-marcador { font-style: italic; font-weight: 400; color: var(--tinta-suave); }
+
+  .reparto__nota, .reparto__explica { font-size: 0.875rem; color: var(--tinta-suave); }
+  .reparto { margin: 0; display: grid; }
+  .reparto > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 10px 0;
+    border-top: 1.5px solid var(--arena-oscura);
+  }
+  .reparto dt { font-weight: 600; }
+  .reparto dt span { margin-left: 0.35em; font-weight: 500; color: var(--tinta-suave); }
+  .reparto dd { margin: 0; font-family: var(--mono); font-weight: 500; overflow-wrap: anywhere; }
+  .reparto__total { border-top: 2px dashed var(--arena-oscura) !important; }
+  .reparto__total dt, .reparto__total dd { font-weight: 800; }
+
+  .borradores__cabeza { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+  .borradores { margin-top: clamp(16px, 3vw, 28px); }
+  .lista-borradores { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .operadores :global(.borrador) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px 16px;
+    background: var(--arena);
+    color: var(--tostado);
+    border-radius: var(--radio-chico);
+  }
+  .operadores :global(.borrador__cuerpo) { display: grid; gap: 4px; min-width: 0; }
+  .operadores :global(.borrador h3) { font-size: 1.125rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .operadores :global(.borrador__etiqueta) { color: var(--criollo); font-weight: 600; }
+  .operadores :global(.borrador__meta) { font-size: 0.875rem; font-family: var(--mono); overflow-wrap: anywhere; }
+  .operadores :global(.borrador__acciones) { display: flex; flex-wrap: wrap; gap: 8px; }
+  .operadores :global(.borrador__acciones button) {
+    min-height: 36px;
+    padding: 0.55em 1.1em;
+    border: 0;
+    border-radius: 999px;
+    background: var(--tostado);
+    color: var(--pulpa);
+    font: 600 0.9375rem/1 var(--fuente);
+    cursor: pointer;
+  }
+  .operadores :global(.borrador__acciones button:hover) { background: var(--mazorca); color: var(--tostado); }
+</style>
+
+<script>
+  // Drafts live only in this browser. Nothing is sent to a server and nothing is published.
+  type Datos = {
+    titulo: string;
+    lugar: string;
+    categoria: string;
+    zona: string;
+    nivel: string;
+    duracion: string;
+    min: number;
+    max: number;
+    precio: number;
+    salidas: string[];
+    bajada: string;
+    incluye: string[];
+  };
+  type Borrador = Datos & { id: string; guardado: number };
+
+  const CLAVE = 'ct-borradores';
+  const sats = (n: number) => Number(n).toLocaleString('en-US') + ' sats';
+  const grupoOk = (n: number) => Number.isInteger(n) && n >= 1 && n <= 30;
+
+  function leer(): Borrador[] {
+    try {
+      const crudo = localStorage.getItem(CLAVE);
+      const datos: unknown = crudo ? JSON.parse(crudo) : [];
+      return Array.isArray(datos) ? (datos as Borrador[]).filter((b) => b && typeof b === 'object') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function escribir(lista: Borrador[]): boolean {
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(lista));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function crearId(): string {
+    return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function iniciar() {
+    const form = document.querySelector<HTMLFormElement>('[data-form]');
+    const lista = document.querySelector<HTMLUListElement>('[data-borradores]');
+    const vacio = document.querySelector<HTMLElement>('[data-vacio]');
+    const estado = document.querySelector<HTMLElement>('[data-estado]');
+    const contador = document.querySelector<HTMLElement>('[data-contador]');
+    const reparto = document.querySelector<HTMLElement>('[data-reparto]');
+    const vista = document.querySelector<HTMLElement>('[data-preview]');
+    const descargar = document.querySelector<HTMLButtonElement>('[data-descargar]');
+    const limpiar = document.querySelector<HTMLButtonElement>('[data-limpiar]');
+    if (!form || !lista || !vacio || !estado || !contador || !reparto || !vista || !descargar || !limpiar) return;
+
+    let editando: string | null = null;
+    let intentado = false;
+
+    const campo = (n: string) =>
+      form.elements.namedItem(n) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    const numero = (n: string) => {
+      const v = campo(n).value.trim();
+      return v === '' ? NaN : Number(v);
+    };
+    const pv = (n: string) => vista.querySelector<HTMLElement>(`[data-p-${n}]`) as HTMLElement;
+    // The explanation line sits outside the list, so look up by name across the page.
+    const rr = (n: string) => document.querySelector<HTMLElement>(`[data-r-${n}]`) as HTMLElement;
+    const mensaje = (texto: string) => {
+      estado.textContent = texto;
+    };
+
+    const leerDatos = (): Datos => ({
+      titulo: campo('titulo').value.trim(),
+      lugar: campo('lugar').value.trim(),
+      categoria: campo('categoria').value,
+      zona: campo('zona').value,
+      nivel: campo('nivel').value,
+      duracion: campo('duracion').value.trim(),
+      min: numero('min'),
+      max: numero('max'),
+      precio: numero('precio'),
+      salidas: Array.from(form.querySelectorAll<HTMLInputElement>('input[name="salidas"]:checked')).map((i) => i.value),
+      bajada: campo('bajada').value.trim(),
+      incluye: campo('incluye').value.split('\n').map((s) => s.trim()).filter(Boolean),
+    });
+
+    const limpiarErrores = () => {
+      form.querySelectorAll<HTMLElement>('.campo__error').forEach((el) => {
+        el.textContent = '';
+      });
+      form.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+    };
+
+    // Validates and shows errors next to each field. Returns the data when everything is valid.
+    const validar = (enfocar: boolean): Datos | null => {
+      const d = leerDatos();
+      const grupoError =
+        !grupoOk(d.min) || !grupoOk(d.max)
+          ? 'Los grupos van de 1 a 30 personas.'
+          : d.max < d.min
+            ? 'El máximo no puede ser menor que el mínimo.'
+            : '';
+      const reglas: [string, string, HTMLElement][] = [
+        ['titulo', d.titulo ? '' : 'Escribí un título para la experiencia.', campo('titulo')],
+        ['lugar', d.lugar ? '' : 'Indicá el lugar de salida.', campo('lugar')],
+        ['duracion', d.duracion ? '' : 'Indicá la duración, por ejemplo 4 horas.', campo('duracion')],
+        ['grupo', grupoError, campo('min')],
+        ['precio', Number.isInteger(d.precio) && d.precio >= 1000 ? '' : 'El precio mínimo es 1,000 sats por persona.', campo('precio')],
+        ['dias', d.salidas.length > 0 ? '' : 'Elegí al menos un día de salida.', form.querySelector<HTMLInputElement>('input[name="salidas"]')!],
+        ['bajada', d.bajada ? '' : 'Escribí una descripción corta.', campo('bajada')],
+      ];
+      let primero: HTMLElement | null = null;
+      for (const [clave, texto, control] of reglas) {
+        const error = document.getElementById(`e-${clave}`);
+        if (error) error.textContent = texto;
+        control.setAttribute('aria-invalid', String(Boolean(texto)));
+        if (clave === 'grupo') campo('max').setAttribute('aria-invalid', String(Boolean(texto)));
+        if (texto && !primero) primero = control;
+      }
+      if (primero) {
+        if (enfocar) (primero as HTMLElement).focus();
+        return null;
+      }
+      return d;
+    };
+
+    const pintarVista = () => {
+      const d = leerDatos();
+      const pintar = (el: HTMLElement, texto: string, marcador: string) => {
+        el.textContent = texto || marcador;
+        el.classList.toggle('es-marcador', !texto);
+      };
+      const grupo = grupoOk(d.min) && grupoOk(d.max) && d.max >= d.min ? `${d.min} a ${d.max} personas` : 'Grupo pendiente';
+      const precioOk = Number.isInteger(d.precio) && d.precio > 0;
+
+      pintar(pv('categoria'), d.categoria, 'Categoría');
+      pintar(pv('lugar'), d.lugar, 'Lugar');
+      pintar(pv('titulo'), d.titulo, 'Título de tu experiencia');
+      pv('ficha').textContent = `${d.duracion || 'Duración'} · ${d.nivel} · ${grupo}`;
+      pv('precio').textContent = precioOk ? sats(d.precio) : 'Precio pendiente';
+
+      if (precioOk && grupoOk(d.max)) {
+        const total = d.precio * d.max;
+        const plataforma = Math.floor(total * Number(reparto.dataset.plataforma));
+        const autor = Math.floor(total * Number(reparto.dataset.autor));
+        // Drafts have no linked story, so the operator takes everything but Cacao Travel's share.
+        rr('operador').textContent = sats(total - plataforma);
+        rr('plataforma').textContent = sats(plataforma);
+        rr('total').textContent = sats(total);
+        // With a Media story the author takes a share too; the operator takes the remainder.
+        rr('explica-operador').textContent = sats(total - plataforma - autor);
+        rr('explica-autor').textContent = sats(autor);
+      } else {
+        for (const n of ['operador', 'plataforma', 'total', 'explica-operador', 'explica-autor']) {
+          rr(n).textContent = 'Pendiente';
+        }
+      }
+
+      contador.textContent = `${campo('bajada').value.length}/140`;
+    };
+
+    const reiniciar = () => {
+      form.reset();
+      editando = null;
+      intentado = false;
+      limpiarErrores();
+      mensaje('');
+      pintarVista();
+    };
+
+    const cargar = (b: Borrador) => {
+      campo('titulo').value = b.titulo;
+      campo('lugar').value = b.lugar;
+      campo('categoria').value = b.categoria;
+      campo('zona').value = b.zona;
+      campo('nivel').value = b.nivel;
+      campo('duracion').value = b.duracion;
+      campo('min').value = String(b.min);
+      campo('max').value = String(b.max);
+      campo('precio').value = String(b.precio);
+      form.querySelectorAll<HTMLInputElement>('input[name="salidas"]').forEach((i) => {
+        i.checked = b.salidas.includes(i.value);
+      });
+      campo('bajada').value = b.bajada;
+      campo('incluye').value = (b.incluye ?? []).join('\n');
+      editando = b.id;
+      intentado = false;
+      limpiarErrores();
+      pintarVista();
+      mensaje(`Editando "${b.titulo}". Guardá para actualizarlo o limpiá el formulario.`);
+      form.scrollIntoView({ block: 'start' });
+    };
+
+    const pintarLista = () => {
+      const borradores = leer().sort((a, b) => b.guardado - a.guardado);
+      lista.replaceChildren();
+      vacio.hidden = borradores.length > 0;
+
+      for (const b of borradores) {
+        const li = document.createElement('li');
+        li.className = 'borrador';
+
+        const cuerpo = document.createElement('div');
+        cuerpo.className = 'borrador__cuerpo';
+        const etiqueta = document.createElement('span');
+        etiqueta.className = 'borrador__etiqueta dato';
+        etiqueta.textContent = 'Borrador local';
+        const titulo = document.createElement('h3');
+        titulo.textContent = b.titulo;
+        const meta = document.createElement('p');
+        meta.className = 'borrador__meta';
+        meta.textContent = `${b.lugar} · ${sats(b.precio)} por persona`;
+        cuerpo.append(etiqueta, titulo, meta);
+
+        const acciones = document.createElement('div');
+        acciones.className = 'borrador__acciones';
+        const editar = document.createElement('button');
+        editar.type = 'button';
+        editar.textContent = 'Editar';
+        editar.setAttribute('aria-label', `Editar borrador ${b.titulo}`);
+        editar.addEventListener('click', () => cargar(b));
+        const borrar = document.createElement('button');
+        borrar.type = 'button';
+        borrar.textContent = 'Borrar';
+        borrar.setAttribute('aria-label', `Borrar borrador ${b.titulo}`);
+        borrar.addEventListener('click', () => {
+          if (!escribir(leer().filter((x) => x.id !== b.id))) {
+            mensaje('No se pudo actualizar este navegador.');
+            return;
+          }
+          if (editando === b.id) reiniciar();
+          mensaje('Borrador borrado de este navegador.');
+          pintarLista();
+        });
+        acciones.append(editar, borrar);
+
+        li.append(cuerpo, acciones);
+        lista.append(li);
+      }
+    };
+
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      intentado = true;
+      const d = validar(true);
+      if (!d) {
+        mensaje('Revisá los campos marcados.');
+        return;
+      }
+      const previos = leer();
+      const anterior = editando ? previos.find((b) => b.id === editando) : undefined;
+      const borrador: Borrador = { ...d, id: anterior?.id ?? crearId(), guardado: Date.now() };
+      if (!escribir([borrador, ...previos.filter((b) => b.id !== borrador.id)])) {
+        mensaje('No se pudo guardar en este navegador.');
+        return;
+      }
+      editando = borrador.id;
+      mensaje('Borrador guardado en este navegador.');
+      pintarLista();
+    });
+
+    const alCambiar = () => {
+      if (intentado) {
+        validar(false);
+        // Once no field is marked, the general "Revisá..." line is stale.
+        if (!form.querySelector('.campo__error:not(:empty)')) mensaje('');
+      }
+      pintarVista();
+    };
+    form.addEventListener('input', alCambiar);
+    form.addEventListener('change', alCambiar);
+
+    limpiar.addEventListener('click', reiniciar);
+
+    descargar.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(leer(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement('a');
+      enlace.href = url;
+      enlace.download = 'borradores-cacao-travel.json';
+      document.body.append(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    pintarVista();
+    pintarLista();
+  }
+
+  iniciar();
+</script>

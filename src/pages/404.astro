@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import Simbolo from '../components/Simbolo.astro';
+---
+
+<Base titulo="No encontramos esa página">
+  <div class="contenedor bloque">
+    <div class="simbolo">
+      <Simbolo tamano={96} />
+    </div>
+    <p class="etiqueta">Error 404</p>
+    <h1 class="display">Esta página no existe.</h1>
+    <p>Puede que el enlace esté viejo o mal escrito.</p>
+    <p class="accion"><a class="boton" href="/">Volver al inicio</a></p>
+  </div>
+</Base>
+
+<style>
+  .bloque {
+    padding-block: clamp(64px, 12vw, 160px);
+    text-align: center;
+  }
+
+  .simbolo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .bloque > .etiqueta {
+    margin-bottom: 16px;
+  }
+
+  .display {
+    margin-bottom: 24px;
+    font-size: var(--t-display);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+
+  .bloque > p + p {
+    margin-top: 16px;
+  }
+
+  .accion {
+    margin-top: 32px;
+  }
+</style>

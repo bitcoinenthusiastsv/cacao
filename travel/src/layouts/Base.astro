@@ -1,0 +1,118 @@
+---
+import '@fontsource-variable/bricolage-grotesque/wght.css';
+import '@fontsource/jetbrains-mono/latin-500.css';
+import '../styles/global.css';
+import Logo from '../components/Logo.astro';
+import Telon from '../components/Telon.astro';
+import { MEDIA_URL } from '../lib/tours';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  imagen?: string;
+}
+const {
+  titulo,
+  descripcion = 'Reservá experiencias en El Salvador: volcanes, playa, café y pueblos. Precios en sats.',
+  imagen,
+} = Astro.props;
+const tituloCompleto = titulo ? `${titulo} · Cacao Travel` : 'Cacao Travel · Experiencias en El Salvador';
+const canonica = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es-SV">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonica} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#2A1912" />
+    <!-- Demo catalogue: keep out of search engines until the experiences are real. -->
+    <meta name="robots" content="noindex" />
+    <meta property="og:site_name" content="Cacao Travel" />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    {imagen && <meta property="og:image" content={new URL(imagen, Astro.site)} />}
+  </head>
+  <body>
+    <Telon />
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <p class="aviso dato">Modo demo · experiencias de muestra · no se cobra nada</p>
+    <header class="cabecera contenedor">
+      <a href="/" aria-label="Cacao Travel, inicio"><Logo /></a>
+      <nav aria-label="Principal">
+        <a href="/#experiencias">Experiencias</a>
+        <a href="/mapa/">Mapa</a>
+        <a href="/reservas/">Mis reservas</a>
+        <a href="/operadores/">Operadores</a>
+        <a href={`${MEDIA_URL}/`}>Cacao Media</a>
+      </nav>
+    </header>
+    <main id="contenido" tabindex="-1">
+      <slot />
+    </main>
+    <footer class="pie contenedor">
+      <p class="pie__gigante" aria-hidden="true"><b>cacao</b>travel</p>
+      <div class="pie__fila">
+        <p>Experiencias en El Salvador, con precio en sats.</p>
+        <nav aria-label="Pie">
+          <a href="/#experiencias">Experiencias</a>
+          <a href="/mapa/">Mapa</a>
+          <a href="/reservas/">Mis reservas</a>
+          <a href="/operadores/">Operadores</a>
+          <a href="/api/tours.json">API</a>
+          <a href={`${MEDIA_URL}/`}>Cacao Media</a>
+          <a href="/creditos/">Créditos de fotos</a>
+        </nav>
+      </div>
+      <p class="dato pie__nota">Parte de Cacao Media · precios en sats · catálogo de muestra</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .saltar { position: absolute; left: -999px; top: 8px; background: var(--mazorca); color: var(--tostado); padding: 0.5em 1em; border-radius: 999px; z-index: 10; }
+  .saltar:focus { left: 8px; }
+  /* The skip link moves focus here; the content itself needs no focus ring. */
+  #contenido:focus, #contenido:focus-visible { outline: none; }
+
+  .aviso { margin: 0; padding: 8px var(--canal); background: var(--mazorca); color: var(--tostado); text-align: center; }
+
+  .cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding-block: 20px;
+  }
+  .cabecera > a { text-decoration: none; }
+  .cabecera nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+  .cabecera nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .cabecera nav a:hover { color: var(--mazorca); }
+
+  .pie { overflow: hidden; padding-block: clamp(56px, 9vw, 120px) clamp(28px, 4vw, 48px); display: grid; gap: 20px; }
+  .pie__gigante {
+    font-size: clamp(3rem, 17.5vw, 16.5rem);
+    font-weight: 400;
+    line-height: 0.8;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+    color: var(--chocolate);
+  }
+  .pie__gigante b { font-weight: 800; }
+  .pie__fila { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
+  .pie nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .pie a:hover { color: var(--mazorca); }
+  .pie__nota { color: var(--arena-oscura); }
+</style>

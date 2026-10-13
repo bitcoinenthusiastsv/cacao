@@ -1,0 +1,64 @@
+---
+import Simbolo from './Simbolo.astro';
+
+interface Props {
+  tipo: 'guía' | 'crónica' | 'historia';
+  /** Already formatted, e.g. "120 sats". */
+  precio: string;
+}
+const { tipo, precio } = Astro.props;
+---
+
+<aside class="muro" data-gate-muro aria-label="Cacao Gate">
+  <div class="muro__marca">
+    <Simbolo tamano={56} fondo="oscuro" decorativo />
+    <span class="muro__nombre"><b>cacao</b>gate</span>
+  </div>
+  <p class="muro__que">Cacao Gate: desbloqueás la historia completa, sin cuenta ni suscripción.</p>
+  <p class="muro__vencido" data-gate-vencido hidden>Tu acceso venció.</p>
+  <h2 class="muro__titulo">Desbloqueá esta {tipo} completa</h2>
+  <p class="etiqueta">por {precio} · sin cuenta, sin suscripción</p>
+  <p class="muro__error" role="alert" data-gate-error hidden></p>
+  <button class="boton" type="button" data-gate-boton data-texto-normal={`Desbloquear ${tipo}`}>Desbloquear {tipo}</button>
+  <p class="muro__nota">Acceso por 7 días en este dispositivo.</p>
+  <p class="etiqueta muro__demo">Modo demo · no se cobra nada</p>
+</aside>
+
+<style>
+  .muro {
+    background: var(--tostado);
+    color: var(--pulpa);
+    border-radius: var(--radio);
+    padding: clamp(28px, 6vw, 56px);
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+  }
+  .muro [hidden] { display: none; }
+
+  .muro__marca { display: flex; align-items: center; gap: 12px; }
+  .muro__nombre {
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .muro__nombre b { font-weight: 800; }
+
+  .muro__titulo {
+    font-size: var(--t-h1);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .muro__que { color: var(--arena-oscura); }
+  .muro__vencido { font-weight: 600; color: var(--mazorca); }
+  .muro__error {
+    background: var(--criollo);
+    color: var(--pulpa);
+    padding: 10px 14px;
+    border-radius: var(--radio-chico);
+  }
+  .muro__nota { font-size: 1rem; color: var(--arena-oscura); }
+  .muro__demo { color: var(--mazorca); }
+</style>

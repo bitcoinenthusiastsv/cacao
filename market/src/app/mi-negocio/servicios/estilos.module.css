@@ -1,0 +1,306 @@
+/* Provider service screens: list, form and the photo. Colours only through the brand variables;
+   no shadows or gradients. Text pairs: Tostado on Arena, Blanco and Mazorca; Pulpa on Tostado. */
+
+.cabecera {
+  display: grid;
+  gap: 14px;
+}
+
+.acciones {
+  display: grid;
+  gap: 12px;
+}
+
+/* Notices: one bordered box for the approval state and the saved message. */
+.noticia {
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  font-weight: 600;
+}
+
+/* Errors reuse the Mazorca pair so the text stays on an allowed background. */
+.error {
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--mazorca);
+  color: var(--tostado);
+  font-weight: 600;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+/* List */
+.lista {
+  display: grid;
+  gap: 12px;
+}
+
+.fila {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+}
+
+.filaTexto {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nombre {
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.nombre a {
+  text-decoration: none;
+}
+
+.nombre a:hover {
+  text-decoration: underline;
+}
+
+.meta {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.precioLista {
+  font-family: var(--mono);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.marcas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.marcas :global(.marca) {
+  white-space: normal;
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.controlesBoton {
+  min-height: var(--alto-toque);
+}
+
+/* Form */
+.formulario {
+  display: grid;
+  gap: 20px;
+}
+
+.grupo {
+  display: grid;
+  gap: 6px;
+  /* Fieldsets come with a border and padding by default. */
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* .campo comes from globals; :global keeps the selector on the shared class so it wins. */
+:global(.campo).textarea {
+  min-height: 120px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+/* The global .campo removes the native arrow; a select needs it back so people see it is a list. */
+:global(.campo).select {
+  -webkit-appearance: menulist;
+  appearance: auto;
+}
+
+.contador {
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+/* Price type: two cards, one per choice. The checked card is filled. */
+.tarjetas {
+  display: grid;
+  gap: 10px;
+}
+
+.tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--blanco);
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.tarjeta:has(input:checked) {
+  background: var(--tostado);
+  color: var(--pulpa);
+}
+
+.tarjeta:has(input:focus-visible) {
+  outline: 3px solid var(--criollo);
+  outline-offset: 2px;
+}
+
+.tarjeta input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--tostado);
+}
+
+.tarjeta:has(input:checked) input {
+  accent-color: var(--mazorca);
+}
+
+.precio {
+  display: flex;
+  align-items: stretch;
+}
+
+.precioSigno {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  border: 2px solid var(--tostado);
+  border-right: 0;
+  border-radius: var(--radio-chico) 0 0 var(--radio-chico);
+  background: var(--arena);
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+:global(.campo).precioCampo {
+  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+  font-family: var(--mono);
+  font-size: 1.125rem;
+}
+
+.equivalencia {
+  font-weight: 600;
+}
+
+/* Always visible under the form: the seller is paid by the buyer, not by CacaoMarket. */
+.notaCobro {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--alto-toque);
+  font-weight: 600;
+}
+
+.casilla input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--tostado);
+}
+
+/* One photo: the picture, or the file picker when there is none yet. */
+.foto {
+  display: grid;
+  gap: 8px;
+  max-width: 240px;
+}
+
+.fotoImagen {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+}
+
+.quitarFoto {
+  width: fit-content;
+  min-height: var(--alto-toque);
+  padding: 0 16px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--blanco);
+  color: var(--tostado);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quitarFoto:hover {
+  background: var(--arena);
+}
+
+.archivo {
+  width: 100%;
+  min-height: var(--alto-toque);
+  padding: 8px 0;
+  font-weight: 600;
+}
+
+.archivo::file-selector-button {
+  min-height: 40px;
+  margin-right: 12px;
+  padding: 0 16px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--tostado);
+  color: var(--pulpa);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (min-width: 560px) {
+  .cabecera {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .acciones {
+    grid-auto-flow: column;
+    justify-content: start;
+  }
+
+  .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) {
+  .fila {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}

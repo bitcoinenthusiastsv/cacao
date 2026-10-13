@@ -1,0 +1,175 @@
+---
+import Base from '../layouts/Base.astro';
+import Simbolo from '../components/Simbolo.astro';
+import { SECCIONES } from '../lib/secciones';
+import { AUTORES, urlAutor } from '../lib/autores';
+import { TRAVEL_URL } from '../lib/travel';
+---
+
+<Base titulo="Acerca" descripcion="Qué es Cacao Media, su línea editorial y cómo funciona Cacao Gate.">
+  <div class="columna">
+    <h1 class="display">Dos mitades, una historia.</h1>
+
+    <p>Cacao Media publica crónicas, guías y cultura de El Salvador. Escribimos desde aquí, para quienes viven aquí y para quienes quieren entender el país más allá de la postal.</p>
+
+    <p>Nuestro símbolo es un grano de cacao partido. Hace 500 años, en Cuscatlán, el grano de cacao era moneda: se usaba para pagar lo justo, poco a poco. Una mitad es quien escribe; la otra, quien lee. Entre las dos queda la historia que se comparte.</p>
+
+    <div class="simbolo">
+      <Simbolo tamano={120} />
+    </div>
+
+    <h2 id="linea-editorial">Línea editorial</h2>
+
+    <p>Cacao Media tiene opinión. Estas son las seis ideas desde las que se escribe todo lo demás.</p>
+
+    <ol class="linea">
+      <li>
+        <strong>El Salvador no es una postal.</strong> Tampoco es un titular de sucesos. Entre la foto del atardecer y la nota roja vive casi todo el país, y de eso escribimos.
+      </li>
+      <li>
+        <strong>Quien lee paga lo justo.</strong> Una suscripción te cobra por lo que no leés. Aquí pagás 120 sats por la historia que querés y nada más. Si no vale eso, no merecía cobrarse.
+      </li>
+      <li>
+        <strong>Bitcoin es una herramienta, no una bandera.</strong> Cobramos en satoshis porque permite pagar centavos sin cuenta, sin tarjeta y sin intermediario. No es una postura sobre el precio ni sobre la política.
+      </li>
+      <li>
+        <strong>Sin publicidad disfrazada.</strong> Ninguna marca, hotel o finca paga por aparecer. Si algún día hay contenido patrocinado, lo va a decir arriba y en grande. Las experiencias de Cacao Travel que aparecen bajo algunas historias son del mismo proyecto y siempre van rotuladas.
+      </li>
+      <li>
+        <strong>Lo local primero.</strong> Preferimos el nombre que usa la gente del lugar al que usa el folleto. Recomendamos comprar en la comunidad y contratar guías de ahí.
+      </li>
+      <li>
+        <strong>Los errores se corrigen a la vista.</strong> Si algo está mal, se arregla con una nota al pie de la historia, no en silencio.
+      </li>
+    </ol>
+
+    <h2 id="quien-escribe">Quién escribe</h2>
+
+    <ul class="firmas">
+      {
+        AUTORES.map((a) => (
+          <li>
+            <a href={urlAutor(a)}>{a.nombre}</a>
+            <span class="etiqueta">{a.rol}</span>
+            <p>{a.bio}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 id="cacao-gate">Cómo funciona Cacao Gate</h2>
+
+    <p>No hay suscripción ni cuenta. Cada historia tiene un precio pequeño, desde 120 sats (satoshis, la unidad más chica de bitcoin). Leés el comienzo gratis y, si querés seguir, desbloqueás solo esa historia.</p>
+
+    <ol>
+      <li>Abrí cualquier historia y leé el comienzo.</li>
+      <li>Tocá Desbloquear. Hoy es una demo y no se cobra nada; cuando el pago esté activo, pagás solo esa historia.</li>
+      <li>Tenés acceso por 7 días en ese dispositivo.</li>
+    </ol>
+
+    <div class="nota">
+      <p class="etiqueta">Modo demo</p>
+      <p>El sitio está en modo demo: el botón de desbloquear funciona, pero todavía no se cobra nada.</p>
+    </div>
+
+    <h2 id="cacao-travel">Cacao Travel</h2>
+
+    <p><a href={`${TRAVEL_URL}/`}>Cacao Travel</a> es el sitio hermano: un catálogo de experiencias en El Salvador que salen de los lugares que contamos aquí. Cuando una historia tiene una experiencia relacionada, la ves al final de la historia.</p>
+
+    <p>Si desbloqueaste una historia, tenés 10% de descuento en su experiencia. Y al revés: una reserva en Cacao Travel desbloquea por 30 días las historias sobre ese lugar.</p>
+
+    <p>Cada reserva se reparte así: 85% para el operador, 10% para Cacao Travel y 5% para quien escribió la historia que te llevó hasta ahí. Si la experiencia no tiene historias relacionadas, el operador se queda con 90%.</p>
+
+    <p>Por ahora todo esto es una demo: las experiencias son de muestra, se reservan sin cobro y no hay un operador real detrás.</p>
+
+    <h2>Secciones</h2>
+
+    <ul class="secciones">
+      {
+        SECCIONES.map((s) => (
+          <li>
+            <a class="pastilla" data-seccion={s.id} href={`/${s.ruta}/`}>{s.plural}</a>
+            <p>{s.descripcion}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Contacto</h2>
+
+    <p>Escribinos a <a href="mailto:hola@cacaomedia.sv">hola@cacaomedia.sv</a>.</p>
+  </div>
+</Base>
+
+<style>
+  .linea { padding-left: 1.2em; display: grid; gap: 0.9em; }
+  .firmas { list-style: none; padding: 0; margin: 0; }
+  .firmas li { display: grid; gap: 4px; padding: 1em 1.2em; background: var(--arena); border-radius: var(--radio-chico); }
+  .firmas a { font-size: var(--t-h2); font-weight: 800; text-decoration: none; }
+  .firmas a:hover { color: inherit; text-decoration: underline; }
+
+  .columna {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin-inline: auto;
+    padding-block: clamp(32px, 6vw, 72px);
+  }
+
+  .display {
+    margin-bottom: 0.6em;
+    font-size: var(--t-h1);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+
+  .columna > p,
+  .columna > ol,
+  .columna > .nota,
+  .columna > .secciones {
+    margin-top: 1.2em;
+  }
+
+  .simbolo {
+    display: flex;
+    justify-content: center;
+    margin-block: 32px;
+  }
+
+  .columna h2 {
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+  }
+
+  ol {
+    padding-left: 1.4em;
+  }
+
+  ol li + li {
+    margin-top: 0.4em;
+  }
+
+  .nota {
+    background: var(--arena);
+    border-radius: var(--radio-chico);
+    padding: 1em 1.2em;
+  }
+
+  .nota > .etiqueta {
+    margin-bottom: 0.4em;
+  }
+
+  .secciones {
+    list-style: none;
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .secciones li + li {
+    margin-top: 1.2em;
+  }
+
+  .secciones p {
+    margin-top: 0.4em;
+  }
+</style>

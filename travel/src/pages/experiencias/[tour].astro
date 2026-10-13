@@ -1,0 +1,596 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Boleto from '../../components/Boleto.astro';
+import { DESCUENTO_LECTOR, NOMBRE_DIA, PARTES } from '../../lib/reparto';
+import { MEDIA_URL, personas, sats, todosLosTours, type Tour } from '../../lib/tours';
+
+export async function getStaticPaths() {
+  const tours = await todosLosTours();
+  return tours.map((tour) => ({
+    params: { tour: tour.id },
+    props: {
+      tour,
+      // Same category first, then same zone, never the listing itself.
+      parecidas: [
+        ...tours.filter((t) => t.id !== tour.id && t.data.categoria === tour.data.categoria),
+        ...tours.filter((t) => t.id !== tour.id && t.data.categoria !== tour.data.categoria && t.data.zona === tour.data.zona),
+      ].slice(0, 3),
+    },
+  }));
+}
+
+interface Props {
+  tour: Tour;
+  parecidas: Tour[];
+}
+const { tour, parecidas } = Astro.props;
+const d = tour.data;
+const { Content } = await render(tour);
+const grupo = personas(d.grupo);
+const datos = [
+  ['Duración', d.duracion],
+  ['Nivel', d.nivel],
+  ['Grupo', d.grupo],
+  ['Zona', d.zona],
+];
+---
+
+<Base titulo={d.titulo} descripcion={d.bajada} imagen={d.portada}>
+  <article class="exp contenedor">
+    <nav class="migas" aria-label="Ruta">
+      <a href="/#experiencias">Experiencias</a>
+      <span aria-hidden="true">/</span>
+      <span>{d.categoria}</span>
+      <span aria-hidden="true">/</span>
+      <span>{d.lugar}</span>
+    </nav>
+
+    <header class="exp__cabeza">
+      <h1>{d.titulo}</h1>
+      <p class="exp__bajada">{d.bajada}</p>
+    </header>
+
+    <figure class="exp__foto">
+      <img src={d.portada} alt={d.alt} width="1600" height="1000" fetchpriority="high" />
+      {
+        (d.credito || d.lugarFoto) && (
+          <figcaption>
+            {
+              d.credito && (
+                <>
+                  Foto: {d.creditoUrl ? <a href={d.creditoUrl} rel="noopener">{d.credito}</a> : d.credito}
+                  {d.licencia && ` · ${d.licencia}`}
+                </>
+              )
+            }
+            {d.lugarFoto && `${d.credito ? ' · ' : ''}Tomada en ${d.lugarFoto}`}
+          </figcaption>
+        )
+      }
+    </figure>
+
+    <div class="exp__dos">
+      <aside
+        class="reserva"
+        aria-label="Reservar"
+        data-reserva
+        data-tour={tour.id}
+        data-precio={d.precio}
+        data-salidas={d.salidas.join(',')}
+        data-con-autor={d.historias.length > 0 ? '1' : ''}
+        data-descuento={DESCUENTO_LECTOR}
+        data-plataforma={PARTES.plataforma}
+        data-autor={PARTES.autor}
+      >
+        <form data-form novalidate>
+          <p class="reserva__precio">
+            <span>Desde</span>
+            <strong data-precio-unidad>{sats(d.precio)}</strong>
+            <span>por persona</span>
+          </p>
+          <label class="reserva__campo">
+            <span>Fecha · sale {d.salidas.map((s) => NOMBRE_DIA[s]).join(', ')}</span>
+            <input type="date" data-fecha required aria-describedby="error-reserva" />
+          </label>
+          <div class="reserva__campo">
+            <span id="etiqueta-personas">Personas</span>
+            <div class="contador" role="group" aria-labelledby="etiqueta-personas">
+              <button type="button" data-menos aria-label="Una persona menos">−</button>
+              <output data-personas data-min={grupo.min} data-max={grupo.max}>{Math.max(grupo.min, 2)}</output>
+              <button type="button" data-mas aria-label="Una persona más">+</button>
+            </div>
+          </div>
+          <div class="reserva__talon">
+            <dl class="reserva__cuenta">
+              <div data-fila-descuento hidden>
+                <dt>Descuento por historia desbloqueada (10%)</dt>
+                <dd data-descuento-monto></dd>
+              </div>
+              <div class="reserva__total">
+                <dt>Total</dt>
+                <dd data-total>{sats(d.precio * Math.max(grupo.min, 2))}</dd>
+              </div>
+            </dl>
+            <details class="reserva__reparto">
+              <summary>Cómo se reparte tu pago</summary>
+              <dl>
+                <div><dt>Operador</dt><dd data-r-operador></dd></div>
+                <div><dt>Cacao Travel</dt><dd data-r-plataforma></dd></div>
+                <div data-fila-autor><dt>Autor de la historia</dt><dd data-r-autor></dd></div>
+              </dl>
+            </details>
+            <p class="reserva__error" id="error-reserva" role="alert" data-error hidden></p>
+            <button class="boton" type="submit" data-reservar>Reservar</button>
+            <p class="reserva__nota">Modo demo · no se cobra nada. El pago con bitcoin llega más adelante.</p>
+          </div>
+        </form>
+
+        <div class="reserva__lista" data-confirmada hidden tabindex="-1">
+          <p class="reserva__sello">Reserva de muestra confirmada</p>
+          <p class="reserva__codigo" data-codigo></p>
+          <p data-resumen></p>
+          <div data-lecturas-reserva hidden>
+            <p class="reserva__abre">Tu reserva desbloquea estas historias en Cacao Media por 30 días:</p>
+            <ul data-lecturas-lista></ul>
+          </div>
+          <a class="boton" href="/reservas/">Ver mis reservas</a>
+        </div>
+      </aside>
+
+      <div class="exp__info">
+        <dl class="ficha">
+          {
+            datos.map(([k, v]) => (
+              <div>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <section class="bloque prosa">
+          <h2>La experiencia</h2>
+          <Content />
+        </section>
+
+        <section class="bloque listas">
+          <div>
+            <h2>Incluye</h2>
+            <ul>{d.incluye.map((i) => <li>{i}</li>)}</ul>
+          </div>
+          {
+            d.llevar.length > 0 && (
+              <div>
+                <h2>Qué llevar</h2>
+                <ul>{d.llevar.map((i) => <li>{i}</li>)}</ul>
+              </div>
+            )
+          }
+        </section>
+
+        <section class="bloque">
+          <h2>Antes de reservar</h2>
+          <dl class="condiciones">
+            <div>
+              <dt>Punto de encuentro</dt>
+              <dd>En {d.lugar}. En la demo no hay punto de encuentro real: no hay un operador detrás.</dd>
+            </div>
+            <div>
+              <dt>Clima</dt>
+              <dd>Las experiencias reales dependen del clima. En la demo nadie mueve la fecha.</dd>
+            </div>
+            <div>
+              <dt>Cancelación</dt>
+              <dd>No hay nada que cancelar: la reserva es de muestra y no se cobra.</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </article>
+
+  {
+    d.historias.length > 0 && (
+      <section
+        class="lecturas contenedor"
+        data-lecturas
+        data-api={`${MEDIA_URL}/api/historias.json`}
+        data-slugs={d.historias.join(',')}
+        hidden
+      >
+        <h2>Leé sobre este lugar en Cacao Media</h2>
+        <div class="lecturas__celdas" data-lecturas-celdas />
+      </section>
+    )
+  }
+
+  {
+    parecidas.length > 0 && (
+      <section class="parecidas contenedor">
+        <h2>Experiencias parecidas</h2>
+        <div class="parecidas__celdas">
+          {parecidas.map((t) => <Boleto tour={t} />)}
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .migas { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; font-size: 0.875rem; color: var(--arena-oscura); }
+  .migas a:hover { color: var(--mazorca); }
+
+  .exp__cabeza { display: grid; gap: 10px; padding-block: 16px clamp(18px, 3vw, 28px); }
+  h1 { font-size: clamp(1.875rem, 4.4vw, 3.25rem); line-height: 1; letter-spacing: -0.03em; max-width: 24ch; overflow-wrap: anywhere; }
+  .exp__bajada { font-size: 1.125rem; line-height: 1.45; max-width: 60ch; color: var(--arena); }
+
+  .exp__foto img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radio-chico); }
+  .exp__foto figcaption { margin-top: 8px; font-size: 0.8125rem; color: var(--arena-oscura); overflow-wrap: anywhere; }
+  @media (min-width: 900px) {
+    .exp__foto img { aspect-ratio: 21 / 9; }
+  }
+
+  .exp__dos { display: grid; gap: clamp(24px, 4vw, 56px); margin-top: clamp(24px, 4vw, 44px); align-items: start; }
+  @media (min-width: 960px) {
+    .exp__dos { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); }
+    .exp__info { grid-column: 1; grid-row: 1; }
+    .reserva { grid-column: 2; grid-row: 1; position: sticky; top: 20px; }
+  }
+  .exp__info { min-width: 0; display: grid; gap: clamp(28px, 4vw, 44px); }
+
+  .ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 0; }
+  .ficha > div { padding: 14px 16px; background: var(--chocolate); border-radius: var(--radio-chico); }
+  .ficha dt { font-size: 0.75rem; font-weight: 600; color: var(--arena-oscura); }
+  .ficha dd { margin: 2px 0 0; font-weight: 800; }
+
+  .bloque h2 { font-size: var(--t-h2); margin-bottom: 12px; }
+  .prosa { max-width: 44rem; }
+  .prosa :global(p) { margin-block: 0 1em; line-height: 1.6; color: var(--arena); }
+  .prosa :global(h2:not(:first-child)) { margin-top: 1.6em; }
+  .prosa :global(ol),
+  .prosa :global(ul) { padding-left: 1.3em; margin-block: 0 1em; color: var(--arena); }
+  .prosa :global(li) { margin: 0.45em 0; }
+  .prosa :global(li::marker) { color: var(--mazorca); font-family: var(--mono); }
+
+  .listas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 8px; }
+  .listas > div { padding: clamp(16px, 2.2vw, 24px); background: var(--chocolate); border-radius: var(--radio-chico); }
+  .listas ul { margin: 0; padding-left: 1.2em; font-size: 1rem; }
+  .listas li { margin: 0.4em 0; }
+
+  .condiciones { margin: 0; display: grid; }
+  .condiciones > div { display: grid; gap: 2px; padding-block: 12px; border-top: 1.5px solid var(--chocolate); }
+  .condiciones dt { font-weight: 800; }
+  .condiciones dd { margin: 0; color: var(--arena); font-size: 1rem; }
+
+  /* Booking box, built like a ticket: choices on the body, total on the stub. */
+  .reserva { --muesca: 22px; background: var(--pulpa); color: var(--tostado); border-radius: var(--radio); display: grid; }
+  .reserva__precio { display: grid; padding: 22px 24px 6px; }
+  .reserva__precio span, .reserva__total span, .reserva__campo > span { font-size: 0.8125rem; font-weight: 600; color: var(--tinta-suave); }
+  .reserva__precio strong { font-family: var(--mono); font-size: 1.75rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; }
+  .reserva__campo { display: grid; gap: 6px; padding: 10px 24px; }
+  .reserva__campo input {
+    width: 100%;
+    padding: 0.7em 0.9em;
+    border: 1.5px solid var(--arena-oscura);
+    border-radius: var(--radio-chico);
+    background: var(--pulpa);
+    color: var(--tostado);
+    font: 600 1rem/1.2 var(--fuente);
+  }
+  .contador { display: flex; align-items: center; justify-content: space-between; padding: 6px; border: 1.5px solid var(--arena-oscura); border-radius: var(--radio-chico); }
+  .contador button {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--arena);
+    color: var(--tostado);
+    font: 800 1.25rem/1 var(--fuente);
+    cursor: pointer;
+  }
+  .contador button:hover:not(:disabled) { background: var(--mazorca); }
+  .contador button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .contador output { font-family: var(--mono); font-size: 1.25rem; font-weight: 500; }
+  .reserva__talon {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 20px 24px 24px;
+    border-top: 2px dashed var(--arena-oscura);
+  }
+  .reserva__talon::before,
+  .reserva__talon::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--muesca) / -2 - 1px);
+    width: var(--muesca);
+    height: var(--muesca);
+    border-radius: 50%;
+    background: var(--tostado);
+  }
+  .reserva__talon::before { left: calc(var(--muesca) / -2); }
+  .reserva__talon::after { right: calc(var(--muesca) / -2); }
+  .reserva__cuenta, .reserva__reparto dl { margin: 0; display: grid; gap: 6px; }
+  .reserva__cuenta > div, .reserva__reparto dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .reserva__cuenta > div[hidden] { display: none; }
+  .reserva__cuenta dt, .reserva__reparto dt { font-size: 0.8125rem; font-weight: 600; color: var(--tinta-suave); }
+  .reserva__cuenta dd, .reserva__reparto dd { margin: 0; font-family: var(--mono); font-size: 0.9375rem; }
+  .reserva__total dd { font-size: 1.5rem; letter-spacing: -0.03em; }
+  .reserva__reparto summary { cursor: pointer; font-size: 0.875rem; font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+  .reserva__reparto dl { margin-top: 8px; }
+  .reserva__reparto [hidden] { display: none; }
+  .reserva__error { padding: 10px 12px; border-radius: 10px; background: var(--criollo); color: var(--pulpa); font-size: 0.9375rem; }
+  .reserva__error[hidden], .reserva__lista[hidden] { display: none; }
+  .reserva .boton { width: 100%; }
+  .reserva .boton:hover:not(:disabled) { background: var(--tostado); color: var(--pulpa); }
+  .reserva .boton:disabled { opacity: 0.6; cursor: progress; }
+  .reserva__nota { font-size: 0.8125rem; color: var(--tinta-suave); }
+
+  .reserva__lista { display: grid; gap: 12px; padding: 24px; }
+  .reserva__lista:focus-visible { outline: 3px solid var(--mazorca); outline-offset: -3px; border-radius: var(--radio); }
+  .reserva__sello { font-size: 0.8125rem; font-weight: 800; color: var(--criollo); }
+  .reserva__codigo { font-family: var(--mono); font-size: 2rem; letter-spacing: 0.06em; line-height: 1; overflow-wrap: anywhere; }
+  .reserva__abre { font-weight: 800; }
+  .reserva__lista ul { margin: 6px 0 0; padding-left: 1.2em; }
+  .reserva__lista li { margin: 0.3em 0; }
+
+  .lecturas, .parecidas { margin-top: clamp(48px, 8vw, 96px); }
+  .lecturas h2, .parecidas h2 { font-size: var(--t-h2); }
+  .lecturas__celdas, .parecidas__celdas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: clamp(16px, 2vw, 24px);
+    margin-top: clamp(16px, 2.5vw, 28px);
+  }
+  /* Reading cards are built by the script below, so they are styled globally. */
+  .lecturas :global(.lectura) { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; padding: 10px; background: var(--chocolate); border-radius: var(--radio-chico); text-decoration: none; }
+  .lecturas :global(.lectura img) { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; }
+  .lecturas :global(.lectura strong) { display: block; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
+  .lecturas :global(.lectura span) { display: block; font-size: 0.8125rem; color: var(--arena-oscura); margin-bottom: 2px; }
+  .lecturas :global(.lectura:hover strong) { text-decoration: underline; }
+</style>
+
+<script>
+  import { mananaEnElSalvador } from '../../lib/reparto';
+
+  // Booking box: date and group size, with the total recomputed on every change.
+  const caja = document.querySelector<HTMLElement>('[data-reserva]');
+  if (caja) {
+    const precio = Number(caja.dataset.precio);
+    const salida = caja.querySelector<HTMLOutputElement>('[data-personas]')!;
+    const total = caja.querySelector<HTMLElement>('[data-total]')!;
+    const menos = caja.querySelector<HTMLButtonElement>('[data-menos]')!;
+    const mas = caja.querySelector<HTMLButtonElement>('[data-mas]')!;
+    const fecha = caja.querySelector<HTMLInputElement>('[data-fecha]')!;
+    const min = Number(salida.dataset.min);
+    const max = Number(salida.dataset.max);
+
+    const form = caja.querySelector<HTMLFormElement>('[data-form]')!;
+    const error = caja.querySelector<HTMLElement>('[data-error]')!;
+    const boton = caja.querySelector<HTMLButtonElement>('[data-reservar]')!;
+    const filaDescuento = caja.querySelector<HTMLElement>('[data-fila-descuento]')!;
+    const tour = caja.dataset.tour ?? '';
+    const salidas = (caja.dataset.salidas ?? '').split(',');
+    const conAutor = Boolean(caja.dataset.conAutor);
+    const DIAS = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
+    const sats = (n: number) => `${n.toLocaleString('en-US')} sats`;
+    const poner = (sel: string, texto: string) => {
+      const el = caja.querySelector<HTMLElement>(sel);
+      if (el) el.textContent = texto;
+    };
+    let esLector = false;
+    // Fallback title from a slug: "el-lago" becomes "El lago".
+    const tituloDeSlug = (s: string) => s.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+    // Same arithmetic as the server (src/lib/reparto.ts). The server recomputes it when booking.
+    const pintar = (n: number) => {
+      // The stepper only ever shows a whole number of people.
+      const entero = Number.isFinite(n) ? Math.trunc(n) : min;
+      const personas = Math.min(max, Math.max(min, entero));
+      const subtotal = precio * personas;
+      const descuento = esLector ? Math.round(subtotal * Number(caja.dataset.descuento)) : 0;
+      const aPagar = subtotal - descuento;
+      const plataforma = Math.floor(aPagar * Number(caja.dataset.plataforma));
+      const autor = conAutor ? Math.floor(aPagar * Number(caja.dataset.autor)) : 0;
+      salida.value = String(personas);
+      total.textContent = sats(aPagar);
+      filaDescuento.hidden = descuento === 0;
+      poner('[data-descuento-monto]', `−${sats(descuento)}`);
+      poner('[data-r-operador]', sats(aPagar - plataforma - autor));
+      poner('[data-r-plataforma]', sats(plataforma));
+      poner('[data-r-autor]', sats(autor));
+      caja.querySelector<HTMLElement>('[data-fila-autor]')!.hidden = !conAutor;
+      menos.disabled = personas <= min;
+      mas.disabled = personas >= max;
+    };
+    menos.addEventListener('click', () => pintar(Number(salida.value) - 1));
+    mas.addEventListener('click', () => pintar(Number(salida.value) + 1));
+
+    const mostrarError = (mensaje: string) => {
+      error.textContent = mensaje;
+      error.hidden = !mensaje;
+    };
+    // Weekday of a YYYY-MM-DD date without time-zone drift.
+    const diaDe = (f: string) => DIAS[new Date(`${f}T12:00:00Z`).getUTCDay()];
+    const validarFecha = (): boolean => {
+      if (!fecha.value) return mostrarError('Elegí una fecha.'), false;
+      if (fecha.value < fecha.min) return mostrarError('La fecha tiene que ser a partir de mañana.'), false;
+      if (!salidas.includes(diaDe(fecha.value))) return mostrarError('Esta experiencia no sale ese día. Fijate en los días de salida.'), false;
+      return mostrarError(''), true;
+    };
+    fecha.addEventListener('change', validarFecha);
+
+    // Bookings start tomorrow in El Salvador, the same day the server counts from.
+    fecha.min = mananaEnElSalvador();
+    // Pick up what the visitor chose in the search bar, but only a date the booking can take.
+    const consulta = new URLSearchParams(location.search);
+    const pedida = consulta.get('fecha') ?? '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(pedida)) {
+      if (pedida < fecha.min) mostrarError('Esa fecha ya pasó. Elegí otra.');
+      else {
+        fecha.value = pedida;
+        validarFecha();
+      }
+    }
+    // Only a whole number of people from the search bar counts; anything else keeps the default.
+    const pedidas = Number.parseInt(consulta.get('personas') ?? '', 10);
+    pintar(Number.isFinite(pedidas) && pedidas >= 1 ? pedidas : Number(salida.value));
+
+    // Reader discount. Cacao Media's widget links here with the reader's token in the URL fragment
+    // (never sent to a server by the browser). Keep it for the session and ask our API if it counts.
+    const LECTOR = 'ct-lector';
+    const llegada = new URLSearchParams(location.hash.slice(1)).get('lector');
+    if (llegada) {
+      try {
+        sessionStorage.setItem(LECTOR, llegada);
+      } catch {}
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    let tokenLector = llegada ?? '';
+    try {
+      tokenLector ||= sessionStorage.getItem(LECTOR) ?? '';
+    } catch {}
+    // While the reader discount is checked, Reservar waits (at most 4 seconds) so the total on screen is the one booked.
+    let comprobando = false;
+    let espera = 0;
+    const terminarComprobacion = () => {
+      if (!comprobando) return;
+      comprobando = false;
+      clearTimeout(espera);
+      boton.disabled = false;
+      boton.textContent = 'Reservar';
+    };
+    if (tokenLector) {
+      comprobando = true;
+      boton.disabled = true;
+      boton.textContent = 'Comprobando descuento';
+      espera = window.setTimeout(terminarComprobacion, 4000);
+      fetch('/api/lector/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenLector, tour }),
+      })
+        .then((r) => (r.ok ? r.json() : { valido: false }))
+        .then((r: { valido: boolean }) => {
+          esLector = r.valido;
+          pintar(Number(salida.value));
+        })
+        .catch(() => {})
+        .finally(terminarComprobacion);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validarFecha()) return fecha.focus();
+      boton.disabled = true;
+      boton.textContent = 'Reservando';
+      try {
+        const r = await fetch('/api/reservar/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // The token goes only once the discount is confirmed, so the server books the total on screen.
+          body: JSON.stringify({ tour, fecha: fecha.value, personas: Number(salida.value), lector: esLector ? tokenLector : undefined }),
+        });
+        // A reply that is not JSON gets the generic message, not the parser's text.
+        let reserva: any = null;
+        try {
+          reserva = await r.json();
+        } catch {}
+        if (!r.ok) throw new Error(reserva?.error ?? 'No se pudo reservar. Probá de nuevo.');
+        if (!reserva || typeof reserva !== 'object') throw new Error('No se pudo reservar. Probá de nuevo.');
+
+        // Each story takes its title from the reading cards on this page; the slug is only a fallback.
+        const tarjetas = [...document.querySelectorAll<HTMLAnchorElement>('[data-lecturas] a.lectura')];
+        const lecturas: { slug: string; url: string }[] = Array.isArray(reserva.lecturas) ? reserva.lecturas : [];
+        reserva.lecturas = lecturas.map((l) => ({
+          slug: l.slug,
+          url: l.url,
+          titulo: tarjetas.find((a) => a.href === l.url)?.querySelector('strong')?.textContent?.trim() || tituloDeSlug(l.slug),
+        }));
+
+        // No accounts: the confirmation lives in this browser. See /reservas/.
+        try {
+          const previas = JSON.parse(localStorage.getItem('ct-reservas') ?? '[]');
+          localStorage.setItem('ct-reservas', JSON.stringify([reserva, ...(Array.isArray(previas) ? previas : [])].slice(0, 30)));
+        } catch {}
+
+        const lista = caja.querySelector<HTMLElement>('[data-confirmada]')!;
+        poner('[data-codigo]', reserva.codigo);
+        const cuando = new Date(`${reserva.fecha}T12:00:00`).toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        poner('[data-resumen]', `${cuando} · ${reserva.personas} personas · ${sats(reserva.total)}`);
+        const ul = caja.querySelector<HTMLElement>('[data-lecturas-lista]')!;
+        const media = caja.closest('main')?.querySelector<HTMLElement>('[data-lecturas]')?.dataset.api ?? '';
+        const origen = media ? new URL(media).origin : '';
+        for (const l of reserva.lecturas as { titulo: string; url: string }[]) {
+          if (!origen || !l.url.startsWith(origen)) continue;
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = reserva.pase ? `${l.url}#pase=${encodeURIComponent(reserva.pase)}` : l.url;
+          a.textContent = l.titulo;
+          li.append(a);
+          ul.append(li);
+        }
+        caja.querySelector<HTMLElement>('[data-lecturas-reserva]')!.hidden = ul.children.length === 0;
+        form.hidden = true;
+        lista.hidden = false;
+        lista.focus();
+      } catch (err) {
+        mostrarError(err instanceof Error ? err.message : 'No se pudo reservar.');
+        boton.disabled = false;
+        boton.textContent = 'Reservar';
+      }
+    });
+  }
+</script>
+
+<script>
+  // Related reading comes from Cacao Media's public API. If it is unreachable the section stays hidden.
+  interface Lectura {
+    id: string;
+    titulo: string;
+    seccion: string;
+    lugar: string;
+    minutos: number;
+    url: string;
+    foto: string;
+  }
+
+  const seccion = document.querySelector<HTMLElement>('[data-lecturas]');
+  const celdas = seccion?.querySelector<HTMLElement>('[data-lecturas-celdas]');
+  if (seccion && celdas) {
+    const slugs = (seccion.dataset.slugs ?? '').split(',');
+    const origen = new URL(seccion.dataset.api ?? location.href).origin;
+    try {
+      const r = await fetch(seccion.dataset.api ?? '');
+      if (r.ok) {
+        const { historias } = (await r.json()) as { historias: Lectura[] };
+        const elegidas = slugs
+          .map((s) => historias.find((h) => h.id === s))
+          .filter((h): h is Lectura => Boolean(h) && h!.url.startsWith(origen) && h!.foto.startsWith(origen));
+        for (const h of elegidas) {
+          const a = document.createElement('a');
+          a.className = 'lectura';
+          a.href = h.url;
+          const img = document.createElement('img');
+          img.src = h.foto;
+          img.alt = '';
+          img.loading = 'lazy';
+          const texto = document.createElement('div');
+          const dato = document.createElement('span');
+          dato.textContent = `${h.seccion} · ${h.minutos} min`;
+          const titulo = document.createElement('strong');
+          titulo.textContent = h.titulo;
+          texto.append(dato, titulo);
+          a.append(img, texto);
+          celdas.append(a);
+        }
+        seccion.hidden = elegidas.length === 0;
+      }
+    } catch {
+      // Offline or blocked: leave the section hidden.
+    }
+  }
+</script>

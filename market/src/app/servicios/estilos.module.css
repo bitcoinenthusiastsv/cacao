@@ -1,0 +1,27 @@
+/* The price block of a service, used by the list cards and the service page. */
+.precio {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  margin-top: auto;
+}
+
+.unidad {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* "A cotizar": outlined, so it reads as a label, not as a price tag. */
+.cotizar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 2px 12px;
+  border: 2px solid var(--tostado);
+  border-radius: 999px;
+  background: var(--pulpa);
+  color: var(--tostado);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1;
+}

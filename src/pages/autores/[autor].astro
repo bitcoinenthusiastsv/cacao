@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import ListaHistorias from '../../components/ListaHistorias.astro';
+import { AUTORES, type Autor } from '../../lib/autores';
+import { todasLasHistorias, type Historia } from '../../lib/historias';
+
+export async function getStaticPaths() {
+  const todas = await todasLasHistorias();
+  return AUTORES.map((autor) => ({
+    params: { autor: autor.id },
+    props: { autor, historias: todas.filter((h) => h.data.autor === autor.nombre) },
+  }));
+}
+
+interface Props {
+  autor: Autor;
+  historias: Historia[];
+}
+const { autor, historias } = Astro.props;
+---
+
+<Base titulo={autor.nombre} descripcion={`${autor.nombre}, ${autor.rol.toLowerCase()} de Cacao Media.`}>
+  <div class="contenedor">
+    <header class="autor">
+      <p class="etiqueta">{autor.rol}</p>
+      <h1>{autor.nombre}</h1>
+      <p class="autor__bio">{autor.bio}</p>
+      <p class="etiqueta">
+        {historias.length} historias · <a href="/acerca/#linea-editorial">Línea editorial</a>
+      </p>
+    </header>
+    <ListaHistorias historias={historias} />
+  </div>
+</Base>
+
+<style>
+  .autor {
+    display: grid;
+    gap: 16px;
+    margin-block: 20px clamp(28px, 5vw, 56px);
+    padding: clamp(28px, 6vw, 72px);
+    background: var(--tostado);
+    color: var(--pulpa);
+    border-radius: var(--radio);
+  }
+  h1 {
+    font-size: var(--t-display);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+  .autor__bio { font-size: 1.25rem; line-height: 1.45; max-width: 44ch; }
+  .autor a { color: inherit; }
+  .autor a:hover { color: var(--mazorca); }
+</style>

@@ -1,0 +1,81 @@
+---
+import { fechaCorta, fechaIso, precio } from '../lib/formato';
+import { urlHistoria, type Historia } from '../lib/historias';
+import { seccionPorId } from '../lib/secciones';
+
+interface Props {
+  historias: Historia[];
+}
+const { historias } = Astro.props;
+---
+
+{
+  historias.length === 0 ? (
+    <p>Todavía no hay historias aquí.</p>
+  ) : (
+    <ul class="lista">
+      {historias.map((h) => {
+        const seccion = seccionPorId(h.data.seccion);
+        return (
+          <li class="fila" data-seccion={h.data.seccion}>
+            <time class="etiqueta fecha" datetime={fechaIso(h.data.fecha)}>{fechaCorta(h.data.fecha)}</time>
+            <a class="pastilla seccion" href={`/${seccion.ruta}/`}>{seccion.singular}</a>
+            <a class="titulo" href={urlHistoria(h)}>{h.data.titulo}</a>
+            <span class="etiqueta dato">
+              {h.data.minutos} min · {h.data.gratis ? 'Gratis' : precio(h.data.precio)}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  )
+}
+
+<style>
+  .lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .fila {
+    display: grid;
+    grid-template-columns: 8.5rem 7rem minmax(0, 1fr) auto;
+    grid-template-areas: 'fecha seccion titulo dato';
+    align-items: baseline;
+    gap: 16px;
+    padding-block: 16px;
+    border-top: 1.5px solid var(--tostado);
+  }
+
+  .fecha { grid-area: fecha; }
+  .seccion { grid-area: seccion; justify-self: start; }
+
+  .titulo {
+    grid-area: titulo;
+    min-width: 0;
+    font-size: var(--t-h2);
+    font-weight: 600;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+  }
+  .titulo:hover { text-decoration: underline; }
+
+  .dato {
+    grid-area: dato;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .fila {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        'fecha seccion'
+        'titulo titulo'
+        'dato dato';
+    }
+    .dato { text-align: left; }
+  }
+</style>

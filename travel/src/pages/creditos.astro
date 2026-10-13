@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import { todosLosTours, urlTour, MEDIA_URL } from '../lib/tours';
+
+// Only photos with a credit line are listed.
+const tours = (await todosLosTours()).filter((t) => t.data.credito);
+---
+
+<Base titulo="Créditos de fotos" descripcion="Autoría y licencias de las fotos de Cacao Travel.">
+  <div class="contenedor columna">
+    <h1>Créditos de fotos</h1>
+    <p class="texto">Las fotos de las experiencias vienen de Wikimedia Commons y se usan bajo la licencia que indica cada una. Fueron recortadas para el sitio.</p>
+
+    <ul class="creditos">
+      {tours.map((t) => (
+        <li>
+          <a class="creditos__titulo" href={urlTour(t)}>{t.data.titulo}</a>
+          <p class="dato creditos__dato">
+            {t.data.creditoUrl ? <a href={t.data.creditoUrl} rel="noopener">{t.data.credito}</a> : t.data.credito}
+            {t.data.licencia && ` · ${t.data.licencia}`}
+            {t.data.lugarFoto && ` · Tomada en ${t.data.lugarFoto}`}
+          </p>
+        </li>
+      ))}
+    </ul>
+
+    <p class="texto">Las fotos de las historias están acreditadas en <a href={`${MEDIA_URL}/creditos/`}>Créditos de Cacao Media</a>.</p>
+  </div>
+</Base>
+
+<style>
+  .columna {
+    max-width: 44rem;
+    display: grid;
+    gap: 28px;
+    padding-block: clamp(48px, 8vw, 96px);
+    min-width: 0;
+  }
+  h1 { font-size: var(--t-h1); overflow-wrap: anywhere; }
+  .texto { color: var(--arena); }
+  .texto a,
+  .creditos__dato a { text-decoration: underline; }
+  .texto a:hover,
+  .creditos a:hover { color: var(--mazorca); }
+
+  .creditos { display: grid; margin: 0; padding: 0; list-style: none; min-width: 0; }
+  .creditos li {
+    display: grid;
+    gap: 6px;
+    padding-block: 18px;
+    border-top: 1.5px solid var(--chocolate);
+    min-width: 0;
+  }
+  .creditos__titulo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-decoration: underline;
+    overflow-wrap: anywhere;
+  }
+  .creditos__dato { color: var(--arena); overflow-wrap: anywhere; }
+</style>

@@ -1,0 +1,69 @@
+---
+import Base from '../layouts/Base.astro';
+import EntradaFeed from '../components/EntradaFeed.astro';
+import Portada from '../components/Portada.astro';
+import PromoBoletin from '../components/PromoBoletin.astro';
+import PromoGate from '../components/PromoGate.astro';
+import RielSeccion from '../components/RielSeccion.astro';
+import WidgetTravel from '../components/WidgetTravel.astro';
+import { todasLasHistorias } from '../lib/historias';
+import { SECCIONES } from '../lib/secciones';
+
+const RECIENTES = 4;
+const POR_RIEL = 3;
+
+const historias = await todasLasHistorias();
+const [principal, ...resto] = historias;
+const recientes = resto.slice(0, RECIENTES);
+
+// Rails skip what is already on the page above them.
+const yaVistas = new Set([principal, ...recientes].map((h) => h?.id));
+const rieles = SECCIONES.map((seccion) => ({
+  seccion,
+  historias: historias
+    .filter((h) => h.data.seccion === seccion.id && !yaVistas.has(h.id))
+    .slice(0, POR_RIEL),
+}));
+---
+
+<Base>
+  <div class="lema contenedor">
+    <h1>Historias de El Salvador, grano a grano.</h1>
+    <p>Sin suscripciones: pagás solo lo que leés.</p>
+  </div>
+
+  {principal && <Portada historia={principal} />}
+
+  <div class="recientes contenedor">
+    {recientes.map((h, i) => <EntradaFeed historia={h} invertida={i % 2 === 1} />)}
+  </div>
+
+  <div class="promo contenedor"><PromoGate /></div>
+
+  {rieles.map((r) => <RielSeccion seccion={r.seccion} historias={r.historias} />)}
+
+  <WidgetTravel limite={3} />
+
+  <div class="promo contenedor"><PromoBoletin /></div>
+
+  <p class="contenedor mas">
+    <a class="boton boton--oscuro" href="/archivo/">Ver las {historias.length} historias</a>
+  </p>
+</Base>
+
+<style>
+  .lema {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 24px;
+    padding-top: 20px;
+  }
+  .lema h1 { font-size: var(--t-h2); font-weight: 800; letter-spacing: -0.02em; }
+  .lema p { color: var(--tinta-suave); }
+
+  .recientes { margin-top: clamp(28px, 5vw, 56px); }
+  .promo { margin-top: clamp(48px, 8vw, 104px); }
+  .mas { margin-top: clamp(40px, 6vw, 72px); text-align: center; }
+</style>

@@ -1,0 +1,187 @@
+/* Necesito and cotizaciones screens. Colours only through the brand variables; no shadows or gradients.
+   Long titles and messages wrap anywhere, and grid tracks are minmax(0, 1fr), so nothing scrolls sideways at 320px. */
+
+.cabecera {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* A back link tall enough to tap. */
+.volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-toque);
+}
+
+.cabecera p {
+  max-width: 36em;
+  font-size: 1.0625rem;
+}
+
+.filtros {
+  margin-bottom: 16px;
+}
+
+.seccion,
+.bloque,
+.ficha {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.seccion {
+  margin-top: 24px;
+}
+
+.ficha {
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjeta,
+.oferta {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  overflow-wrap: anywhere;
+}
+
+.categoria {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.titulo,
+.subtitulo {
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.titulo a,
+.subtitulo a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tituloGrande {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.9375rem;
+  min-width: 0;
+}
+
+.descripcion {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.etiquetaTexto {
+  font-weight: 700;
+}
+
+.mensaje {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.precioOferta {
+  font-family: var(--mono);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.ayuda {
+  font-size: 0.9375rem;
+}
+
+.aviso {
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--arena);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ok,
+.error {
+  padding: 12px 14px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ok {
+  background: var(--blanco);
+}
+
+/* Errors reuse the Mazorca pair so the text stays on an allowed background. */
+.error {
+  background: var(--mazorca);
+  color: var(--tostado);
+}
+
+/* Forms */
+.formulario {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.grupo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.select {
+  appearance: auto;
+}
+
+.textarea {
+  min-height: 120px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.precio {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+}

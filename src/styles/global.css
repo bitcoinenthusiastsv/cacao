@@ -1,0 +1,121 @@
+/* Cacao Media — brand tokens from Brandbook v1.0. No shadows, no gradients. */
+:root {
+  --tostado: #2a1912;
+  --chocolate: #5a3221;
+  --criollo: #8c2f2b;
+  --grano-fresco: #5e3050;
+  --mazorca: #d9902f;
+  --mazorca-oscuro: #b86e1f;
+  --pulpa: #f5ede3;
+  --blanco-calido: #fffaf4;
+  --arena: #e6d8c6;
+  --arena-oscura: #c9b6a4;
+  --tinta-suave: #6b5648;
+
+  --fuente: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --t-display: clamp(2.75rem, 7vw, 5.5rem);
+  --t-h1: clamp(2rem, 4.5vw, 3rem);
+  --t-h2: clamp(1.375rem, 2.6vw, 1.75rem);
+  --t-texto: 1.125rem;
+  --t-etiqueta: 0.8125rem;
+
+  --radio: 28px;
+  --radio-chico: 14px;
+  --canal: clamp(16px, 4vw, 48px);
+  --ancho: 1240px;
+  --ancho-lectura: 42rem;
+
+  /* Overridden per section via [data-seccion] */
+  --acento: var(--mazorca);
+  --sobre-acento: var(--tostado);
+}
+
+[data-seccion='cronica'] { --acento: var(--criollo); --sobre-acento: var(--pulpa); }
+[data-seccion='guia'] { --acento: var(--mazorca); --sobre-acento: var(--tostado); }
+[data-seccion='cultura'] { --acento: var(--grano-fresco); --sobre-acento: var(--pulpa); }
+[data-seccion='cafe'] { --acento: var(--chocolate); --sobre-acento: var(--pulpa); }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--tostado);
+  color: var(--tostado);
+  font-family: var(--fuente);
+  font-size: var(--t-texto);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { line-height: 1.05; letter-spacing: -0.02em; text-wrap: balance; }
+h1 { font-size: var(--t-h1); font-weight: 800; }
+h2 { font-size: var(--t-h2); font-weight: 600; }
+
+a { color: inherit; text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; }
+a:hover { color: var(--mazorca-oscuro); }
+
+:focus-visible { outline: 3px solid var(--mazorca); outline-offset: 3px; border-radius: 4px; }
+
+/* Mono label: CRÓNICA · 8 MIN · 120 SATS */
+.etiqueta {
+  font-family: var(--mono);
+  font-size: var(--t-etiqueta);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.35em 0.9em;
+  border-radius: 999px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+  font-family: var(--mono);
+  font-size: var(--t-etiqueta);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.pastilla:hover { background: var(--tostado); color: var(--pulpa); }
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.8em 1.4em;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mazorca);
+  color: var(--tostado);
+  font: 600 1rem/1 var(--fuente);
+  text-decoration: none;
+  cursor: pointer;
+}
+.boton:hover { background: var(--tostado); color: var(--pulpa); }
+.boton--oscuro { background: var(--tostado); color: var(--pulpa); }
+.boton--oscuro:hover { background: var(--mazorca); color: var(--tostado); }
+
+.contenedor { width: min(100% - 2 * var(--canal), var(--ancho)); margin-inline: auto; }
+
+.solo-lectores {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a, .boton, .pastilla { transition: background-color 0.15s, color 0.15s; }
+}

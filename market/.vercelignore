@@ -1,0 +1,9 @@
+# Not needed to build the site.
+.qa
+tests
+supabase
+scripts
+.env*
+playwright.config.ts
+vitest.config.ts
+*-out

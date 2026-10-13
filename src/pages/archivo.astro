@@ -1,0 +1,98 @@
+---
+import Base from '../layouts/Base.astro';
+import ListaHistorias from '../components/ListaHistorias.astro';
+import { todasLasHistorias, type Historia } from '../lib/historias';
+import { slugTag } from '../lib/secciones';
+
+const historias = await todasLasHistorias();
+
+// Already sorted newest first, so each year's list stays newest first.
+const porAnio = new Map<number, Historia[]>();
+for (const h of historias) {
+  const anio = h.data.fecha.getUTCFullYear();
+  porAnio.set(anio, [...(porAnio.get(anio) ?? []), h]);
+}
+const anios = [...porAnio.keys()].sort((a, b) => b - a);
+
+// One entry per distinct slug, labelled with the first spelling found.
+const temas = new Map<string, string>();
+for (const h of historias) {
+  for (const tag of h.data.tags) {
+    const slug = slugTag(tag);
+    if (!temas.has(slug)) temas.set(slug, tag);
+  }
+}
+const listaTemas = [...temas]
+  .map(([slug, nombre]) => ({ slug, nombre }))
+  .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+const total = historias.length === 1 ? '1 historia' : `${historias.length} historias`;
+---
+
+<Base titulo="Archivo" descripcion="Todas las historias de Cacao Media.">
+  <div class="contenedor">
+    <div class="cabecera">
+      <h1 class="display">Archivo</h1>
+      <p class="etiqueta">{total}</p>
+    </div>
+
+    {
+      anios.map((anio) => (
+        <section class="anio">
+          <h2 class="etiqueta">{anio}</h2>
+          <ListaHistorias historias={porAnio.get(anio)!} />
+        </section>
+      ))
+    }
+
+    <section class="temas">
+      <h2>Temas</h2>
+      <div class="temas__lista">
+        {listaTemas.map((t) => (
+          <a class="pastilla" href={`/tags/${t.slug}/`}>{t.nombre}</a>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .cabecera {
+    padding-block: clamp(32px, 6vw, 72px);
+  }
+
+  .display {
+    font-size: var(--t-display);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+  }
+
+  .cabecera > .etiqueta {
+    margin-top: 16px;
+  }
+
+  .anio {
+    margin-bottom: 48px;
+  }
+
+  .anio > .etiqueta {
+    margin-bottom: 8px;
+  }
+
+  .temas {
+    margin-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  .temas h2 {
+    margin-bottom: 16px;
+  }
+
+  .temas__lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>

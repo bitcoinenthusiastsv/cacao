@@ -1,0 +1,113 @@
+---
+import type { Historia } from '../lib/historias';
+import { urlHistoria } from '../lib/historias';
+import { seccionPorId } from '../lib/secciones';
+import { fechaCorta, fechaIso, precio } from '../lib/formato';
+
+interface Props {
+  historia: Historia;
+  destacada?: boolean;
+  /** Photo on the right instead of the left. */
+  invertida?: boolean;
+}
+const { historia, destacada = false, invertida = false } = Astro.props;
+const { titulo, bajada, seccion: seccionId, fecha, lugar, minutos, gratis, portada, alt } = historia.data;
+const seccion = seccionPorId(seccionId);
+const url = urlHistoria(historia);
+---
+
+<article class:list={['entrada', destacada && 'entrada--destacada', invertida && 'entrada--invertida']} data-seccion={seccionId}>
+  <a class="entrada__imagen" href={url} tabindex="-1" aria-hidden="true">
+    <img
+      src={portada}
+      alt={alt}
+      width="1600"
+      height="1000"
+      loading={destacada ? 'eager' : 'lazy'}
+    />
+  </a>
+  <div class="entrada__texto">
+    <time class="etiqueta entrada__fecha" datetime={fechaIso(fecha)}>{fechaCorta(fecha)}</time>
+    <a class="pastilla entrada__kicker" href={`/${seccion.ruta}/`}>{seccion.singular} · {lugar}</a>
+    <h2 class="entrada__titulo"><a href={url}>{titulo}</a></h2>
+    <p class="entrada__bajada">{bajada}</p>
+    <p class="etiqueta entrada__dato">{minutos} min · {gratis ? 'Gratis' : precio(historia.data.precio)}</p>
+    <a class="boton boton--oscuro entrada__boton" href={url} tabindex="-1" aria-hidden="true">Leer historia</a>
+  </div>
+</article>
+
+<style>
+  .entrada {
+    display: grid;
+    gap: clamp(20px, 3vw, 40px);
+    min-width: 0;
+    padding-block: clamp(28px, 5vw, 56px);
+    border-top: 1.5px solid var(--tostado);
+  }
+
+  @media (min-width: 800px) {
+    .entrada {
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
+      align-items: center;
+    }
+    .entrada--invertida { grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); }
+    .entrada--invertida .entrada__imagen { order: 2; }
+  }
+
+  .entrada__imagen {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radio);
+  }
+  .entrada__imagen img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .entrada__imagen img { transition: transform 0.5s ease; }
+    .entrada:hover .entrada__imagen img { transform: scale(1.03); }
+  }
+
+  .entrada__texto {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .entrada__fecha,
+  .entrada__dato,
+  .entrada__boton,
+  .entrada__kicker {
+    justify-self: start;
+  }
+
+  .entrada__kicker {
+    white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .entrada__titulo {
+    font-size: var(--t-h1);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+  .entrada--destacada .entrada__titulo {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+  }
+  .entrada__titulo a {
+    text-decoration: none;
+  }
+  .entrada__titulo a:hover {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .entrada__bajada {
+    color: var(--tinta-suave);
+    overflow-wrap: anywhere;
+  }
+</style>

@@ -1,0 +1,341 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CacaoGate from '../../components/CacaoGate.astro';
+import GrillaHistorias from '../../components/GrillaHistorias.astro';
+import { todasLasHistorias, type Historia } from '../../lib/historias';
+import { fechaCorta, fechaIso, precio } from '../../lib/formato';
+import { seccionPorId, slugTag } from '../../lib/secciones';
+import { autorPorNombre, urlAutor } from '../../lib/autores';
+import WidgetTravel from '../../components/WidgetTravel.astro';
+
+export async function getStaticPaths() {
+  const todas = await todasLasHistorias();
+  return todas.map((historia) => {
+    // Same section first, then the newest of the rest, so there are always three.
+    const otras = todas.filter((h) => h.id !== historia.id);
+    const relacionadas = [
+      ...otras.filter((h) => h.data.seccion === historia.data.seccion),
+      ...otras.filter((h) => h.data.seccion !== historia.data.seccion),
+    ].slice(0, 3);
+    return { params: { slug: historia.id }, props: { historia, relacionadas } };
+  });
+}
+
+interface Props {
+  historia: Historia;
+  relacionadas: Historia[];
+}
+const { historia, relacionadas } = Astro.props;
+const { Content } = await render(historia);
+
+const d = historia.data;
+const seccion = seccionPorId(d.seccion);
+const autor = autorPorNombre(d.autor);
+const tipo = d.seccion === 'guia' ? 'guía' : d.seccion === 'cronica' ? 'crónica' : 'historia';
+---
+
+<Base titulo={d.titulo} descripcion={d.bajada} seccion={d.seccion} imagen={d.portada}>
+  <div class="avance" data-avance aria-hidden="true"></div>
+  <article class="historia" data-historia={historia.id} data-gate-estado={d.gratis ? 'gratis' : 'bloqueado'}>
+    <header class="historia__cabeza contenedor">
+      <p class="etiqueta"><a href={`/${seccion.ruta}/`}>{seccion.singular}</a> · {d.lugar}</p>
+      <h1>{d.titulo}</h1>
+      <p class="historia__bajada">{d.bajada}</p>
+      <div class="historia__meta etiqueta">
+        <span>Por {autor ? <a class="historia__firma" href={urlAutor(autor)}>{autor.nombre}</a> : d.autor}</span>
+        <time datetime={fechaIso(d.fecha)}>{fechaCorta(d.fecha)}</time>
+        <span>{d.minutos} min</span>
+        {d.coords && <span>{d.coords}</span>}
+        <span class="pastilla historia__estado" data-gate-pastilla data-precio={precio(d.precio)}>
+          {d.gratis ? 'Gratis' : precio(d.precio)}
+        </span>
+      </div>
+    </header>
+
+    <figure class="historia__portada contenedor">
+      <img src={d.portada} alt={d.alt} width="1600" height="1000" />
+      {(d.credito || d.lugarFoto) && (
+        <figcaption class="etiqueta">
+          {d.credito && (
+            <>
+              Foto: {d.creditoUrl ? <a href={d.creditoUrl} rel="noopener">{d.credito}</a> : d.credito}
+              {d.licencia && ` · ${d.licencia}`}
+            </>
+          )}
+          {d.lugarFoto && (d.credito ? ` · Tomada en ${d.lugarFoto}` : `Tomada en ${d.lugarFoto}`)}
+        </figcaption>
+      )}
+    </figure>
+
+    <div class="historia__cuerpo">
+      <div class="prosa">
+        <Content />
+      </div>
+      {!d.gratis && <CacaoGate tipo={tipo} precio={precio(d.precio)} />}
+    </div>
+
+    <WidgetTravel historia={historia.id} lugar={d.lugar} seccion={d.seccion} />
+
+    {
+      autor && (
+        <aside class="historia__autor">
+          <p class="etiqueta">Escribe</p>
+          <p class="historia__autor-nombre">
+            <a href={urlAutor(autor)}>{autor.nombre}</a>
+          </p>
+          <p>{autor.bio}</p>
+        </aside>
+      )
+    }
+
+    <footer class="historia__pie">
+      {d.tags.map((tag) => (
+        <a class="pastilla" href={`/tags/${slugTag(tag)}/`}>{tag}</a>
+      ))}
+      <a href="/">Volver al inicio</a>
+    </footer>
+  </article>
+  <GrillaHistorias titulo="Seguí leyendo" historias={relacionadas} />
+</Base>
+
+<style>
+  .avance {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 5px;
+    background: var(--mazorca);
+    transform: scaleX(0);
+    transform-origin: left;
+    z-index: 10;
+  }
+
+  /* Header and photo are the two halves of the split bean: a thin gap, sharp inner corners. */
+  .historia__cabeza {
+    margin-top: 20px;
+    padding: clamp(24px, 5vw, 64px);
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+    background: var(--acento);
+    color: var(--sobre-acento);
+    border-radius: var(--radio) var(--radio) 6px 6px;
+  }
+  .historia__cabeza a { color: inherit; text-decoration: none; }
+  .historia__cabeza a:hover { text-decoration: underline; }
+  .historia__estado { background: var(--pulpa); color: var(--tostado); }
+  .historia h1 {
+    font-size: var(--t-display);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+    overflow-wrap: anywhere;
+  }
+  .historia__bajada {
+    font-size: var(--t-h2);
+    font-weight: 400;
+    max-width: 36ch;
+  }
+  .historia__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .historia__portada { margin: 8px auto 0; }
+  .historia__portada img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 6px 6px var(--radio) var(--radio);
+  }
+
+  .historia__portada figcaption { margin-top: 10px; color: var(--tinta-suave); }
+
+  .historia__cuerpo {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin: clamp(28px, 5vw, 56px) auto 0;
+  }
+
+  .historia__cabeza .historia__firma { text-decoration: underline; }
+  .historia__autor {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin: clamp(32px, 5vw, 56px) auto 0;
+    padding: clamp(20px, 3vw, 32px);
+    display: grid;
+    gap: 6px;
+    background: var(--arena);
+    border-radius: var(--radio-chico);
+  }
+  .historia__autor-nombre { font-size: var(--t-h2); font-weight: 800; }
+  .historia__autor-nombre a { text-decoration: none; }
+  .historia__autor-nombre a:hover { color: inherit; text-decoration: underline; }
+
+  .historia__pie {
+    width: min(100% - 2 * var(--canal), var(--ancho-lectura));
+    margin: 40px auto 0;
+    border-top: 1.5px solid var(--tostado);
+    padding-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* Markdown output is not scoped, so these rules use :global(). */
+  .prosa :global(p) { margin-block: 0 1.2em; font-size: 1.1875rem; line-height: 1.65; }
+  .prosa > :global(p:first-child) { font-size: 1.5rem; line-height: 1.45; font-weight: 600; letter-spacing: -0.01em; }
+  .prosa :global(h2) { margin-block: 1.8em 0.6em; font-weight: 800; }
+  .prosa :global(blockquote) {
+    margin: 0 0 1.6em;
+    padding: 0.8em 1.1em;
+    background: var(--arena);
+    border-radius: var(--radio-chico);
+    font-family: var(--mono);
+    font-size: var(--t-etiqueta);
+  }
+  .prosa :global(blockquote p) { margin: 0; font-size: inherit; }
+  .prosa :global(ul),
+  .prosa :global(ol) { padding-left: 1.2em; margin-block: 0 1.2em; }
+  .prosa :global(li) { margin: 0.4em 0; }
+  .prosa :global(a) { text-decoration: underline; }
+
+  .historia :global([data-gate-cerrado]) { display: none; }
+  .historia[data-gate-estado='desbloqueado'] :global([data-gate-cerrado]),
+  .historia[data-gate-estado='leyendo'] :global([data-gate-cerrado]),
+  .historia[data-gate-estado='gratis'] :global([data-gate-cerrado]) { display: block; }
+  .historia[data-gate-estado='desbloqueado'] :global([data-gate-muro]),
+  .historia[data-gate-estado='leyendo'] :global([data-gate-muro]),
+  .historia[data-gate-estado='gratis'] :global([data-gate-muro]) { display: none; }
+</style>
+
+<script>
+  import { aceptarPase, desbloquear, estadoGate, traerCerrado } from '../../lib/gate';
+
+  const articulo = document.querySelector<HTMLElement>('article[data-historia]');
+
+  // Shown in the wall when an unlock fails or a stored pass is refused.
+  const MENSAJE_DESBLOQUEAR = 'No pudimos desbloquear esta historia. Revisá tu conexión y probá de nuevo.';
+  const MENSAJE_VENCIDO = 'Tu acceso venció o ya no es válido. Desbloqueá la historia de nuevo.';
+
+  // A Cacao Travel booking links here with a reading pass in the URL fragment. Remove it on every story.
+  const pase = new URLSearchParams(location.hash.slice(1)).get('pase');
+  if (pase) history.replaceState(null, '', location.pathname + location.search);
+
+  if (articulo && articulo.dataset.gateEstado !== 'gratis') {
+    const slug = articulo.dataset.historia ?? '';
+    const pastilla = articulo.querySelector<HTMLElement>('[data-gate-pastilla]');
+    const boton = articulo.querySelector<HTMLButtonElement>('[data-gate-boton]');
+    const vencido = articulo.querySelector<HTMLElement>('[data-gate-vencido]');
+    const aviso = articulo.querySelector<HTMLElement>('[data-gate-error]');
+    const cerrado = articulo.querySelector<HTMLElement>('[data-gate-cerrado]');
+    let observador: IntersectionObserver | null = null;
+
+    if (pase) aceptarPase(slug, pase);
+
+    const mostrarAviso = (texto: string) => {
+      if (!aviso) return;
+      aviso.textContent = texto;
+      aviso.hidden = false;
+    };
+    const ocultarAviso = () => {
+      if (!aviso) return;
+      aviso.textContent = '';
+      aviso.hidden = true;
+    };
+
+    const pintar = (estado: 'bloqueado' | 'desbloqueado' | 'expirado') => {
+      articulo.dataset.gateEstado = estado;
+      if (pastilla) {
+        pastilla.textContent =
+          estado === 'bloqueado' ? (pastilla.dataset.precio ?? '') : estado === 'desbloqueado' ? 'Desbloqueado' : 'Expirado';
+      }
+      if (vencido) vencido.hidden = estado !== 'expirado';
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = estado === 'expirado' ? 'Desbloquear de nuevo' : (boton.dataset.textoNormal ?? '');
+      }
+    };
+
+    // Only the reader's first scroll starts the observer: unlocking or loading the page is not reading yet.
+    const observar = () => {
+      if (observador || !cerrado || typeof IntersectionObserver === 'undefined') return;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (observador) return;
+          observador = new IntersectionObserver((entradas) => {
+            if (!entradas.some((e) => e.isIntersecting)) return;
+            articulo.dataset.gateEstado = 'leyendo';
+            if (pastilla) pastilla.textContent = 'Leyendo';
+            observador?.disconnect();
+          });
+          observador.observe(cerrado);
+        },
+        { once: true, passive: true },
+      );
+    };
+
+    // The locked text is not in the page. Fetch it with the stored token; the server decides.
+    const abrir = async (): Promise<boolean> => {
+      if (!cerrado) return false;
+      const html = await traerCerrado(slug);
+      if (html === null) return false;
+      // Our own server's rendering of our own story.
+      cerrado.innerHTML = html;
+      pintar('desbloqueado');
+      ocultarAviso();
+      // Tell the Cacao Travel widget the reader now holds a token it can pass along.
+      document.dispatchEvent(new CustomEvent('cacao:desbloqueada', { detail: { slug } }));
+      observar();
+      return true;
+    };
+
+    boton?.addEventListener('click', async () => {
+      boton.disabled = true;
+      boton.textContent = 'Desbloqueando…';
+      ocultarAviso();
+      try {
+        await desbloquear(slug);
+        if (await abrir()) {
+          cerrado!.tabIndex = -1;
+          // Focus without scrolling: the page must not jump under the reader.
+          cerrado!.focus({ preventScroll: true });
+          return;
+        }
+      } catch {
+        // fall through to the locked state
+      }
+      mostrarAviso(MENSAJE_DESBLOQUEAR);
+      pintar(estadoGate(slug) === 'expirado' ? 'expirado' : 'bloqueado');
+    });
+
+    const inicial = estadoGate(slug);
+    pintar(inicial === 'desbloqueado' ? 'bloqueado' : inicial);
+    if (inicial === 'desbloqueado') {
+      // A stored pass the server refuses leaves the wall up and says why.
+      abrir()
+        .then((ok) => {
+          if (!ok) mostrarAviso(MENSAJE_VENCIDO);
+        })
+        .catch(() => mostrarAviso(MENSAJE_DESBLOQUEAR));
+    }
+  }
+</script>
+
+<script>
+  // Reading progress: answers the reader's own scrolling, nothing moves by itself.
+  const avance = document.querySelector<HTMLElement>('[data-avance]');
+  const texto = document.querySelector<HTMLElement>('.historia');
+  if (avance && texto) {
+    const pintarAvance = () => {
+      const total = texto.offsetTop + texto.offsetHeight - window.innerHeight;
+      const hecho = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+      avance.style.transform = `scaleX(${hecho})`;
+    };
+    window.addEventListener('scroll', pintarAvance, { passive: true });
+    pintarAvance();
+  }
+</script>
