@@ -5,7 +5,17 @@ import { cookies } from 'next/headers';
 import { clienteServicio } from './supabase';
 
 // Funnel events of CacaoMarket. The names are the ones the database allows for the 'market' site.
-export type NombreEvento = 'vista_producto' | 'agrego_carrito' | 'inicio_pedido' | 'vio_pago' | 'pago';
+export type NombreEvento =
+  | 'vista_producto'
+  | 'agrego_carrito'
+  | 'inicio_pedido'
+  | 'vio_pago'
+  | 'pago'
+  | 'vista_servicio'
+  | 'acordo_trabajo'
+  | 'trabajo_hecho'
+  | 'vio_pago_trabajo'
+  | 'pago_trabajo';
 
 export type EventoARegistrar = {
   nombre: NombreEvento;
@@ -17,7 +27,7 @@ export type EventoARegistrar = {
 };
 
 // The only events a browser may send. The rest are written by the server, where the order is known.
-export const EVENTOS_DEL_NAVEGADOR: readonly NombreEvento[] = ['vista_producto', 'agrego_carrito'];
+export const EVENTOS_DEL_NAVEGADOR: readonly NombreEvento[] = ['vista_producto', 'agrego_carrito', 'vista_servicio'];
 
 // An anonymous id for one browser. HttpOnly, so scripts on the page cannot read it.
 export const COOKIE_SESION = 'cm_sesion';

@@ -64,7 +64,7 @@ type NegocioLeido = Awaited<ReturnType<typeof leerNegocio>>;
 /**
  * The one place a payment is confirmed. The buyer's screen, the buyer's demo button and the seller's
  * manual confirmation all come through here, so the database call and the funnel event stay together.
- * Returns the database error, if any. Only product payments count in the funnel.
+ * Returns the database error, if any. Product and job payments each record their own funnel step.
  */
 export async function confirmarPagoEnBD(
   ordenId: string,
@@ -76,12 +76,23 @@ export async function confirmarPagoEnBD(
     p_actor: actorId ?? NULO,
   });
   if (error) return error;
+  const sesionPago = sesionDePago(sesion, ordenId);
+  const ruta = `/ordenes/${ordenId}/pagar`;
   if (data?.tipo === 'productos') {
     await registrarEvento({
       nombre: 'pago',
-      sesion: sesionDePago(sesion, ordenId),
+      sesion: sesionPago,
       usuarioId: data.comprador_id,
-      ruta: `/ordenes/${ordenId}/pagar`,
+      ruta,
+      objeto: ordenId,
+      valorUsdCentavos: data.total_usd_centavos,
+    });
+  } else if (data?.tipo === 'servicio') {
+    await registrarEvento({
+      nombre: 'pago_trabajo',
+      sesion: sesionPago,
+      usuarioId: data.comprador_id,
+      ruta,
       objeto: ordenId,
       valorUsdCentavos: data.total_usd_centavos,
     });

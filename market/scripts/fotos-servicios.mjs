@@ -7,7 +7,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 // [título exacto en scripts/sembrar.mjs, archivo en public/productos]
-// The service without a photo ("Instalación eléctrica en casa") is left out on purpose.
 const FOTOS = [
   ['Asesoría para huerto casero', 'servicio-asesoria-huerto-casero.jpg'],
   ['Instalación de huerto en patio', 'servicio-instalacion-huerto-patio.jpg'],
@@ -20,6 +19,8 @@ const FOTOS = [
   ['Corte de pelo clásico', 'servicio-corte-pelo-clasico.jpg'],
   ['Arreglo de barba', 'servicio-arreglo-barba.jpg'],
   ['Reparación de celulares', 'servicio-reparacion-celulares.jpg'],
+  // Imagen propia (generada para CacaoMarket), no de Wikimedia.
+  ['Instalación eléctrica en casa', 'servicio-instalacion-electrica-casa.jpg'],
 ];
 
 async function asignarFotos() {

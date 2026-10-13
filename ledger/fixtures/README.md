@@ -5,6 +5,7 @@ ni conexión a internet.
 
 | Archivo | Qué es |
 |---|---|
+| `comercio-prueba/clave-privada.pem` | PEM inventado para probar el cifrado por comercio. **No es válido ante Hacienda** y no va en respaldos reales. |
 | `emisor.json` | Emisor ficticio de la demostración. NIT y NRC tienen formato válido; el dígito verificador no se comprueba. Códigos de establecimiento `M001` y punto de venta `P001`. Actividad 47219 y ubicación (departamento 05, municipio 27) tomadas del catálogo oficial. |
 | `ticket-consumidor.json` | Venta a consumidor final: dos líneas, $4.52 con IVA incluido. Produce una factura 01. |
 | `ticket-contribuyente.json` | Misma venta a contribuyente: precios netos de $1.00 y $2.00, total $4.52 con IVA. Produce un CCF 03. Incluye un receptor ficticio. |

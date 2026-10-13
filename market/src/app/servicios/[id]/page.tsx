@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 
 import { Estrellas } from '@/componentes/Estrellas';
 import { FotoProducto } from '@/componentes/FotoProducto';
+import { RegistrarEvento } from '@/componentes/RegistrarEvento';
 import { cotizacionSegura } from '@/servidor/catalogo';
 import { sesionActual } from '@/servidor/sesion';
 import { servicioPublico, type ServicioDetalle } from '@/servidor/servicios';
@@ -15,12 +16,15 @@ import { FormularioContratar } from './FormularioContratar';
 import { FormularioCotizar } from './FormularioCotizar';
 import estilos from './estilos.module.css';
 
-// The id comes from the URL, so the service is read per request. The public part streams first;
-// the session (the form or the edit link) is read behind its own Suspense boundary.
-export default function PaginaServicio(props: PageProps<'/servicios/[id]'>) {
+// The id comes from the URL. Existence is checked before Suspense so a missing service returns HTTP 404.
+export default async function PaginaServicio(props: PageProps<'/servicios/[id]'>) {
+  const { id } = await props.params;
+  const servicio = await servicioPublico(id);
+  if (!servicio) notFound();
+
   return (
     <Suspense fallback={<p role="status">Cargando el servicio…</p>}>
-      <DetalleServicio params={props.params} />
+      <DetalleServicio servicio={servicio} />
     </Suspense>
   );
 }
@@ -31,14 +35,12 @@ export async function generateMetadata(props: PageProps<'/servicios/[id]'>): Pro
   return { title: servicio ? servicio.titulo : 'Servicio no encontrado' };
 }
 
-async function DetalleServicio({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const [servicio, cotizacion] = await Promise.all([servicioPublico(id), cotizacionSegura()]);
-  // Paused, hidden, not approved or unknown: all answered the same way.
-  if (!servicio) notFound();
+async function DetalleServicio({ servicio }: { servicio: ServicioDetalle }) {
+  const cotizacion = await cotizacionSegura();
 
   return (
     <article className={estilos.servicio}>
+      <RegistrarEvento nombre="vista_servicio" objeto={servicio.id} />
       <figure className={estilos.figura}>
         <FotoProducto
           src={servicio.foto}

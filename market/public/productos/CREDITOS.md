@@ -53,3 +53,4 @@ también está permitido por CC BY y CC BY-SA.
 | Corte de pelo clásico | servicio-corte-pelo-clasico.jpg | Greg Willis | CC BY-SA 2.0 ([licencia](https://creativecommons.org/licenses/by-sa/2.0)) | https://commons.wikimedia.org/wiki/File:Barber_cutting_hair_(3749541180).jpg |
 | Arreglo de barba | servicio-arreglo-barba.jpg | Gkbediako | CC BY-SA 4.0 ([licencia](https://creativecommons.org/licenses/by-sa/4.0)) | https://commons.wikimedia.org/wiki/File:A_Ghanaian_Barber_trims_a_beard.jpg |
 | Reparación de celulares | servicio-reparacion-celulares.jpg | Amuzujoe | CC BY-SA 4.0 ([licencia](https://creativecommons.org/licenses/by-sa/4.0)) | https://commons.wikimedia.org/wiki/File:Phone_Repair_01.jpg |
+| Instalación eléctrica en casa | servicio-instalacion-electrica-casa.jpg | CacaoMarket (imagen propia) | Uso interno del proyecto | Generada para el catálogo de servicios |

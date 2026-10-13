@@ -1,7 +1,7 @@
 import { MEDIA_URL } from './tours';
 
-/** The five products of the Cacao group. Each product keeps its own copy of this list. */
-export type ProductoId = 'media' | 'travel' | 'market' | 'pay' | 'ledger';
+/** The products of the Cacao group. Each product keeps its own copy of this list. */
+export type ProductoId = 'media' | 'travel' | 'market' | 'pay' | 'ledger' | 'juego';
 
 export interface Producto {
   id: ProductoId;
@@ -21,4 +21,5 @@ export const PRODUCTOS: Producto[] = [
   { id: 'market', marca: 'market', url: 'https://cacao-market.vercel.app', linea: 'Productos y servicios locales, pagados en sats' },
   { id: 'pay', marca: 'pay', url: 'https://cacao-pay.vercel.app', linea: 'Mandá dinero a El Salvador y mirá cada centavo' },
   { id: 'ledger', marca: 'ledger', url: 'https://cacao-ledger.vercel.app', linea: 'Cobrá y declará: la venta y su factura electrónica' },
+  { id: 'juego', marca: 'juego', url: 'https://cacao-juego.vercel.app', linea: 'Un quiz sobre El Salvador, con sats simulados' },
 ];

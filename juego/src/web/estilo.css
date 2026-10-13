@@ -1,0 +1,249 @@
+:root {
+  --pulpa: #f5ede3;
+  --tostado: #2a1912;
+  --mazorca: #d9902f;
+  --criollo: #8c2f2b;
+  --arena: #e6d8c6;
+  --blanco: #fffaf4;
+  --fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--pulpa);
+  color: var(--tostado);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--criollo);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.cabecera {
+  background: var(--tostado);
+  color: var(--pulpa);
+  padding: 1rem 1.25rem;
+}
+
+.marca {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.marca span {
+  font-weight: 350;
+  color: var(--mazorca);
+}
+
+.lema {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.92rem;
+  color: var(--arena);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.nav a {
+  color: var(--pulpa);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cinta {
+  background: var(--mazorca);
+  color: var(--tostado);
+  padding: 0.55rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.contenido {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.tarjeta {
+  background: var(--blanco);
+  border: 2px solid var(--arena);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 1.35rem;
+  margin: 0 0 0.75rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+input[type="text"] {
+  width: 100%;
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--arena);
+  border-radius: 8px;
+  background: var(--blanco);
+}
+
+button,
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.65rem 1.25rem;
+  font: inherit;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  background: var(--criollo);
+  color: var(--blanco);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.secundario {
+  background: var(--tostado);
+}
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.opciones button {
+  width: 100%;
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--tostado);
+  border: 2px solid var(--arena);
+  text-align: left;
+  font-weight: 600;
+}
+
+.opciones button:hover:not(:disabled) {
+  border-color: var(--mazorca);
+}
+
+.aviso {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--arena);
+  margin: 0.75rem 0;
+  min-height: 2.5rem;
+}
+
+.aviso.ok {
+  background: #e8f0dc;
+  border-left: 4px solid var(--mazorca);
+}
+
+.aviso.error {
+  background: #f3e0de;
+  border-left: 4px solid var(--criollo);
+}
+
+.saldo-pill {
+  display: inline-block;
+  background: var(--tostado);
+  color: var(--mazorca);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 0.5rem 0.35rem;
+  border-bottom: 1px solid var(--arena);
+}
+
+.tabla th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--criollo);
+}
+
+.nota {
+  font-size: 0.85rem;
+  color: #5a4038;
+}
+
+.pie {
+  margin-top: 2rem;
+  font-size: 0.82rem;
+  color: #5a4038;
+}
+
+.lista-historial {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.grupo ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.lista-historial li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--arena);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 480px) {
+  .contenido {
+    padding: 1.75rem;
+  }
+}

@@ -55,8 +55,8 @@ export default async function PaginaEmbudo(props: Props) {
         Embudo de compra
       </h2>
       <p className={estilos.descripcion}>
-        Cuántas sesiones llegaron a cada paso, de ver un producto a pagarlo. Una sesión cuenta una vez por paso
-        y por hora.
+        Cuántas sesiones llegaron a cada paso: compras de productos (arriba) y trabajos de servicio (abajo). Una sesión
+        cuenta una vez por paso y por hora.
       </p>
 
       <form method="get" action="/admin/embudo" className={estilosEmbudo.filtros}>

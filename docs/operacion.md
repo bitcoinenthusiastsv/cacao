@@ -2,7 +2,7 @@
 
 Guía práctica para retomar el proyecto en cualquier computadora: qué instalar, cómo correr cada producto, cómo probar, cómo publicar y qué quedó pendiente.
 
-## Los cinco productos
+## Los productos
 
 | Producto | Carpeta | Tecnología | Puerto local | En vivo |
 |---|---|---|---|---|
@@ -11,6 +11,7 @@ Guía práctica para retomar el proyecto en cualquier computadora: qué instalar
 | CacaoMarket | `market/` | Next.js 16 y Supabase | 4323 | https://cacao-market.vercel.app |
 | CacaoPay | `pay/` | Next.js 16 y Supabase | 4324 | https://cacao-pay.vercel.app |
 | CacaoLedger | `ledger/` | Node 24, TypeScript, terminal | no usa | https://cacao-ledger.vercel.app |
+| Cacao Juego | `juego/` | Node 24, TypeScript | 4325 | https://cacao-juego.vercel.app |
 
 Media, Market y Pay comparten una base de datos de Supabase. Sus migraciones viven en `market/supabase/migrations/`: las tablas de Market no llevan prefijo, las de Media empiezan con `media_`, las de Pay con `pay_`, y `eventos` es común.
 
@@ -26,7 +27,7 @@ Después de clonar, instalar dependencias en cada carpeta que se vaya a usar:
 npm install
 ```
 
-(en la raíz, en `travel/`, en `market/`, en `pay/` y en `ledger/`)
+(en la raíz, en `travel/`, en `market/`, en `pay/`, en `ledger/` y en `juego/`)
 
 ## Variables de entorno
 
@@ -82,6 +83,7 @@ Cuentas de prueba: en `/entrar` de Market y de Pay hay botones de demostración.
 | Pay, unitarias y de base | `pay/` | `node --env-file=.env.local node_modules/vitest/vitest.mjs run` |
 | Pay, en navegador | `pay/` | `node --env-file=.env.local node_modules/@playwright/test/cli.js test tests/e2e` |
 | Ledger | `ledger/` | `npm test` |
+| Juego | `juego/` | `npm test` |
 
 Las pruebas en navegador necesitan los servidores de desarrollo arriba. Las pruebas de base y de navegador dejan filas en la base local; para dejarla limpia, desde `market/`:
 
@@ -91,7 +93,7 @@ npx supabase db reset
 
 y luego volver a sembrar.
 
-Antes de publicar conviene revisar tipos (el guion existe en las cinco carpetas) y compilar:
+Antes de publicar conviene revisar tipos (el guion existe en cada carpeta) y compilar:
 
 ```bash
 npm run check
@@ -147,11 +149,10 @@ Orden recomendado cuando cambian varias cosas: migraciones, datos de muestra, Me
 
 ## Qué quedó pendiente
 
-- **Entregables estratégicos** de cada reto: investigación de mercado, usuarios, estrategia de precios, indicadores y recomendación final. No hay ninguno escrito.
+- **Entregables estratégicos** de cada reto: investigación de mercado, usuarios, estrategia de precios, indicadores y recomendación final. No están en este repositorio.
 - **Ingreso por correo** en Market y Pay: funciona en local con código; en el proyecto alojado del plan gratis el correo trae un enlace y no se probó con una dirección real.
-- **Ledger:** firma con el firmador de Hacienda, manejo de varios comercios y transmisión real. Están listados en `ledger/README.md`.
-- **Market:** el comprobante de un trabajo de servicio no tiene prueba propia; el embudo cuenta solo pedidos de productos; una página de producto con un identificador válido que no existe responde 200 con el texto de "no existe".
-- **Fotos:** el servicio "Instalación eléctrica en casa" no tiene foto.
+- **Ledger:** el cliente del firmador y el sobre cifrado por comercio están en el programa. La transmisión real al Ministerio no. El detalle está en `ledger/docs/firma-y-comercios.md`.
+- **Cacao Juego:** el tablero publicado se reinicia con la instancia. La vista de administración no se publica.
 
 ## Documentación de cada producto
 
@@ -159,4 +160,5 @@ Orden recomendado cuando cambian varias cosas: migraciones, datos de muestra, Me
 - Market: `market/README.md` y `market/docs/` (arquitectura, base de datos, API, pagos).
 - Pay: `pay/README.md`.
 - Ledger: `ledger/README.md` y `ledger/docs/` (hallazgos, atestación, importar órdenes de Market).
+- Juego: `juego/README.md`.
 - Diseños: `docs/diseno/`.

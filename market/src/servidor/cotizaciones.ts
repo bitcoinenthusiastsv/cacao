@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { cotizacionUsdBtc } from '@/lib/precio/fuente';
 import { enteroEnLimite, type EstadoCotizacion, esUuid, LIMITES, textoEnLimite } from '@/lib/servicios';
 
+import { registrarEvento, sesionDeVisitaCreando } from './eventos';
 import { nombresDeUsuarios } from './necesidades';
 import { desdeError, exito, fallo, type Resultado } from './resultado';
 import { clienteServicio } from './supabase';
@@ -290,6 +291,15 @@ export async function aceptarCotizacion(usuarioId: string, cotizacionId: string)
       p_cotizacion_btc: cotizacion,
     });
     if (error) return desdeError(error);
+
+    await registrarEvento({
+      nombre: 'acordo_trabajo',
+      sesion: await sesionDeVisitaCreando(),
+      usuarioId,
+      ruta: '/cotizaciones',
+      objeto: data.id,
+      valorUsdCentavos: data.total_usd_centavos,
+    });
 
     revalidar('/cotizaciones');
     revalidar('/mi-negocio/cotizaciones');

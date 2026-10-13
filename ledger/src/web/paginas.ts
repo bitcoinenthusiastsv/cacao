@@ -15,6 +15,7 @@ export const OTROS_PRODUCTOS = [
   { nombre: "cacaotravel", url: "https://cacao-travel.vercel.app" },
   { nombre: "cacaomarket", url: "https://cacao-market.vercel.app" },
   { nombre: "cacaopay", url: "https://cacao-pay.vercel.app" },
+  { nombre: "cacaojuego", url: "https://cacao-juego.vercel.app" },
 ] as const;
 
 export interface DocumentoSitio {

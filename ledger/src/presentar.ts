@@ -57,6 +57,10 @@ export function vistaTicket(ticket: Ticket): string[] {
   if (ticket.dte) {
     lineas.push(`Documento: ${ticket.dte.tipoDte} ${ticket.dte.numeroControl}`);
   }
+  if (ticket.firma) {
+    const prefijo = ticket.firma.jws.slice(0, 24);
+    lineas.push(`Firma JWS: ${prefijo}… (${ticket.firma.comercioId}, ${ticket.firma.momento})`);
+  }
   if (ticket.sello) {
     lineas.push(`Sello: sello simulado ${ticket.sello.valor} (recibido ${ticket.sello.momento})`);
   }

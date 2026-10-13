@@ -1,7 +1,35 @@
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { adjuntarDte, aceptarDte, crearTicket, guardarTicket, leerTicket, listarTickets, rechazarDte, registrarPago, ticketConHashDePago, totalDeTicket, validarEntrada, validarId, validarReceptor, type EntradaTicket, type LineaTicket, type Ticket } from "./ticket.ts";
+import {
+  adjuntarDte,
+  adjuntarFirma,
+  aceptarDte,
+  crearTicket,
+  guardarTicket,
+  leerTicket,
+  listarTickets,
+  rechazarDte,
+  registrarPago,
+  ticketConHashDePago,
+  totalDeTicket,
+  validarEntrada,
+  validarId,
+  validarReceptor,
+  type EntradaTicket,
+  type FirmaDte,
+  type LineaTicket,
+  type Ticket,
+} from "./ticket.ts";
+import {
+  claveMaestraDeEntorno,
+  descifrarMaterialComercio,
+  leerClavePrivadaPem,
+  leerIndiceComercios,
+  registrarComercio,
+  resolverComercioActivo,
+} from "./comercio/almacen.ts";
+import { firmarDocumentoSvfe, resolverUrlFirmador } from "./firma/svfe-firmador.ts";
 import { importarOrdenMarket } from "./market.ts";
 import { escribirLibrosCsv, informeMes, leerDocumentosEmitidos, lineasMes, validarMes } from "./mes.ts";
 import { generarSitio } from "./web/generar.ts";
@@ -37,6 +65,11 @@ const CON_VALOR = new Set([
   "csv",
   "salida",
   "dia",
+  "comercio",
+  "nit",
+  "password-pri",
+  "clave-privada",
+  "firmador-url",
 ]);
 const INTERRUPTORES = new Set(["json", "efectivo", "confirmar-produccion", "ayuda", "simulado"]);
 
@@ -296,6 +329,81 @@ function cmdDteValidar(objetivo: string, a: Argumentos, datos: string): Resultad
   };
 }
 
+function cmdComercioRegistrar(id: string, a: Argumentos, datos: string): Resultado {
+  const nit = needArg(unico(a, "nit"), "NIT de 14 dígitos (--nit)");
+  const passwordPri = needArg(unico(a, "password-pri"), "contraseña de la clave privada (--password-pri)");
+  const rutaClave = needArg(unico(a, "clave-privada"), "archivo PEM (--clave-privada)");
+  const claveMaestra = claveMaestraDeEntorno();
+  const pem = leerClavePrivadaPem(resolve(rutaClave));
+  const registro = registrarComercio(
+    datos,
+    id,
+    nit,
+    { passwordPri, clavePrivadaPem: pem },
+    claveMaestra,
+    ahora(),
+  );
+  return {
+    datos: { id: registro.id, nit: registro.nit, creado: registro.creado },
+    lineas: [
+      `Comercio "${registro.id}" registrado (NIT ${registro.nit}).`,
+      "Las credenciales quedaron cifradas en datos/comercios/; la clave maestra no se guardó en disco.",
+      "El firmador del Ministerio debe tener el .crt de ese NIT montado aparte; CacaoLedger no lo sube.",
+    ],
+  };
+}
+
+function cmdComercioLista(datos: string): Resultado {
+  const indice = leerIndiceComercios(datos);
+  const lineas =
+    indice.comercios.length === 0
+      ? ["No hay comercios registrados."]
+      : [
+          `Comercio activo: ${indice.comercioActivo ?? "(ninguno)"}`,
+          ...indice.comercios.map((c) => `  ${c.id} · NIT ${c.nit} · ${c.creado}`),
+        ];
+  return { datos: indice, lineas };
+}
+
+async function cmdDteFirmar(id: string, a: Argumentos, datos: string): Promise<Resultado> {
+  validarId(id);
+  const ticket = leerTicket(datos, id);
+  if (!ticket.dte) throw new ErrorLedger(`El ticket ${id} todavía no tiene documento; construilo con dte construir.`);
+  if (ticket.firma) throw new ErrorLedger(`El ticket ${id} ya tiene firma JWS.`);
+  const comercioId = resolverComercioActivo(datos, unico(a, "comercio"));
+  const claveMaestra = claveMaestraDeEntorno();
+  const material = descifrarMaterialComercio(datos, comercioId, claveMaestra);
+  const nitComercio = leerIndiceComercios(datos).comercios.find((c) => c.id === comercioId)!.nit;
+  const doc = leerJson(join(datos, ticket.dte.archivo));
+  const url = resolverUrlFirmador(unico(a, "firmador-url"));
+  const instante = ahora();
+  const jws = await firmarDocumentoSvfe(url, {
+    nit: nitComercio,
+    passwordPri: material.passwordPri,
+    dteJson: doc,
+  });
+  const nombre = `dte/firmas/${ticket.dte.codigoGeneracion}.jws.txt`;
+  escribirJson(join(datos, nombre), { jws, comercioId, firmadorUrl: url, momento: instante.toISOString() });
+  const firma: FirmaDte = {
+    jws,
+    momento: instante.toISOString(),
+    firmadorUrl: url,
+    comercioId,
+    archivo: nombre,
+  };
+  guardarTicket(datos, adjuntarFirma(ticket, firma, instante));
+  return {
+    datos: { ticket: id, comercioId, firmadorUrl: url, jwsPrefijo: jws.slice(0, 32), archivo: join(datos, nombre) },
+    lineas: [
+      `Documento firmado con el firmador en ${url}.`,
+      `JWS (inicio): ${jws.slice(0, 48)}…`,
+      `Comercio: ${comercioId} (NIT ${nitComercio}).`,
+      `Archivo: ${join(datos, nombre)}`,
+      "Este JWS no se transmitió al Ministerio. Podés seguir con dte transmitir --simulado.",
+    ],
+  };
+}
+
 function cmdDteTransmitir(id: string, a: Argumentos, datos: string): Resultado {
   if (!a.interruptores.has("simulado")) {
     throw new ErrorLedger(
@@ -438,7 +546,10 @@ const AYUDA = `Uso: ledger <orden> [opciones]
   dte construir <id> [--forzar-codigo <código>]
                      [--ambiente 01 --confirmar-produccion]
   dte validar <archivo o id> [--confirmar-produccion]
+  dte firmar <id> [--comercio <id>] [--firmador-url <url>]
   dte transmitir <id> --simulado
+  comercio registrar <id> --nit ... --password-pri ... --clave-privada <archivo.pem>
+  comercio lista
   atestacion ver <id> | verificar | exportar
   cierre [YYYY-MM-DD] [--json]     (cierre --ayuda explica el plazo de 24 horas)
   mes <YYYY-MM> [--json] [--csv <carpeta>]   libros de IVA y cifras para F-07 y F-14
@@ -449,7 +560,13 @@ Opciones generales:
   --esquemas caso|2026  generación de esquemas (por defecto caso, o LEDGER_ESQUEMAS)
   --datos <carpeta>     carpeta de datos (por defecto ledger/datos, o LEDGER_DATOS)
   --emisor <archivo>    datos del emisor (por defecto fixtures/emisor.json o fixtures/caso/emisor.json)
+  --firmador-url <url>  firmador SVFE (o LEDGER_FIRMADOR_URL)
+  --comercio <id>       comercio para firmar (por defecto el activo en datos/comercios/indice.json)
   --json                salida en JSON
+
+Variables (no van en datos/ ni en fixtures):
+  LEDGER_CLAVE_MAESTRA  descifra credenciales por comercio
+  LEDGER_FIRMADOR_URL   URL del SVFE-API-Firmador
 `;
 
 async function main(argv: string[]): Promise<number> {
@@ -467,7 +584,21 @@ async function main(argv: string[]): Promise<number> {
   if (grupo === "demo") return ejecutarDemo(unico(a, "esquemas"));
   const datos = dirDatos(unico(a, "datos"));
   let r: Resultado;
-  if (grupo === "ticket" && orden === "nuevo") r = cmdTicketNuevo(a, datos);
+  if (grupo === "comercio" && orden === "registrar") {
+    r = cmdComercioRegistrar(needArg(resto[0], "identificador del comercio"), a, datos);
+  } else if (grupo === "comercio" && orden === "lista") {
+    r = cmdComercioLista(datos);
+  } else if (grupo === "dte" && orden === "firmar") {
+    return cmdDteFirmar(needArg(resto[0], "identificador del ticket"), a, datos).then((res) => {
+      if (json) process.stdout.write(`${JSON.stringify(res.datos, null, 2)}\n`);
+      else process.stdout.write(`${res.lineas.join("\n")}\n`);
+      if (res.fallo) {
+        process.stderr.write(`error: ${res.fallo}\n`);
+        return 1;
+      }
+      return 0;
+    });
+  } else if (grupo === "ticket" && orden === "nuevo") r = cmdTicketNuevo(a, datos);
   else if (grupo === "ticket" && orden === "ver") r = cmdTicketVer(needArg(resto[0], "identificador del ticket"), datos);
   else if (grupo === "ticket" && orden === "lista") r = cmdTicketLista(datos);
   else if (grupo === "pagar") r = cmdPagar(needArg(orden, "identificador del ticket"), a, datos);

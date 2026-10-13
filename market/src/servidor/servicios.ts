@@ -6,6 +6,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
 import { cotizacionUsdBtc } from '@/lib/precio/fuente';
+
+import { registrarEvento, sesionDeVisitaCreando } from './eventos';
 import {
   enteroEnLimite,
   esTipoPrecio,
@@ -502,6 +504,15 @@ export async function contratarServicio(
       p_cotizacion_btc: cotizacion,
     });
     if (error) return desdeError(error);
+
+    await registrarEvento({
+      nombre: 'acordo_trabajo',
+      sesion: await sesionDeVisitaCreando(),
+      usuarioId,
+      ruta: `/servicios/${datos.servicioId}`,
+      objeto: data.id,
+      valorUsdCentavos: data.total_usd_centavos,
+    });
     return exito({ ordenId: data.id });
   } catch (error) {
     return desdeError(error);

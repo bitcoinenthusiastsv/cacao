@@ -1,7 +1,9 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { embudoAdmin } from '@/servidor/admin';
+import { marcarHecha } from '@/servidor/pedidos';
 import { confirmarPagoEnBD } from '@/servidor/pagos';
+import { contratarServicio } from '@/servidor/servicios';
 import { type EventoARegistrar, type NombreEvento, registrarEvento } from '@/servidor/eventos';
 
 import {
@@ -147,7 +149,7 @@ describe('the payment event', () => {
     expect(filas.map((f) => f.sesion)).toEqual([sesion]);
   });
 
-  it('a job payment is not a product payment: the funnel does not count it', async () => {
+  it('a job payment records pago_trabajo, not the product pago step', async () => {
     const dueno = await usuarioNuevo();
     const cliente = await usuarioNuevo();
     const tienda = await negocio(dueno);
@@ -168,6 +170,9 @@ describe('the payment event', () => {
     });
     expect(await confirmarPagoEnBD(trabajo.id, null, null)).toBeNull();
     expect(await eventosDeObjeto(trabajo.id, 'pago')).toHaveLength(0);
+    const pagosTrabajo = await eventosDeObjeto(trabajo.id, 'pago_trabajo');
+    expect(pagosTrabajo).toHaveLength(1);
+    expect(pagosTrabajo[0].valor_usd_centavos).toBe(trabajo.total_usd_centavos);
   });
 });
 
@@ -178,15 +183,108 @@ describe('embudoAdmin (server layer)', () => {
     await expect(embudoAdmin(visitante.id, desde, hasta)).rejects.toThrow();
   });
 
-  it('for an administrator: the five product steps, in funnel order, with the counts of the window', async () => {
+  it('for an administrator: product and job steps, in funnel order, with the counts of the window', async () => {
     const admin = await administrador();
     const { desde, hasta } = ventana();
     const pasos = await embudoAdmin(admin.id, desde, hasta);
-    expect(pasos.map((p) => p.nombre)).toEqual(['vista_producto', 'agrego_carrito', 'inicio_pedido', 'vio_pago', 'pago']);
-    expect(pasos.map((p) => p.orden)).toEqual([1, 2, 3, 4, 5]);
+    expect(pasos.map((p) => p.nombre)).toEqual([
+      'vista_producto',
+      'agrego_carrito',
+      'inicio_pedido',
+      'vio_pago',
+      'pago',
+      'vista_servicio',
+      'acordo_trabajo',
+      'trabajo_hecho',
+      'vio_pago_trabajo',
+      'pago_trabajo',
+    ]);
+    expect(pasos.map((p) => p.orden)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     for (const p of pasos) {
       expect(p.sesiones).toBeGreaterThanOrEqual(0);
       expect(typeof p.valorUsdCentavos).toBe('number');
     }
+  });
+});
+
+const PASOS_TRABAJO = [
+  'vista_servicio',
+  'acordo_trabajo',
+  'trabajo_hecho',
+  'vio_pago_trabajo',
+  'pago_trabajo',
+] as const;
+
+describe('job funnel (server layer)', () => {
+  it('a full job walkthrough adds sessions on job steps only, not on product payment', async () => {
+    const dueno = await usuarioNuevo();
+    const cliente = await usuarioNuevo();
+    await negocio(dueno);
+    const svc = await servicioDe(dueno, { tipo: 'fijo', precio: 500 });
+    const sesion = `embudo-trabajo-${sufijo()}${sufijo()}`;
+    const { desde, hasta } = ventana();
+
+    async function sesionesDe(nombre: string): Promise<number> {
+      const { data, error } = await servicio().rpc('embudo', { p_sitio: 'market', p_desde: desde, p_hasta: hasta });
+      if (error) throw error;
+      const fila = (data as { nombre: string; sesiones: number }[]).find((p) => p.nombre === nombre);
+      return Number(fila?.sesiones ?? 0);
+    }
+
+    const antes = Object.fromEntries(await Promise.all(PASOS_TRABAJO.map(async (n) => [n, await sesionesDe(n)]))) as Record<
+      (typeof PASOS_TRABAJO)[number],
+      number
+    >;
+
+    await registrarEvento({
+      nombre: 'vista_servicio',
+      sesion,
+      usuarioId: cliente.id,
+      ruta: `/servicios/${svc.id}`,
+      objeto: svc.id,
+      valorUsdCentavos: null,
+    });
+
+    const contrato = await contratarServicio(cliente.id, {
+      servicioId: svc.id,
+      nota: 'Prueba del embudo de trabajos.',
+      clave: `clave-${sufijo()}`,
+    });
+    expect(contrato.ok).toBe(true);
+    if (!contrato.ok) return;
+    const ordenId = contrato.dato.ordenId;
+
+    expect(await marcarHecha(ordenId, dueno.id)).toEqual({ ok: true, dato: null });
+
+    await registrarEvento({
+      nombre: 'vio_pago_trabajo',
+      sesion,
+      usuarioId: cliente.id,
+      ruta: `/ordenes/${ordenId}/pagar`,
+      objeto: ordenId,
+      valorUsdCentavos: null,
+    });
+
+    await servicio().rpc('registrar_cobro_servicio', {
+      p_orden: ordenId,
+      p_proveedor: 'falso',
+      p_referencia: `falso-${sufijo()}`,
+      p_bolt11: null,
+      p_destino: null,
+      p_verificar_url: null,
+      p_expira_en: new Date(Date.now() + 600_000).toISOString(),
+      p_cotizacion_btc: 100000,
+    });
+    expect(await confirmarPagoEnBD(ordenId, null, sesion)).toBeNull();
+
+    const despues = Object.fromEntries(await Promise.all(PASOS_TRABAJO.map(async (n) => [n, await sesionesDe(n)]))) as Record<
+      (typeof PASOS_TRABAJO)[number],
+      number
+    >;
+    for (const nombre of PASOS_TRABAJO) {
+      expect(despues[nombre], `paso ${nombre}`).toBe(antes[nombre] + 1);
+    }
+    expect(await eventosDeObjeto(ordenId, 'pago')).toHaveLength(0);
+    expect(await eventosDeObjeto(ordenId, 'pago_trabajo')).toHaveLength(1);
   });
 });
