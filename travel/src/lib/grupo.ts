@@ -16,7 +16,7 @@ export const GRUPO_FRASE =
 
 // The Media link follows the environment like the rest of Travel; the other addresses are constants.
 export const PRODUCTOS: Producto[] = [
-  { id: 'cacao', marca: '', url: 'https://cacao.vercel.app', linea: 'La empresa y la plataforma. De aquí salen los demás.' },
+  { id: 'cacao', marca: '', url: 'https://cacao-grupo.vercel.app', linea: 'La empresa y la plataforma. De aquí salen los demás.' },
   { id: 'media', marca: 'media', url: MEDIA_URL, linea: 'Historias de El Salvador, grano a grano' },
   { id: 'travel', marca: 'travel', url: 'https://cacao-travel.vercel.app', linea: 'Experiencias en El Salvador, con precio en sats' },
   { id: 'market', marca: 'market', url: 'https://cacao-market.vercel.app', linea: 'Productos y servicios locales, pagados en sats' },

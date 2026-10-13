@@ -11,7 +11,7 @@ import { escapar } from "./escapar.ts";
 // Every value that comes from a ticket or a document is escaped before it reaches the HTML.
 
 export const OTROS_PRODUCTOS = [
-  { nombre: "cacao", url: "https://cacao.vercel.app" },
+  { nombre: "cacao", url: "https://cacao-grupo.vercel.app" },
   { nombre: "cacaomedia", url: "https://cacao-media.vercel.app" },
   { nombre: "cacaotravel", url: "https://cacao-travel.vercel.app" },
   { nombre: "cacaomarket", url: "https://cacao-market.vercel.app" },

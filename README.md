@@ -13,7 +13,7 @@ Este repositorio contiene la página de la empresa, Cacao, y cinco productos hec
 
 | Producto | Carpeta | Qué es | En vivo |
 |---|---|---|---|
-| Cacao | `cacao/` | La empresa y la plataforma. La puerta a los cinco productos | https://cacao.vercel.app |
+| Cacao | `cacao/` | La empresa y la plataforma. La puerta a los cinco productos | https://cacao-grupo.vercel.app |
 | Cacao Media | raíz (`src/`) | Historias de El Salvador; cada una se desbloquea por 120 sats | https://cacao-media.vercel.app |
 | Cacao Travel | `travel/` | Experiencias con precio en sats | https://cacao-travel.vercel.app |
 | CacaoMarket | `market/` | Productos y servicios locales pagados en sats | https://cacao-market.vercel.app |
