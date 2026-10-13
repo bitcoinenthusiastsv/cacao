@@ -91,7 +91,7 @@ npx supabase db reset
 
 y luego volver a sembrar.
 
-Antes de publicar conviene revisar tipos (el guion existe en la raíz, en `market/`, en `pay/` y en `ledger/`) y compilar:
+Antes de publicar conviene revisar tipos (el guion existe en las cinco carpetas) y compilar:
 
 ```bash
 npm run check
