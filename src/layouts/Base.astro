@@ -2,6 +2,7 @@
 import '@fontsource-variable/bricolage-grotesque/wght.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
 import '../styles/global.css';
+import GrupoCacao from '../components/GrupoCacao.astro';
 import Logo from '../components/Logo.astro';
 import { SECCIONES, type SeccionId } from '../lib/secciones';
 import { TRAVEL_URL } from '../lib/travel';
@@ -12,12 +13,15 @@ interface Props {
   /** Tints the page with the section accent and marks the nav pill as current. */
   seccion?: SeccionId;
   imagen?: string;
+  /** Leave the group block out of the footer when the page shows it in its own section. */
+  sinGrupo?: boolean;
 }
 const {
   titulo,
   descripcion = 'Crónicas, guías y cultura local. Sin suscripciones: pagás solo lo que leés.',
   seccion,
   imagen,
+  sinGrupo = false,
 } = Astro.props;
 const tituloCompleto = titulo ? `${titulo} — Cacao Media` : 'Cacao Media — Historias de El Salvador';
 const canonica = new URL(Astro.url.pathname, Astro.site);
@@ -89,6 +93,7 @@ const demo = import.meta.env.PUBLIC_DEMO === '1';
         {demo && <a href="/admin/">Panel</a>}
       </nav>
       <p class="etiqueta">13.69°N · 89.22°W · San Salvador</p>
+      {!sinGrupo && <GrupoCacao actual="media" />}
     </footer>
   </body>
 </html>

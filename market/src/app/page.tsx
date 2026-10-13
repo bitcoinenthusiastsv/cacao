@@ -6,6 +6,7 @@ import { Puertas } from '@/componentes/Puertas';
 import { TarjetaProducto } from '@/componentes/TarjetaProducto';
 import { Vacio } from '@/componentes/Vacio';
 import { usdCentavosASats } from '@/lib/dinero';
+import { URL_PAY } from '@/lib/grupo';
 import { categorias, cotizacionSegura, productosDelCatalogo } from '@/servidor/catalogo';
 
 // The filters come from the URL, so the catalogue is read per request and streams in.
@@ -26,6 +27,11 @@ export default function Inicio(props: PageProps<'/'>) {
       <Suspense fallback={<CatalogoCargando />}>
         <CatalogoInicio busqueda={props.searchParams} />
       </Suspense>
+
+      <p className="aviso">
+        ¿Te mandan dinero del exterior? Seguí tu envío en{' '}
+        <a href={URL_PAY}>CacaoPay</a>
+      </p>
     </>
   );
 }

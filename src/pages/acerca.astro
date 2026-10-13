@@ -1,12 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import GrupoCacao from '../components/GrupoCacao.astro';
 import Simbolo from '../components/Simbolo.astro';
 import { SECCIONES } from '../lib/secciones';
 import { AUTORES, urlAutor } from '../lib/autores';
 import { TRAVEL_URL } from '../lib/travel';
 ---
 
-<Base titulo="Acerca" descripcion="Qué es Cacao Media, su línea editorial y cómo funciona Cacao Gate.">
+<Base titulo="Acerca" descripcion="Qué es Cacao Media, su línea editorial y cómo funciona Cacao Gate." sinGrupo>
   <div class="columna">
     <h1 class="display">Dos mitades, una historia.</h1>
 
@@ -95,6 +96,11 @@ import { TRAVEL_URL } from '../lib/travel';
       }
     </ul>
 
+    <section class="grupo-acerca" aria-labelledby="el-grupo">
+      <h2 id="el-grupo">El grupo</h2>
+      <GrupoCacao actual="media" sinTitulo />
+    </section>
+
     <h2>Contacto</h2>
 
     <p>Escribinos a <a href="mailto:hola@cacaomedia.sv">hola@cacaomedia.sv</a>.</p>
@@ -171,5 +177,21 @@ import { TRAVEL_URL } from '../lib/travel';
 
   .secciones p {
     margin-top: 0.4em;
+  }
+
+  /* The group block keeps its light text, so it sits on a dark card in the reading column. */
+  .columna > .grupo-acerca {
+    margin-top: 2em;
+    padding: 24px;
+    border-radius: var(--radio-chico);
+    background: var(--tostado);
+    color: var(--pulpa);
+  }
+  .columna .grupo-acerca h2 {
+    margin: 0 0 0.6em;
+  }
+  .grupo-acerca :global(.grupo) {
+    padding-top: 0;
+    border-top: 0;
   }
 </style>
