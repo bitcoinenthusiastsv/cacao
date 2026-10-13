@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { EstadoOrden } from '@/componentes/EstadoOrden';
+import { Boton } from '@/componentes/Boton';
 import { EtiquetaPrecio } from '@/componentes/EtiquetaPrecio';
 import { Estrellas } from '@/componentes/Estrellas';
 import { formatoSats, formatoUsd, usdCentavosASats } from '@/lib/dinero';
@@ -76,6 +77,13 @@ async function Orden({ params }: { params: Promise<{ id: string }> }) {
         </p>
         {/* The provider's agreed sentence is the same text as the reminder: show it once. */}
         {descripcion !== recordatorio && <p>{descripcion}</p>}
+        {detalle.pagadaEn !== null && (
+          <p>
+            <Boton href={`/ordenes/${detalle.id}/recibo`} variante="secundario">
+              Ver comprobante
+            </Boton>
+          </p>
+        )}
       </header>
 
       {recordatorio !== null && <p className={styles.recordatorio}>{recordatorio}</p>}
@@ -122,6 +130,7 @@ async function Orden({ params }: { params: Promise<{ id: string }> }) {
                 entregada: detalle.entregadaEn,
                 cerrada: detalle.cerradaEn,
                 expirada: detalle.expiradaEn,
+                cancelada: detalle.canceladaEn,
                 disputada: detalle.disputadaEn,
                 resuelta: detalle.resueltaEn,
               }
@@ -262,7 +271,9 @@ async function Orden({ params }: { params: Promise<{ id: string }> }) {
           soloLectura={detalle.estado === 'expirada' || detalle.estado === 'cancelada'}
           motivoSoloLectura={
             detalle.estado === 'cancelada'
-              ? 'El trabajo se canceló. El chat quedó en solo lectura.'
+              ? trabajo
+                ? 'El trabajo se canceló. El chat quedó en solo lectura.'
+                : 'El pedido se canceló. El chat quedó en solo lectura.'
               : undefined
           }
           inicial={mensajes}

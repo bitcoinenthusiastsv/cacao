@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
 import type { EstadoOrden } from '@/lib/estados';
+import { registrarEvento, sesionDeVisita } from '@/servidor/eventos';
 import { asegurarCobro, estadoDePago } from '@/servidor/pagos';
 import { exigirSesion } from '@/servidor/sesion';
 
@@ -10,8 +11,9 @@ import { PagoCliente } from './PagoCliente';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// States that still belong on this screen. Anything later means the order was paid.
-const ESTADOS_DE_PAGO: EstadoOrden[] = ['creada', 'esperando_pago', 'expirada'];
+// States that still belong on this screen. Anything later means the order was paid. A cancelled product
+// order stays here, so the screen can say it was cancelled and not to pay the invoice.
+const ESTADOS_DE_PAGO: EstadoOrden[] = ['creada', 'esperando_pago', 'expirada', 'cancelada'];
 // A job is payable once its work is done ('hecha'); its request is made here, when the screen opens.
 const ESTADOS_DE_TRABAJO: EstadoOrden[] = ['hecha', 'esperando_pago'];
 
@@ -68,6 +70,19 @@ async function PagoOrden({
 
   const pagable = trabajo ? ESTADOS_DE_TRABAJO.includes(estado.estado) : ESTADOS_DE_PAGO.includes(estado.estado);
   if (!pagable) redirect(`/ordenes/${id}`);
+
+  // Funnel: the payment screen opened. Only product orders are in the market funnel.
+  const sesionVisita = await sesionDeVisita();
+  if (!trabajo && sesionVisita) {
+    await registrarEvento({
+      nombre: 'vio_pago',
+      sesion: sesionVisita,
+      usuarioId: sesion.usuario.id,
+      ruta: `/ordenes/${id}/pagar`,
+      objeto: id,
+      valorUsdCentavos: null,
+    });
+  }
 
   return <PagoCliente ordenId={id} inicial={estado} errorCobro={problema} />;
 }

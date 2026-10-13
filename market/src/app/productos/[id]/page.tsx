@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { AgregarAlCarrito } from '@/componentes/AgregarAlCarrito';
 import { EtiquetaPrecio } from '@/componentes/EtiquetaPrecio';
 import { FotoProducto } from '@/componentes/FotoProducto';
+import { RegistrarEvento } from '@/componentes/RegistrarEvento';
 import { usdCentavosASats } from '@/lib/dinero';
 import { cotizacionSegura, productoPorId } from '@/servidor/catalogo';
 
@@ -42,6 +43,7 @@ async function DetalleProducto({ params }: { params: Promise<{ id: string }> }) 
 
   return (
     <article className="producto">
+      <RegistrarEvento nombre="vista_producto" objeto={producto.id} />
       <figure>
         <FotoProducto
           src={producto.foto}

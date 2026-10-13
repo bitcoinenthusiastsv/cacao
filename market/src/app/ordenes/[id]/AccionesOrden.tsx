@@ -51,7 +51,7 @@ export function AccionesOrden({
         />
       )}
 
-      {tiene('cancelar') && <FormularioCancelar ordenId={ordenId} />}
+      {tiene('cancelar') && <FormularioCancelar ordenId={ordenId} trabajo={trabajo} />}
 
       {tiene('confirmar_pago') && (
         <Paso descripcion="El pago no llega solo a la app cuando la Lightning Address no avisa. Confirmalo a mano.">

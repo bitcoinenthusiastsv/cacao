@@ -58,6 +58,11 @@ export async function cancelarTrabajo(ordenId: string, motivo: string): Promise<
   return transicion(ordenId, (usuarioId) => cancelarOrden(ordenId, usuarioId, motivo));
 }
 
+/** The buyer cancels a product order before it is paid. The stock goes back to the shop. */
+export async function cancelarPedido(ordenId: string, motivo: string): Promise<Resultado<null>> {
+  return transicion(ordenId, (usuarioId) => cancelarOrden(ordenId, usuarioId, motivo));
+}
+
 export async function confirmarEntregaComprador(ordenId: string): Promise<Resultado<null>> {
   return transicion(ordenId, (usuarioId) => marcarEntregada(ordenId, usuarioId));
 }

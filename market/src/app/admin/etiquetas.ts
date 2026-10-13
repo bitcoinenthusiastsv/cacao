@@ -42,6 +42,8 @@ export const ETIQUETA_COBRO: Record<string, string> = {
   pendiente: 'Pendiente',
   pagado: 'Pagado',
   expirado: 'Expirado',
+  // The buyer cancelled the order before paying, so its request is closed.
+  cancelado: 'Cancelado',
 };
 
 export const ETIQUETA_MODO: Record<string, string> = {

@@ -8,9 +8,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Boton } from '@/componentes/Boton';
 import { EtiquetaPrecio } from '@/componentes/EtiquetaPrecio';
 import { formatoUsd } from '@/lib/dinero';
+import { accionesPosibles } from '@/lib/estados';
 import { clienteNavegador } from '@/lib/supabase-navegador';
 
 import { clienteEnVivo } from '../canalEnVivo';
+import { FormularioCancelar } from '../FormularioCancelar';
 
 import {
   estadoDePagoAccion,
@@ -102,6 +104,23 @@ export function PagoCliente({
   const vencidaProducto = !trabajo && vencida;
   const quedaUnMinuto = esperando && !vencida && restante !== null && restante <= 60;
   const activo = !vencida && (estado.estado === 'creada' || esperando);
+  // A cancelled product order: the screen stops, hides the invoice and says so.
+  const canceladaProducto = !trabajo && estado.estado === 'cancelada';
+  // The same rule as the order page: the buyer may cancel while the order is unpaid.
+  const puedeCancelar =
+    !trabajo &&
+    accionesPosibles(
+      {
+        tipo: 'productos',
+        estado: estado.estado,
+        pagada: false,
+        entregadaEn: null,
+        tieneResena: false,
+        disputa: null,
+        proveedor: estado.proveedor ?? 'manual',
+      },
+      'comprador',
+    ).includes('cancelar');
 
   const refrescar = useCallback(async () => {
     if (enVuelo.current) return;
@@ -256,6 +275,7 @@ export function PagoCliente({
 
   let textoEstado: string;
   if (pagado) textoEstado = 'Pago recibido';
+  else if (canceladaProducto) textoEstado = 'Cancelaste este pedido. No pagués esta factura.';
   else if (vencidaTrabajo) textoEstado = TEXTO_VENCIDA_TRABAJO;
   else if (vencidaProducto) textoEstado = TEXTO_VENCIDA;
   else if (estado.estado === 'creada') textoEstado = 'Estamos registrando tu orden. Esperá un momento.';
@@ -333,6 +353,20 @@ export function PagoCliente({
           </Boton>
           <Boton href="/">Ir al inicio</Boton>
         </div>
+      )}
+
+      {canceladaProducto && (
+        <div className={styles.acciones}>
+          <Boton href="/carrito" variante="secundario">
+            Volver al carrito
+          </Boton>
+        </div>
+      )}
+
+      {puedeCancelar && (
+        <section className={styles.bloque} aria-label="Cancelar el pedido">
+          <FormularioCancelar ordenId={ordenId} trabajo={false} alCancelar={() => void refrescar()} />
+        </section>
       )}
 
       {demo && (

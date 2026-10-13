@@ -7,6 +7,7 @@ import { proveedorPara } from '@/lib/pagos';
 import type { Cobro } from '@/lib/pagos';
 import { cotizacionUsdBtc } from '@/lib/precio/fuente';
 
+import { registrarEvento, sesionDePago, sesionDeVisita } from './eventos';
 import { barrer } from './mantenimiento';
 import { desdeError, exito, fallo, type Resultado } from './resultado';
 import { clienteServicio } from './supabase';
@@ -59,6 +60,34 @@ async function leerNegocio(servicio: Servicio, negocioId: string) {
 }
 
 type NegocioLeido = Awaited<ReturnType<typeof leerNegocio>>;
+
+/**
+ * The one place a payment is confirmed. The buyer's screen, the buyer's demo button and the seller's
+ * manual confirmation all come through here, so the database call and the funnel event stay together.
+ * Returns the database error, if any. Only product payments count in the funnel.
+ */
+export async function confirmarPagoEnBD(
+  ordenId: string,
+  actorId: string | null,
+  sesion: string | null,
+): Promise<{ message: string } | null> {
+  const { data, error } = await clienteServicio().rpc('confirmar_pago', {
+    p_orden: ordenId,
+    p_actor: actorId ?? NULO,
+  });
+  if (error) return error;
+  if (data?.tipo === 'productos') {
+    await registrarEvento({
+      nombre: 'pago',
+      sesion: sesionDePago(sesion, ordenId),
+      usuarioId: data.comprador_id,
+      ruta: `/ordenes/${ordenId}/pagar`,
+      objeto: ordenId,
+      valorUsdCentavos: data.total_usd_centavos,
+    });
+  }
+  return null;
+}
 
 function proveedorDe(negocio: NegocioLeido) {
   return proveedorPara({
@@ -226,7 +255,7 @@ export async function estadoDePago(ordenId: string, usuarioId: string): Promise<
     ) {
       // The database refuses a payment after expira_en (FUERA_DE_PLAZO), so a late payment
       // never marks the order paid. A concurrent poll may have confirmed first; both are fine.
-      const { error } = await servicio.rpc('confirmar_pago', { p_orden: ordenId, p_actor: NULO });
+      const error = await confirmarPagoEnBD(ordenId, null, await sesionDeVisita());
       if (error && !error.message.startsWith('ESTADO_INVALIDO')) {
         console.warn('confirmar_pago:', error.message);
       }
@@ -299,7 +328,7 @@ export async function simularPago(ordenId: string, usuarioId: string): Promise<R
       return fallo('NO_PERMITIDO', 'Esta orden no se puede simular. Su pago es real.');
     }
 
-    const { error } = await servicio.rpc('confirmar_pago', { p_orden: ordenId, p_actor: NULO });
+    const error = await confirmarPagoEnBD(ordenId, null, await sesionDeVisita());
     if (error) return desdeError(error);
     return exito(null);
   } catch (error) {

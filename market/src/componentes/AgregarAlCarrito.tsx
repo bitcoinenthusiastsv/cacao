@@ -6,6 +6,7 @@ import { useId, useState } from 'react';
 import { agregarAlCarrito } from '@/lib/carrito';
 
 import { Boton } from './Boton';
+import { enviarEventoNavegador } from './RegistrarEvento';
 
 export type ProductoParaCarrito = {
   id: string;
@@ -56,6 +57,8 @@ export function AgregarAlCarrito({
       },
       ajustada,
     );
+    // Only a successful add is a funnel step.
+    enviarEventoNavegador('agrego_carrito', producto.id);
     setAgregadas(ajustada);
   }
 

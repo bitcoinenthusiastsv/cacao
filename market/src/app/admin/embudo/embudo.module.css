@@ -1,0 +1,92 @@
+/* Funnel page: phone first. Bars are Mazorca on Arena with a Tostado edge, and every bar has its
+   number and percentage printed beside it, so colour is never the only signal. */
+
+.filtros {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+  min-width: 0;
+}
+
+@media (min-width: 560px) {
+  .filtros {
+    grid-template-columns: 1fr 1fr auto;
+  }
+}
+
+.campo {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.aviso {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--arena);
+  color: var(--tostado);
+  border-left: 4px solid var(--criollo);
+}
+
+.pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.paso {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.etiqueta {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cifra {
+  white-space: nowrap;
+}
+
+.barra {
+  height: 16px;
+  background: var(--arena);
+  border: 2px solid var(--tostado);
+  max-width: 100%;
+}
+
+.barra > span {
+  display: block;
+  height: 100%;
+  background: var(--mazorca);
+  max-width: 100%;
+}
+
+.porcentaje {
+  margin: 0;
+  color: var(--tostado);
+}
+
+.lectura {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--tostado);
+}
+
+.valor {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
