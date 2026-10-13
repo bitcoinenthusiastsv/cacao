@@ -4,6 +4,7 @@ import type { ModoEntrega, ProductoRevisado, RevisionCarrito } from '@/app/carri
 import { cotizacionUsdBtc } from '@/lib/precio/fuente';
 
 import { cotizacionSegura } from './catalogo';
+import { registrarEvento, sesionDeVisitaCreando } from './eventos';
 import { asegurarCobro } from './pagos';
 import { desdeError, exito, fallo, type Resultado } from './resultado';
 import { clienteServicio, clienteSesion } from './supabase';
@@ -80,6 +81,17 @@ export async function crearPedido(
 
     // A failed payment request does not undo the order: the payment screen retries it on load.
     if (data.estado === 'creada') await asegurarCobro(data.id);
+
+    // The order was placed from the cart. This is also where the browser's session id is first set
+    // when the buyer never opened a product page in this browser.
+    await registrarEvento({
+      nombre: 'inicio_pedido',
+      sesion: await sesionDeVisitaCreando(),
+      usuarioId,
+      ruta: '/carrito',
+      objeto: data.id,
+      valorUsdCentavos: data.total_usd_centavos,
+    });
     return exito({ ordenId: data.id });
   } catch (error) {
     return desdeError(error);

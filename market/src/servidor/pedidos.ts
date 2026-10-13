@@ -13,6 +13,7 @@ import type {
 import { accionesPosibles, type OrdenParaAcciones } from '@/lib/estados';
 import type { Database } from '@/tipos/db';
 
+import { confirmarPagoEnBD } from './pagos';
 import { barrer } from './mantenimiento';
 import { desdeError, exito, fallo, type Resultado } from './resultado';
 import type { Sesion } from './sesion';
@@ -445,9 +446,11 @@ export async function ejecutarRpc(llamada: PromiseLike<{ error: unknown }>): Pro
 
 // Transitions. Each one passes the signed-in user as p_actor; the database checks the role and state.
 
+/** The seller confirms a payment received by hand (a manual Lightning Address). */
 export async function confirmarPagoManual(ordenId: string, usuarioId: string): Promise<Resultado<null>> {
   if (!esUuid(ordenId) || !esUuid(usuarioId)) return NO_ENCONTRADA();
-  return ejecutarRpc(clienteServicio().rpc('confirmar_pago', { p_orden: ordenId, p_actor: usuarioId }));
+  const error = await confirmarPagoEnBD(ordenId, usuarioId, null);
+  return error ? desdeError(error) : exito(null);
 }
 
 export async function marcarLista(ordenId: string, usuarioId: string): Promise<Resultado<null>> {
@@ -461,7 +464,10 @@ export async function marcarHecha(ordenId: string, usuarioId: string): Promise<R
   return ejecutarRpc(clienteServicio().rpc('marcar_hecha', { p_orden: ordenId, p_actor: usuarioId }));
 }
 
-/** Either party cancels an agreed job, with a short reason. The database checks the same limits. */
+/**
+ * Cancels with a short reason. Either party cancels an agreed job; the buyer cancels a product order
+ * before it is paid. The database checks the role, the state and the same limits.
+ */
 export async function cancelarOrden(
   ordenId: string,
   usuarioId: string,
@@ -475,6 +481,21 @@ export async function cancelarOrden(
   return ejecutarRpc(
     clienteServicio().rpc('cancelar_orden', { p_orden: ordenId, p_actor: usuarioId, p_motivo: texto }),
   );
+}
+
+/**
+ * The reference of a payment request, for the receipt. Service role: the browser never reads the
+ * payment columns. Call only after the role check of detalleDeOrden.
+ */
+export async function referenciaDeCobro(ordenId: string): Promise<string | null> {
+  if (!esUuid(ordenId)) return null;
+  const { data, error } = await clienteServicio()
+    .from('cobros')
+    .select('referencia_externa')
+    .eq('orden_id', ordenId)
+    .maybeSingle();
+  if (error) throw new Error(`No pudimos leer el pago: ${error.message}`);
+  return data?.referencia_externa ?? null;
 }
 
 /** The buyer confirms delivery. No code is needed on this side. */
@@ -512,7 +533,7 @@ export async function crearResena(
     return fallo('DATOS_INVALIDOS', 'Elegí una puntuación de 1 a 5.');
   }
   const texto = comentario.trim();
-  // Stricter than the database (600), as the brief asks for this screen.
+  // Stricter than the database (600), to match the limit shown on this form.
   if (largo(texto) > 500) {
     return fallo('DATOS_INVALIDOS', 'El comentario no puede pasar de 500 caracteres.');
   }

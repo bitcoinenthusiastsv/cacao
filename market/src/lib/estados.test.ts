@@ -41,14 +41,14 @@ function ver(o: OrdenParaAcciones, rol: Rol, ahora?: Date): Accion[] {
 const AHORA = new Date('2026-10-12T12:00:00Z');
 
 describe('accionesPosibles, transition table', () => {
-  it('creada: nothing for anyone; the system moves it on', () => {
-    for (const rol of ['comprador', 'vendedor', 'admin'] as Rol[]) {
-      expect(ver(orden({ estado: 'creada' }), rol, AHORA)).toEqual([]);
-    }
+  it('creada: the buyer may cancel while the system registers the order; nobody else acts', () => {
+    expect(ver(orden({ estado: 'creada' }), 'comprador', AHORA)).toEqual(['cancelar']);
+    expect(ver(orden({ estado: 'creada' }), 'vendedor', AHORA)).toEqual([]);
+    expect(ver(orden({ estado: 'creada' }), 'admin', AHORA)).toEqual([]);
   });
 
-  it('esperando_pago: the buyer pays', () => {
-    expect(ver(orden({ estado: 'esperando_pago' }), 'comprador', AHORA)).toEqual(['pagar']);
+  it('esperando_pago: the buyer pays or cancels', () => {
+    expect(ver(orden({ estado: 'esperando_pago' }), 'comprador', AHORA)).toEqual(['cancelar', 'pagar']);
   });
 
   it('esperando_pago: the seller confirms by hand only for the manual provider', () => {
@@ -112,6 +112,12 @@ describe('accionesPosibles, transition table', () => {
     }
   });
 
+  it('cancelada (product): nothing for anyone, and the buyer cannot cancel it again', () => {
+    for (const rol of ['comprador', 'vendedor', 'admin'] as Rol[]) {
+      expect(ver(orden({ estado: 'cancelada' }), rol, AHORA)).toEqual([]);
+    }
+  });
+
   it('disputada: the admin resolves; the parties wait', () => {
     const o = orden({ estado: 'disputada', disputa: { estado: 'abierta', resultado: null, reembolsoMarcado: false, reembolsoConfirmado: false } });
     expect(ver(o, 'admin', AHORA)).toEqual(['resolver_disputa']);
@@ -169,6 +175,7 @@ describe('accionesPosibles, roles and guards', () => {
   it('a seller never gets buyer actions', () => {
     const buyerOnly = [
       'pagar',
+      'cancelar',
       'marcar_entregada',
       'resenar',
       'abrir_disputa',
@@ -203,6 +210,47 @@ describe('accionesPosibles, roles and guards', () => {
       disputa: { estado: 'abierta', resultado: null, reembolsoMarcado: false, reembolsoConfirmado: false },
     });
     expect(ver(conDisputa, 'comprador', AHORA)).not.toContain('abrir_disputa');
+  });
+});
+
+describe('product orders: buyer cancellation before payment', () => {
+  it('the buyer cancels while creada or esperando_pago, and never once paid', () => {
+    for (const estado of ['creada', 'esperando_pago'] as EstadoOrden[]) {
+      expect(ver(orden({ estado, pagada: false }), 'comprador', AHORA)).toContain('cancelar');
+      expect(ver(orden({ estado, pagada: false }), 'vendedor', AHORA)).not.toContain('cancelar');
+    }
+    for (const estado of ['pagada', 'lista', 'entregada', 'cerrada', 'disputada', 'resuelta'] as EstadoOrden[]) {
+      expect(ver(orden({ estado }), 'comprador', AHORA)).not.toContain('cancelar');
+    }
+  });
+
+  it('a manual payment does not change the cancellation: the buyer may still cancel', () => {
+    expect(ver(orden({ estado: 'esperando_pago', proveedor: 'manual' }), 'comprador', AHORA)).toContain('cancelar');
+    expect(ver(orden({ estado: 'esperando_pago', proveedor: 'falso' }), 'comprador', AHORA)).toContain('cancelar');
+  });
+
+  it('the seller reads the cancelled product sentence: the buyer cancelled before paying', () => {
+    expect(descripcionDeEstado('cancelada', 'comprador', 'productos')).toBe(
+      'Cancelaste este pedido. Los productos volvieron al inventario.',
+    );
+    expect(descripcionDeEstado('cancelada', 'vendedor', 'productos')).toBe(
+      'El comprador canceló este pedido antes de pagar.',
+    );
+  });
+
+  it('a cancelled job keeps the job sentence for both parties', () => {
+    expect(descripcionDeEstado('cancelada', 'comprador', 'servicio')).toBe(
+      'El trabajo se canceló. Revisá el motivo en la orden.',
+    );
+    expect(descripcionDeEstado('cancelada', 'vendedor', 'servicio')).toBe(
+      'El trabajo se canceló. Revisá el motivo en la orden.',
+    );
+  });
+
+  it('a job keeps its cancel rules: either party while agreed, the buyer never cancels a paid product', () => {
+    const trabajo = orden({ tipo: 'servicio', pagada: false, estado: 'acordada' });
+    expect(ver(trabajo, 'comprador', AHORA)).toEqual(['cancelar']);
+    expect(ver(trabajo, 'vendedor', AHORA)).toEqual(['cancelar', 'marcar_hecha']);
   });
 });
 

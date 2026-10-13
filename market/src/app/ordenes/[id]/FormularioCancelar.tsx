@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { cancelarTrabajo } from './acciones';
+import { cancelarPedido, cancelarTrabajo } from './acciones';
 import styles from './orden.module.css';
 import { useAccion } from './useAccion';
 
@@ -10,9 +10,18 @@ import { useAccion } from './useAccion';
 const MINIMO = 4;
 const MAXIMO = 300;
 
-// Either party can cancel an agreed job, with a reason. Behind a disclosure, like the dispute form,
-// and a second step, because a cancelled job cannot be reopened.
-export function FormularioCancelar({ ordenId }: { ordenId: string }) {
+// Cancels with a reason. A job: either party while it is agreed. A product order: the buyer, before it
+// is paid, and the stock goes back. Behind a disclosure, like the dispute form, and a second step,
+// because a cancelled order cannot be reopened. `alCancelar` lets the payment screen refresh itself.
+export function FormularioCancelar({
+  ordenId,
+  trabajo = true,
+  alCancelar,
+}: {
+  ordenId: string;
+  trabajo?: boolean;
+  alCancelar?: () => void;
+}) {
   const [abierto, setAbierto] = useState(false);
   const [motivo, setMotivo] = useState('');
   const [preguntando, setPreguntando] = useState(false);
@@ -33,7 +42,15 @@ export function FormularioCancelar({ ordenId }: { ordenId: string }) {
   }
 
   function confirmar() {
-    correr(() => cancelarTrabajo(ordenId, motivo.trim()), () => setPreguntando(false));
+    const operacion = trabajo ? cancelarTrabajo : cancelarPedido;
+    correr(
+      () => operacion(ordenId, motivo.trim()),
+      () => {
+        setPreguntando(false);
+        setAbierto(false);
+        alCancelar?.();
+      },
+    );
   }
 
   const mensajeError = errorLocal ?? error;
@@ -47,13 +64,15 @@ export function FormularioCancelar({ ordenId }: { ordenId: string }) {
         aria-controls="formulario-cancelar"
         onClick={() => setAbierto((v) => !v)}
       >
-        Cancelar este trabajo
+        {trabajo ? 'Cancelar este trabajo' : 'Cancelar pedido'}
       </button>
 
       {abierto && (
         <form id="formulario-cancelar" className={styles.formulario} onSubmit={pedirConfirmacion} noValidate>
           <p className={styles.ayuda}>
-            Si lo cancelás, no se puede deshacer. La otra persona ve el motivo en la orden.
+            {trabajo
+              ? 'Si lo cancelás, no se puede deshacer. La otra persona ve el motivo en la orden.'
+              : 'Si lo cancelás, no se puede deshacer. Los productos vuelven al inventario y la tienda ve el motivo.'}
           </p>
 
           <div className={styles.campoGrupo}>
@@ -81,17 +100,21 @@ export function FormularioCancelar({ ordenId }: { ordenId: string }) {
           {!preguntando && (
             <div>
               <button type="submit" className="boton" disabled={pendiente}>
-                Cancelar el trabajo
+                {trabajo ? 'Cancelar el trabajo' : 'Cancelar el pedido'}
               </button>
             </div>
           )}
 
           {preguntando && (
             <div className={styles.confirmacion}>
-              <p className={styles.pregunta}>¿Seguro que querés cancelar este trabajo? No se puede deshacer.</p>
+              <p className={styles.pregunta}>
+                {trabajo
+                  ? '¿Seguro que querés cancelar este trabajo? No se puede deshacer.'
+                  : '¿Seguro que querés cancelar este pedido? No se puede deshacer.'}
+              </p>
               <div className={styles.fila}>
                 <button type="button" className="boton" disabled={pendiente} onClick={confirmar}>
-                  {pendiente ? 'Cancelando…' : 'Sí, cancelar el trabajo'}
+                  {pendiente ? 'Cancelando…' : trabajo ? 'Sí, cancelar el trabajo' : 'Sí, cancelar el pedido'}
                 </button>
                 <button
                   type="button"

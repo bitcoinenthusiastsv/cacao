@@ -105,14 +105,19 @@ export const DESCRIPCION_ESTADO: Record<EstadoOrden, Record<RolParte, string>> =
     comprador: 'El trabajo está hecho. Pagalo cuando estés conforme. Si no estás de acuerdo, abrí una disputa.',
     vendedor: 'Marcaste el trabajo como hecho. El cliente ya puede pagarte.',
   },
+  // A product order is cancelled by its buyer before it is paid.
   cancelada: {
-    comprador: 'El trabajo se canceló. Revisá el motivo en la orden.',
-    vendedor: 'El trabajo se canceló. Revisá el motivo en la orden.',
+    comprador: 'Cancelaste este pedido. Los productos volvieron al inventario.',
+    vendedor: 'El comprador canceló este pedido antes de pagar.',
   },
 };
 
 // Job wording for the states that read differently from a product. Other states use DESCRIPCION_ESTADO.
 const DESCRIPCION_TRABAJO: Partial<Record<EstadoOrden, Record<RolParte, string>>> = {
+  cancelada: {
+    comprador: 'El trabajo se canceló. Revisá el motivo en la orden.',
+    vendedor: 'El trabajo se canceló. Revisá el motivo en la orden.',
+  },
   esperando_pago: {
     comprador: 'Pagá el trabajo. El monto en sats ya está fijado.',
     vendedor: 'El cliente está pagando.',
@@ -222,8 +227,12 @@ function accionesDeProducto(orden: OrdenParaAcciones, rol: Rol, ahora: Date): Ac
   const admin = rol === 'admin';
 
   switch (orden.estado) {
+    // The buyer may cancel an order until it is paid; the stock goes back. The seller cannot.
+    case 'creada':
+      if (comprador) acciones.push('cancelar');
+      break;
     case 'esperando_pago':
-      if (comprador) acciones.push('pagar');
+      if (comprador) acciones.push('pagar', 'cancelar');
       // Only manual payments need the seller to confirm; the others are detected.
       if (vendedor && orden.proveedor === 'manual') acciones.push('confirmar_pago');
       break;
@@ -244,11 +253,10 @@ function accionesDeProducto(orden: OrdenParaAcciones, rol: Rol, ahora: Date): Ac
     case 'resuelta':
       acciones.push(...accionesDeReembolso(orden, rol));
       break;
-    // Jobs only; a product order never reaches them.
+    // Jobs only, or nothing left to do: a product order never reaches the first two.
     case 'acordada':
     case 'hecha':
     case 'cancelada':
-    case 'creada':
     case 'expirada':
       break;
   }

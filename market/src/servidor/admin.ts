@@ -967,3 +967,34 @@ export async function auditoriaAdmin(actorId: string): Promise<FilaAuditoria[]> 
   const referencias = await referenciasAuditoria(db, filas);
   return filas.map((f) => filaAuditoria(f, referencias.get(f.entidad_id) ?? null));
 }
+
+// ---------------------------------------------------------------------------------------------
+// Embudo de compra
+
+export type PasoEmbudo = {
+  nombre: string;
+  etiqueta: string;
+  orden: number;
+  sesiones: number;
+  eventos: number;
+  valorUsdCentavos: number;
+};
+
+/** The purchase funnel of CacaoMarket for [desde, hasta), one row per step in order. */
+export async function embudoAdmin(actorId: string, desde: string, hasta: string): Promise<PasoEmbudo[]> {
+  await exigirAdminBD(actorId);
+  const { data, error } = await clienteServicio().rpc('embudo', {
+    p_sitio: 'market',
+    p_desde: desde,
+    p_hasta: hasta,
+  });
+  if (error) throw new Error(`No pudimos leer el embudo: ${error.message}`);
+  return (data ?? []).map((f) => ({
+    nombre: f.nombre,
+    etiqueta: f.etiqueta,
+    orden: f.orden,
+    sesiones: numero(f.sesiones),
+    eventos: numero(f.eventos),
+    valorUsdCentavos: numero(f.valor_usd_centavos),
+  }));
+}

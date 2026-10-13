@@ -1,0 +1,156 @@
+/* The receipt. On screen it is a card on Blanco cálido; printed, only the receipt remains, in black
+   on white, with no header, bars or buttons. */
+
+.sinImprimir {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.volver {
+  color: var(--tostado);
+}
+
+.comprobante {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  padding: 20px 16px;
+  background: var(--blanco);
+  color: var(--tostado);
+  border: 2px solid var(--tostado);
+  overflow-wrap: anywhere;
+}
+
+.cabecera h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+}
+
+.numero {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.datos {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.datos > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datos dt {
+  font-size: 0.875rem;
+}
+
+.datos dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.bloque {
+  display: grid;
+  gap: 8px;
+}
+
+.bloque h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.lineas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  border-top: 2px solid var(--tostado);
+}
+
+.linea {
+  display: grid;
+  gap: 2px;
+  padding-top: 10px;
+  min-width: 0;
+}
+
+.lineaNombre {
+  font-weight: 600;
+}
+
+.lineaDetalle,
+.lineaTotal {
+  font-size: 0.875rem;
+}
+
+.total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 2px solid var(--tostado);
+  font-weight: 600;
+}
+
+.totalCifra {
+  font-size: 1rem;
+}
+
+.aviso {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Printing: the receipt alone, black on white. Everything else of the page is hidden, which also
+   removes the header, the navigation bar and the buttons. */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  :global(html),
+  :global(body) {
+    background: #fff !important;
+  }
+
+  :global(body) * {
+    visibility: hidden !important;
+  }
+
+  .comprobante,
+  .comprobante * {
+    visibility: visible !important;
+  }
+
+  .comprobante {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: #fff;
+    color: #000;
+    box-sizing: border-box;
+  }
+
+  .sinImprimir {
+    display: none !important;
+  }
+
+  .lineas,
+  .total {
+    border-color: #000;
+  }
+}
