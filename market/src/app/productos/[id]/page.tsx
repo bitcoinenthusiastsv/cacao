@@ -11,6 +11,9 @@ import { usdCentavosASats } from '@/lib/dinero';
 import type { ProductoDetalle } from '@/servidor/catalogo';
 import { cotizacionSegura, productoPorId } from '@/servidor/catalogo';
 
+// The lookup has to finish before the shell, so a missing id can answer 404.
+export const instant = false;
+
 // The id comes from the URL. Existence is checked before Suspense so a missing product returns HTTP 404.
 export default async function PaginaProducto(props: PageProps<'/productos/[id]'>) {
   const { id } = await props.params;

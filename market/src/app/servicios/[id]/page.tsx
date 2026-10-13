@@ -16,6 +16,9 @@ import { FormularioContratar } from './FormularioContratar';
 import { FormularioCotizar } from './FormularioCotizar';
 import estilos from './estilos.module.css';
 
+// The lookup has to finish before the shell, so a missing id can answer 404.
+export const instant = false;
+
 // The id comes from the URL. Existence is checked before Suspense so a missing service returns HTTP 404.
 export default async function PaginaServicio(props: PageProps<'/servicios/[id]'>) {
   const { id } = await props.params;
