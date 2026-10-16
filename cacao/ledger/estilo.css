@@ -1,0 +1,211 @@
+/* Cacao colours as variables. Text pairs: Tostado on Pulpa, Arena, Blanco and Mazorca;
+   Pulpa on Tostado, Criollo, Grano fresco and Chocolate. No shadows, no gradients. */
+:root {
+  --pulpa: #F5EDE3;
+  --tostado: #2A1912;
+  --mazorca: #D9902F;
+  --criollo: #8C2F2B;
+  --grano: #5E3050;
+  --chocolate: #5A3221;
+  --arena: #E6D8C6;
+  --blanco: #FFFAF4;
+  --fuente: "Bricolage Grotesque", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --radio: 28px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--tostado);
+  color: var(--tostado);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.hoja {
+  background: var(--pulpa);
+  margin-inline: clamp(0px, 1.5vw, 20px);
+  border-radius: 0 0 var(--radio) var(--radio);
+  padding-bottom: clamp(24px, 4vw, 48px);
+}
+
+a { color: var(--tostado); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+a:focus-visible { outline: 3px solid var(--mazorca); outline-offset: 2px; }
+
+.cabecera {
+  background: var(--pulpa);
+  color: var(--tostado);
+  padding: 1rem;
+  border-bottom: 1.5px solid var(--tostado);
+}
+.cabecera a { color: var(--tostado); }
+.marca { margin: 0; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; text-transform: lowercase; }
+.marca a { text-decoration: none; }
+.marca span { font-weight: 400; }
+.lema { margin: 0.25rem 0 0.75rem; font-size: 0.9rem; color: var(--tostado); }
+.nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.25rem; }
+
+.cinta {
+  margin: 0;
+  background: var(--mazorca);
+  color: var(--tostado);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.contenido {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1 { font-size: 1.5rem; line-height: 1.2; margin: 1rem 0 0.5rem; }
+h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+
+.nota, .volver { font-size: 0.95rem; }
+.volver { margin: 0.5rem 0 0; }
+.volver a { display: inline-flex; align-items: center; min-height: 44px; }
+
+.grupo, .bloque {
+  background: var(--blanco);
+  border: 1px solid var(--arena);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.grupo h2 .num { font-weight: 500; }
+
+.filas, .lineas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--arena);
+}
+.fila:first-child { border-top: 0; }
+.ticket {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+.fecha { font-family: var(--mono); font-weight: 500; font-size: 0.9rem; }
+.monto { font-family: var(--mono); font-weight: 500; }
+.motivo { flex-basis: 100%; font-size: 0.95rem; }
+.plazo {
+  background: var(--criollo);
+  color: var(--pulpa);
+  padding: 0 0.4rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+}
+
+.linea {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--arena);
+}
+.linea:first-child { border-top: 0; }
+
+.num, .hash {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+}
+.hash { overflow-wrap: anywhere; word-break: break-all; }
+
+.chip {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid var(--tostado);
+  background: var(--arena);
+  color: var(--tostado);
+}
+.chip-emitido { background: var(--chocolate); color: var(--pulpa); border-color: var(--chocolate); }
+.chip-rechazado { background: var(--criollo); color: var(--pulpa); border-color: var(--criollo); }
+.chip-pagado { background: var(--mazorca); color: var(--tostado); border-color: var(--mazorca); }
+.chip-abierto { background: var(--arena); color: var(--tostado); }
+.chip-simulado { background: var(--grano); color: var(--pulpa); border-color: var(--grano); }
+
+.datos { margin: 0; }
+.datos > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--arena);
+}
+.datos > div:first-child { border-top: 0; padding-top: 0; }
+.datos dt { font-size: 0.85rem; font-weight: 700; }
+.datos dd { margin: 0; }
+
+.respuesta {
+  background: var(--tostado);
+  color: var(--pulpa);
+  padding: 1rem;
+  font-weight: 700;
+  margin: 1rem 0;
+}
+.vacio { margin: 0; color: var(--tostado); }
+.aviso { background: var(--arena); padding: 0.5rem; margin: 0.5rem 0; }
+.rechazo, .sello { margin: 0.75rem 0 0; }
+
+.pie {
+  background: var(--tostado);
+  color: var(--pulpa);
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1rem;
+  margin-top: 0;
+  overflow: hidden;
+}
+.pie a { color: var(--pulpa); display: inline-flex; align-items: center; min-height: 44px; }
+.pie ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1rem; }
+.pie p { margin: 0; font-size: 0.9rem; }
+.pie__gigante {
+  font-size: clamp(3rem, 14vw, 10rem);
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  color: var(--chocolate);
+  margin: 0 0 clamp(1rem, 3vw, 2rem);
+  white-space: nowrap;
+}
+.pie__gigante b { font-weight: 800; }
+
+/* Wider screens: the layout only gets roomier. */
+@media (min-width: 40rem) {
+  .datos > div { grid-template-columns: 13rem 1fr; gap: 1rem; }
+  .fila .motivo { flex-basis: auto; }
+  .marca { font-size: 2.25rem; }
+}
+
+/* Printing: no background blocks, the content stays readable on paper. */
+@media print {
+  body { background: #fff; color: #000; }
+  .hoja { margin: 0; border-radius: 0; background: none; padding: 0; }
+  .cabecera, .pie, .nav, .volver { display: none; }
+  .cinta, .respuesta, .plazo, .chip { background: none; color: #000; border-color: #000; }
+  .grupo, .bloque { border: 1px solid #000; background: none; break-inside: avoid; }
+  a { color: #000; }
+}
