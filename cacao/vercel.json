@@ -3,7 +3,8 @@
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "estilo.css", "use": "@vercel/static" },
-    { "src": "favicon.svg", "use": "@vercel/static" }
+    { "src": "favicon.svg", "use": "@vercel/static" },
+    { "src": "ledger/**", "use": "@vercel/static" }
   ],
   "cleanUrls": true,
   "trailingSlash": false

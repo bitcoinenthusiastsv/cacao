@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es-SV">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cierre del día · cacaoledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="hoja">
+<header class="cabecera">
+<p class="marca"><a href="index.html">cacao<span>ledger</span></a></p>
+<p class="lema">Cobrar y declarar</p>
+<nav class="nav" aria-label="Secciones">
+<a href="index.html">Cierre del día</a>
+<a href="esquemas.html">Esquemas</a>
+</nav>
+</header>
+<p class="cinta">Demostración: sello y transmisión simulados</p>
+<main class="contenido">
+
+<h1>Cierre del 12/10/2026</h1>
+<p class="nota">Cada ticket del día en un solo grupo. Hora de El Salvador.</p>
+<section class="grupo" aria-labelledby="grupo-emitidos"><h2 id="grupo-emitidos">Emitidos (con sello simulado): <span class="num">2</span> <span class="num">$9.04</span></h2><ul class="filas"><li class="fila"><a class="ticket" href="tickets/TK-20261012-0E79.html">TK-20261012-0E79</a> <span class="fecha">2026-10-12</span> <span class="monto">$4.52 efectivo</span> <span class="motivo">sello simulado recibido</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-8E2E.html">TK-20261012-8E2E</a> <span class="fecha">2026-10-12</span> <span class="monto">$4.52 (12,236 sats) Lightning</span> <span class="motivo">sello simulado recibido</span></li></ul></section>
+<section class="grupo" aria-labelledby="grupo-huerfanos"><h2 id="grupo-huerfanos">Pagados sin documento válido (huérfanos): <span class="num">3</span> <span class="num">$26.47</span></h2><ul class="filas"><li class="fila"><a class="ticket" href="tickets/TK-20261012-E377.html">TK-20261012-E377</a> <span class="fecha">2026-10-12</span> <span class="monto">$17.75 (48,051 sats) Lightning</span> <span class="motivo">documento construido, sin transmitir</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-E87C.html">TK-20261012-E87C</a> <span class="fecha">2026-10-12</span> <span class="monto">$4.20 (11,370 sats) Lightning</span> <span class="motivo">sin documento: nunca se construyó, así que aún no hay atestación; los sats son del pago</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-F4B8.html">TK-20261012-F4B8</a> <span class="fecha">2026-10-12</span> <span class="monto">$4.52 efectivo</span> <span class="motivo">sin documento: nunca se construyó</span></li></ul></section>
+<section class="grupo" aria-labelledby="grupo-plazo"><h2 id="grupo-plazo">Con plazo de 24 horas corriendo: <span class="num">1</span> <span class="num">$4.52</span></h2><ul class="filas"><li class="fila"><span class="plazo">quedan 23 h</span> <a class="ticket" href="tickets/TK-20261012-B7EB.html">TK-20261012-B7EB</a> <span class="fecha">2026-10-12</span> <span class="monto">$4.52 efectivo</span> <span class="motivo">rechazado: identificacion.ambiente: &quot;01&quot; es producción. Sin --confirmar-produccion este documento se rechaza.</span></li></ul></section>
+<section class="grupo" aria-labelledby="grupo-abiertos"><h2 id="grupo-abiertos">Abiertos (creados, sin pagar): <span class="num">0</span></h2><p class="vacio">Ninguno.</p></section>
+<p class="respuesta" role="status">¿Todos los cobros de hoy tienen su sello? No: 4 cobros sin documento válido.</p>
+</main>
+</div>
+<footer class="pie">
+<p class="pie__gigante" aria-hidden="true"><b>cacao</b>ledger</p>
+<p>Cacao, la empresa, y los otros productos</p>
+<ul><li><a href="https://cacao-grupo.vercel.app">cacao</a></li><li><a href="https://cacao-media.vercel.app">cacaomedia</a></li><li><a href="https://cacao-travel.vercel.app">cacaotravel</a></li><li><a href="https://cacao-market.vercel.app">cacaomarket</a></li><li><a href="https://cacao-pay.vercel.app">cacaopay</a></li></ul>
+</footer>
+</body>
+</html>
