@@ -7,6 +7,8 @@ import { emisorPrueba, entradaConsumidor, entradaContribuyente } from "./ayudas-
 import { construirDte } from "./dte/construir.ts";
 import { pagoEfectivo } from "./pagos/efectivo.ts";
 import {
+  anexoConsumidorF07Csv,
+  anexoContribuyentesF07Csv,
   documentoDesde,
   informeMes,
   leerDocumentosEmitidos,
@@ -176,3 +178,34 @@ test("a sealed sale whose document file is missing stops the books instead of di
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("DGII 2021 template annexes have 20 columns (Anexo 1) and 23 columns (Anexo 2) with Renta fields", () => {
+  const { informe } = mesDePrueba();
+  const a1 = anexoContribuyentesF07Csv(informe).trim().split("\r\n");
+  assert.equal(a1.length, 1);
+  const cols1 = (a1[0] ?? "").split(";");
+  assert.equal(cols1.length, 20, "Anexo 1 has 20 columns A-T");
+  assert.equal(cols1[0], "07/10/2026");
+  assert.equal(cols1[1], "4");
+  assert.equal(cols1[2], "03");
+  assert.equal(cols1[11], "4.00");
+  assert.equal(cols1[12], "0.52");
+  assert.equal(cols1[15], "4.52");
+  assert.equal(cols1[17], "1");
+  assert.equal(cols1[18], "3");
+  assert.equal(cols1[19], "1");
+
+  const a2 = anexoConsumidorF07Csv(informe).trim().split("\r\n");
+  assert.equal(a2.length, 2, "two days with emitted 01 sales (Oct 5 and Oct 7)");
+  const cols2 = (a2[0] ?? "").split(";");
+  assert.equal(cols2.length, 23, "Anexo 2 has 23 columns A-W");
+  assert.equal(cols2[0], "05/10/2026");
+  assert.equal(cols2[1], "4");
+  assert.equal(cols2[2], "01");
+  assert.equal(cols2[13], "9.04");
+  assert.equal(cols2[19], "9.04");
+  assert.equal(cols2[20], "1");
+  assert.equal(cols2[21], "3");
+  assert.equal(cols2[22], "2");
+});
+

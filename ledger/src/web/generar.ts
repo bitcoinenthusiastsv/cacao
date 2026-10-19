@@ -5,6 +5,7 @@ import { leerAtestaciones } from "../atestacion.ts";
 import { clasificarCierre, GRUPOS } from "../cierre.ts";
 import { leerJson } from "../datos.ts";
 import { generacionDeDocumento, resolverGeneracion } from "../generacion.ts";
+import { escribirLibrosCsv, informeMes, leerDocumentosEmitidos } from "../mes.ts";
 import { listarTickets, type Ticket } from "../ticket.ts";
 import { validarDte } from "../validar.ts";
 import { paginasDelSitio, type DatosSitio, type DocumentoSitio } from "./paginas.ts";
@@ -25,6 +26,9 @@ export function generarSitio(o: OpcionesSitio): string[] {
   const tickets = listarTickets(o.datos);
   const atestaciones = leerAtestaciones(o.datos);
   const informe = clasificarCierre({ fecha: o.dia, ahora: o.ahora, tickets, atestaciones });
+  const mes = o.dia.slice(0, 7);
+  const docsEmitidos = leerDocumentosEmitidos(o.datos, tickets);
+  const mesInforme = informeMes(mes, docsEmitidos, tickets);
 
   // Only the tickets that appear in the close get a page.
   const enCierre = new Map<string, Ticket>();
@@ -46,14 +50,18 @@ export function generarSitio(o: OpcionesSitio): string[] {
     documentos.set(ticket.id, { documento: doc, generacion, validacion });
   }
 
-  const datos: DatosSitio = { dia: o.dia, informe, tickets: enCierre, atestaciones, documentos };
+  const datos: DatosSitio = { dia: o.dia, informe, informeMes: mesInforme, tickets: enCierre, atestaciones, documentos };
   rmSync(join(o.salida, "tickets"), { recursive: true, force: true });
+  rmSync(join(o.salida, "csv"), { recursive: true, force: true });
   const escritos: string[] = [];
   for (const [ruta, html] of paginasDelSitio(datos)) {
     const absoluta = join(o.salida, ruta);
     mkdirSync(dirname(absoluta), { recursive: true });
     writeFileSync(absoluta, html, "utf8");
     escritos.push(absoluta);
+  }
+  for (const csvRuta of escribirLibrosCsv(join(o.salida, "csv"), mesInforme)) {
+    escritos.push(csvRuta);
   }
   const estilo = join(o.salida, "estilo.css");
   mkdirSync(o.salida, { recursive: true });

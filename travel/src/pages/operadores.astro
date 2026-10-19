@@ -3,6 +3,11 @@ import Base from '../layouts/Base.astro';
 import { PARTES } from '../lib/reparto';
 import { CATEGORIAS, ZONAS, DIAS_SEMANA } from '../content.config';
 
+// The operator panel is for signed-in people only. Signed-out visitors go to /entrar/, which brings them back here.
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (!Astro.locals.auth().isAuthenticated) return Astro.redirect('/entrar/');
+
 // Day codes are the ones stored in the content collection; these are the labels shown to the operator.
 const ETIQUETA_DIA: Record<string, string> = {
   lun: 'lun', mar: 'mar', mie: 'mié', jue: 'jue', vie: 'vie', sab: 'sáb', dom: 'dom',

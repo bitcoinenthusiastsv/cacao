@@ -1,0 +1,98 @@
+/* Marco tributario y regulatorio en El Salvador. Brand variables only. */
+.pagina {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
+.seccion {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--blanco);
+  min-width: 0;
+}
+
+.seccion h2 {
+  font-size: clamp(1.25rem, 3.5vw, 1.55rem);
+}
+
+.tarjetas {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tarjeta {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--tostado);
+  border-radius: var(--radio-chico);
+  background: var(--pulpa);
+  min-width: 0;
+}
+
+.tarjeta h3 {
+  font-size: 1.0625rem;
+}
+
+.lista {
+  display: grid;
+  gap: 10px;
+  padding-left: 1.25em;
+  list-style: disc;
+  min-width: 0;
+}
+
+.lista li {
+  padding-left: 0.25em;
+  overflow-wrap: anywhere;
+}
+
+.definiciones {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+.definiciones > div {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--arena);
+  min-width: 0;
+}
+
+.definiciones dt {
+  font-weight: 700;
+}
+
+.definiciones dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pie {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .definiciones > div {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: 16px;
+  }
+}

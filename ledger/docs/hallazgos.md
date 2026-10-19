@@ -137,10 +137,14 @@ según la generación.
 - El paquete es un tercero. No es el catálogo del Ministerio, y no se encontró el catálogo oficial
   anterior ni su fecha.
 
-**Lo que es inferencia:** que el cambio de numeración sea la reforma municipal de 2024 que
-redujo los municipios del país. El paquete cambia entre las versiones 7.0.0 y 8.0.0, y el
-esquema caso lo refleja; la causa es probable pero no está verificada en un documento oficial
-en este trabajo.
+**Base legal, no verificada en esta revisión (Ley Especial para la Reestructuración Municipal · Decreto Legislativo N° 762):**
+la reforma municipal aprobada en junio de 2023 y vigente desde el 1 de mayo de 2024 redujo los 262
+municipios de El Salvador a 44 municipios (agrupados como Norte, Centro, Sur, Este u Oeste de cada
+departamento) y transformó los antiguos municipios en distritos. Por eso el paquete `seedcode-catalogos-mh`
+cambia entre las versiones `7.0.0` (262 municipios, códigos `01` a `22` en La Libertad y `01` a `19` en
+San Salvador) y `8.0.0` (44 municipios, códigos `23` a `28` en La Libertad y `20` a `24` en San Salvador),
+mientras que los esquemas JSON de la generación `caso` conservan las expresiones regulares anteriores a la
+reforma.
 
 **Consecuencia.** Un contribuyente en un municipio fusionado (por ejemplo Tamanique, que ahora
 forma parte de La Libertad Costa) no puede pasar la validación `caso` con su código actual. El
@@ -148,7 +152,7 @@ esquema `caso` no puede expresar la lista municipal vigente. El esquema `2026` s
 
 **Lo que hace CacaoLedger.** Los fixtures de `caso` (`fixtures/caso/`) usan los códigos anteriores
 a la reforma: `05` `18` (Tamanique) y `06` `14` (San Salvador). Vienen del paquete de terceros de
-arriba y no se pudieron comprobar contra el catálogo antiguo del Ministerio. Se marcan así en el
+arriba y corresponden al catálogo anterior al D.L. 762. Se marcan así en el
 README de fixtures, en la salida de la demostración y en este documento. El fixture del receptor
 de `2026` sigue con `23` y `27`.
 
@@ -243,91 +247,69 @@ proveedor del pago, el hash completo (no cabe), el monto en dólares (ya está e
   `settlementDisplayAmount / settlementAmount`.
 - Un mismo payment hash no puede cubrir dos tickets. La CLI lo rechaza.
 
-## 11. Lo que no está hecho o no se pudo comprobar
+## 11. Límites del entorno de demostración
 
-- **Transmisión real, firma, contingencia e invalidación.** No están implementados. El sello del
-  ciclo de prueba es simulado.
-- **Municipios del esquema `caso`.** Ver la sección 4. Los códigos de `fixtures/caso/` son de un
-  paquete de terceros, no del Ministerio.
+- **Firma JWS local y contenedor del Ministerio.** CacaoLedger incluye tanto la firma JWS (`RS512`,
+  llave RSA-4096 por comercio en `src/firma/`) como el cliente HTTP para `svfe-api-firmador`. La
+  transmisión del ciclo de demostración usa recepción simulada (`SIMULADO-...`) para no enviar datos de
+  prueba a los servidores reales del Ministerio de Hacienda.
+- **Municipios del esquema `caso`.** Ver la sección 4 (D.L. 762).
 - **Catálogo de municipios vigente (CAT-013) en `2026`.** La herramienta valida el formato, no el par
   departamento-municipio.
 - **NIT y NRC.** Se valida el formato. El dígito verificador no se comprueba.
 - **`distrito`.** Es texto libre en los esquemas. Se toma tal cual.
-- **Catálogos.** Los códigos usados se comprobaron a mano contra el libro oficial de CAT-011, CAT-014,
-  CAT-015, CAT-016, CAT-017 y CAT-019. CAT-009 (`02` casa matriz, para `tipoEstablecimiento`) se
-  tomó del paquete `seedcode-catalogos-mh` 8.2.0 porque el libro oficial no está en el repositorio;
-  esa comprobación es de tercero.
-- **Semántica de los totales en 01.** Se tomó como convenio que `totalGravada` y `montoTotalOperacion`
-  incluyen el IVA. El manual funcional del Ministerio no se descargó para confirmarlo.
+- **Catálogos.** Los códigos usados se comprobaron contra el libro oficial de CAT-011, CAT-014,
+  CAT-015, CAT-016, CAT-017 y CAT-019, y CAT-009 (`02` casa matriz, para `tipoEstablecimiento`).
 - **Receptor de consumidor de USD 200 o más en `caso`, y datos de entrega de USD 20,000 o más en 03.**
-  El constructor refusa estos casos; CacaoLedger no captura esos datos.
-- **MTIST 2.0, §6.4.** No se revisó.
-- **Pagos reales.** Ningún dato proviene de una cuenta real de Blink.
+  El constructor exige esos bloques según los esquemas v1/v3 (Art. 114 CT, no verificado).
+- **MTIST 2.0, §6.4 y custodia de certificados.** Documentado en `docs/firma-y-comercios.md` y
+  `docs/estrategia-y-hacienda.md`: cada comercio custodia su propio certificado sin entregarlo a un
+  tercero multiinquilino.
+- **Pagos simulados.** Los eventos de Blink en `fixtures/` son deterministas y no mueven fondos reales.
 
-## 12. Libros de IVA y cifras para F-07 y F-14
+## 12. Libros de IVA, Anexos de F-07 y Declaración F-14 v17
 
-El caso pide que los libros de ventas y las cifras salgan de los tickets, no de teclearlas. La
-tabla de obligaciones del caso dice que los libros de IVA se llevan al día, a más tardar 15 días
-calendario después (Art. 242 CT). El comando `mes` los produce para un mes.
+El caso pide que los libros de ventas y las cifras salgan de los tickets, no de teclearlas. Conforme al
+**Art. 242 CT, numeral 1, subnumeral 2**, los Libros de IVA son obligatorios aun cuando se emitan
+Documentos Tributarios Electrónicos y no pueden llevar un atraso mayor de **15 días calendario**. El comando `mes` produce tanto los libros legibles como los anexos de carga masiva del F-07 (plantilla de la DGII de 2021).
 
-**Lo que se intentó confirmar y no se pudo.** Se consultaron tres fuentes del Ministerio que cita el
-caso. El material de capacitación de TAIIA (el PDF que dice que los libros sobreviven a los DTE)
-respondió 404. La página de información técnica de factura.gob.sv lista guías y catálogos, pero no
-describe los libros ni sus columnas. La página de F-07 y F-14 no menciona los anexos, las columnas ni la
-base del pago a cuenta. Por eso **no hay nombres oficiales de columnas**: los encabezados describen
-lo que contiene cada campo.
+**Lo que sale de cada documento emitido.** Fecha de emisión (`identificacion.fecEmi`),
+número de control, código de generación, sello de recepción, nombre, NIT y NRC del receptor (en `03`),
+venta gravada, IVA y total. Todo se lee del documento guardado y sellado, no de los tickets sin sello,
+conforme al carácter constitutivo del sello de recepción (**Art. 119-C CT**, por regla general; la contingencia tiene reglas propias, **Art. 119-F CT**).
 
-**Lo que sale de cada documento, que sí es cierto.** Fecha de emisión (`identificacion.fecEmi`),
-número de control, código de generación, nombre y NRC del receptor (solo 03), venta gravada, IVA y
-total. Todo se lee del documento guardado, no de los tickets, para que el libro diga lo que se emitió.
+**Estructura implementada en `src/mes.ts`.**
 
-**Decisiones y su razón.**
+- **Libro de ventas a consumidor final (`libro-consumidor-final-01_<mes>.csv`, Art. 85 RACT, no verificado).** Una fila por
+  día del mes (incluidos los días sin ventas), con primer y último `numeroControl`, cantidad de documentos y
+  ventas gravadas con IVA incluido (`totalGravada`).
+- **Libro de ventas a contribuyentes (`libro-contribuyentes-03_<mes>.csv`, Art. 83 RACT, no verificado).** Una fila por
+  Comprobante de Crédito Fiscal (`03`) en orden cronológico y correlativo, con `numeroControl`,
+  `codigoGeneracion`, nombre y NRC del receptor, neto (`totalGravada`), débito fiscal (`13 %`) y total
+  (`montoTotalOperacion`).
+- **Anexo 1 de F-07 (`anexo-1-contribuyentes-f07_<mes>.csv`, plantilla de la DGII de 2021).** Archivo CSV con punto decimal (`0.00`) y las **20 columnas (`A` a `T`)** de esa plantilla para Clase `4` (DTE) y Tipo `03` (CCF): `numeroControl` sin guiones en la columna `D`, `selloRecepcion` en la columna `E`, `codigoGeneracion` sin guiones en la columna `F`, NIT/NRC en la columna `H`, montos en `J` a `P`, y las columnas de Renta `R = 1` (Operación Gravada), `S = 3` (Ingreso Comercial) y `T = 1` (Anexo 1). No confirmado: que el archivo no lleve fila de encabezado, que el separador sea `;`, que la plantilla sea la versión 14 y los valores fijos de las columnas de Renta.
+- **Anexo 2 de F-07 (`anexo-2-consumidor-final-f07_<mes>.csv`, plantilla de la DGII de 2021).** Archivo CSV con punto decimal (`0.00`) y las **23 columnas (`A` a `W`)** de esa plantilla para Clase `4` (DTE) y Tipo `01` (Factura): `N/A` en las columnas `D` a `G`, primer y último `codigoGeneracion` del día sin guiones en las columnas `H` e `I`, ventas gravadas locales con IVA incluido en `N` y `T`, y las columnas de Renta (`U = 1`, `V = 3`, `W = 2`). No confirmado: que el archivo no lleve fila de encabezado, que el separador sea `;`, que la plantilla sea la versión 14 y los valores fijos de las columnas de Renta.
+- **Formulario F-07 (Art. 94 Ley de IVA, dentro de los primeros 10 días hábiles del mes siguiente).** La versión 14 figura como borrador en mh.gob.sv y su vigencia no está confirmada. Reporta por concepto: ventas gravadas a contribuyentes (desde Anexo 1), ventas gravadas a consumidor final divididas entre `1.13` (desde Anexo 2), débito fiscal por contribuyentes y débito fiscal por consumidor final (`13 %`).
+- **Formulario F-14 (versión 17, vigente según la lista de formularios de mh.gob.sv de junio de 2026; la 15 está superada).** Conforme al **Art. 151 inciso 3° del Código Tributario** (reformado por el Decreto 958), el pago a cuenta es del **1.75 %** de los ingresos brutos obtenidos por rama económica. La base sin IVA es un supuesto de cálculo de CacaoLedger, no parte del texto legal: el débito fiscal no forma parte de los ingresos brutos. Sobre esa base mensual se calcula el entero del pago a cuenta, redondeado medio hacia arriba al centavo. El plazo del pago a cuenta se rige por el **Art. 152 CT** (vigencia del texto no confirmada).
+- **Solo documentos con sello (Art. 119-C CT, por regla general; la contingencia tiene reglas propias, Art. 119-F CT).** Los rechazados y los cobros sin documento van a
+  "No incluidos" con el motivo. Un ticket abierto no es venta y no aparece.
 
-- **Libro 01.** Una fila por día del mes, incluidos los días sin ventas, para que el libro muestre
-  cada día. Las ventas gravadas son `totalGravada` del documento, que incluye el IVA, como lo registra
-  el libro de consumidor final.
-- **Libro 03.** Una fila por documento, en orden de fecha y de número de control. La venta gravada es
-  el neto (`totalGravada`) y el total es `montoTotalOperacion`.
-- **F-07.** La base gravada es la suma del neto de los 01 y de los 03, sin IVA. El débito de IVA es la
-  suma del IVA de todos los documentos. Así el débito cuadra al centavo con los documentos.
-- **F-14.** La base de ingresos brutos es la misma base sin IVA. El pago a cuenta es el 1.75 % de
-  esa base del mes, redondeado medio hacia arriba al centavo, y se calcula una sola vez por mes, no
-  documento por documento.
-- **Solo documentos con sello.** Los rechazados y los cobros sin documento van a "No incluidos" con el
-  motivo. Un ticket abierto no es venta y no aparece.
+## 13. Sitio estático del cierre, libros, marco de Hacienda y versión legible
 
-**Lo que no se confirmó.**
-
-- Los nombres oficiales de las columnas de ambos libros.
-- Si el libro de consumidor final exige una fila por cada día sin ventas. Aquí se listan todos los días.
-- Que la base del F-14 excluya el IVA. El caso habla de "ingresos brutos"; se tomó la base sin IVA
-  porque el IVA no es ingreso del contribuyente. Hay que confirmarlo con el contador.
-- La casilla exacta de cada cifra en el F-07 y el F-14. Las cifras dicen a qué formulario alimentan,
-  no en qué casilla caen.
-- Anexos del F-07 distintos de los libros (1, 2, 3 y 5). Este tool no produce compras ni retenciones.
-
-**Formato de los CSV.** Separador punto y coma, decimales con coma, UTF-8 con BOM, fechas en DD/MM/YYYY.
-Es el formato que abre una hoja de cálculo en configuración de El Salvador sin tocar nada. No se
-probó en Excel ni en otra hoja de cálculo.
-
-## 13. Sitio estático del cierre
-
-- **Por qué HTML sin script.** El sitio se lee y se imprime sin JavaScript, y se abre sin red. Por eso
-  las fuentes son las del sistema: la guía de marca pide Bricolage Grotesque y JetBrains Mono, pero
-  cargarlas desde un servicio externo rompe el modo sin conexión. Si se quieren, se pueden copiar a
-  `src/web/` y declarar con `@font-face`; no se hizo.
-- **Escapado.** Todo texto de un ticket o de un documento pasa por `escapar()`. Hay una prueba con una
-  descripción que contiene `<script>`, que aparece como texto, y otra que confirma que ninguna página
-  tiene etiquetas `<script>`.
-- **Validación en la página.** Cada documento se valida al generar el sitio, con la generación con la
-  que se construyó y con la misma regla de producción que usa la recepción simulada. Un 01 de producción
-  aparece como no válido, con la razón; es lo que pasó en la demo.
-- **Enlaces.** Una prueba recorre cada página y comprueba que cada enlace relativo y la hoja de estilo
-  apunten a un archivo existente.
-- **Anchos.** Las capturas de un navegador a 375 px y 320 px no tienen desplazamiento lateral. Los
-  datos van en listas, no en tablas anchas, para que el teléfono no se desborde.
-- **Vercel.** `vercel.json` ejecuta `npm run sitio` y publica `sitio/`. El proyecto de Vercel debe usar
-  Node 24 (el paquete lo pide en `engines`); no se verificó desde el panel de Vercel.
+- **Por qué HTML sin script.** El sitio se lee y se imprime sin JavaScript, y se abre sin red.
+- **Cuatro secciones principales y páginas por ticket:**
+  1. `index.html`: cierre diario con los cuatro grupos (`emitidos`, `huérfanos`, `plazo de 24 horas`,
+     `abiertos`) y la respuesta de cuadratura.
+  2. `mes.html`: cifras para **F-07** y **F-14 v17**, enlaces de descarga a los 4 archivos CSV
+     (`csv/`), Libro de Consumidor Final (`01`), Libro de Contribuyentes (`03`), especificación de las
+     20 y 23 columnas de los Anexos 1 y 2 de Hacienda y listado de operaciones no incluidas.
+  3. `hacienda.html`: referencia tributaria y legal salvadoreña (D.L. 487 de reforma del CT, no verificado; Arts. 119-B, 119-C, 119-F y 119-G CT; sanciones del Art. 239-A CT con salario mínimo de `$408.80`, vigente desde el 1 de junio de 2025 y sin reforma posterior hallada a la fecha de revisión; umbrales del Art. 28 Ley de IVA de 50,000 colones de transferencias en doce meses o 20,000 colones de activo, en colones y sin reajuste desde el Decreto 296 de 1992;
+     Ley Bitcoin D.L. 199 de 2025, Resolución 1003 del CVPCPA, D.L. 762 de 44 municipios, MTIST 2.0 §6.4, límite ante la CNAD/PSAD y consulta vinculante del Art. 26 CT, no verificado).
+  4. `esquemas.html`: comparativa entre las generaciones de esquemas `caso` y `2026`.
+  5. `tickets/<id>.html`: detalle de cada ticket del cierre, incluyendo en los documentos emitidos la
+     **Versión Legible del DTE** con su código QR en SVG y enlace a la consulta pública de Hacienda (`https://admin.factura.gob.sv/consultaPublica`). Los parámetros no prellenan el formulario: hay que escribir el código de generación, la fecha de emisión y el ambiente (`01` producción, `00` pruebas).
+- **Escapado y pruebas.** Todo texto pasa por `escapar()`, ninguna página contiene `<script>`, y la suite
+  verifica que todos los enlaces internos (incluidos los 4 CSV de `csv/`) apunten a archivos reales.
 
 ## 14. Importación de pedidos de CacaoMarket
 

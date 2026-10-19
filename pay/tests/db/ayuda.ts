@@ -1,3 +1,5 @@
+import { createHmac } from 'node:crypto';
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { Entrega } from '@/lib/cotizacion';
@@ -6,14 +8,16 @@ import type { DatosNuevoEnvio } from '@/servidor/transferencias';
 import type { Database } from '@/tipos/db';
 
 // Helpers for the database tests, which run against the local Supabase stack. Each test creates its
-// own users, so the tests pass on an empty database and on a seeded one.
+// own users, so the tests pass on an empty database and on a seeded one. Users sign in with Clerk in
+// production, so the tests sign their own session JWTs with the local JWT secret (JWT_SECRET) and send
+// them the way the browser does. The sub claim is a Clerk id.
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 // Fixed BTC price, so a Lightning quote does not depend on the live sources.
 process.env.PRECIO_FIJO_USD_BTC ??= '100000';
 
-const CLAVE = 'clave-de-prueba-123';
 const sinSesion = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } };
 
 let servicioCache: SupabaseClient<Database> | undefined;
@@ -33,17 +37,52 @@ export function sufijo(): string {
   return Math.random().toString(36).slice(2, 8);
 }
 
-export type Usuario = { id: string; telefono: string };
+// id is the uuid of the usuarios row; clerkId is the Clerk id that signs its session.
+export type Usuario = { id: string; telefono: string; clerkId?: string; sesion?: SupabaseClient };
 
-// A fresh user with a random phone from the 5035 range, created with the admin API. Its stored phone
-// is digits only, as the database keeps it, so a contact "+5035..." matches it.
+// Clerk ids of the users these tests create: one per call, so no two tests share a row.
+function clerkIdNuevo(): string {
+  return `user_test_${sufijo()}${sufijo()}`;
+}
+
+// Signs a session JWT the way Clerk's token reaches the database: the Clerk id goes in `sub`.
+// Signed with the local JWT secret from the environment (see `npx supabase status -o env`).
+export function firmarJwt(clerkId: string): string {
+  const secreto = process.env.JWT_SECRET ?? '';
+  if (!secreto) throw new Error('Falta JWT_SECRET. Corré las pruebas con la variable JWT_SECRET del Supabase local.');
+  const codificar = (objeto: object) => Buffer.from(JSON.stringify(objeto)).toString('base64url');
+  const ahora = Math.floor(Date.now() / 1000);
+  const cabecera = codificar({ alg: 'HS256', typ: 'JWT' });
+  const cuerpo = codificar({ sub: clerkId, role: 'authenticated', aud: 'authenticated', iat: ahora, exp: ahora + 3600 });
+  const firma = createHmac('sha256', secreto).update(`${cabecera}.${cuerpo}`).digest('base64url');
+  return `${cabecera}.${cuerpo}.${firma}`;
+}
+
+// A client with the anon key that sends the session JWT of one Clerk user, as the browser does.
+export function clienteDe(clerkId: string): SupabaseClient {
+  return createClient(url, anonKey, { ...sinSesion, accessToken: async () => firmarJwt(clerkId) });
+}
+
+// A fresh user with a random phone from the 5035 range, linked through vincular_clerk with a new clerk
+// id. Its stored phone is digits only, as the database keeps it, so a contact "+5035..." matches it.
 export async function usuarioNuevo(nombre = 'Usuaria de prueba'): Promise<Usuario> {
   const telefono = `5035${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`;
-  const { data, error } = await servicio().auth.admin.createUser({ phone: telefono, password: CLAVE, phone_confirm: true });
+  const clerkId = clerkIdNuevo();
+  const { data, error } = await servicio().rpc('vincular_clerk', {
+    p_clerk_id: clerkId,
+    p_telefono: telefono,
+    p_correo: '',
+    p_nombre: nombre,
+  });
   if (error) throw error;
-  const { error: errorNombre } = await servicio().from('usuarios').update({ nombre }).eq('id', data.user.id);
-  if (errorNombre) throw errorNombre;
-  return { id: data.user.id, telefono };
+  return { id: data as string, telefono, clerkId };
+}
+
+// The session of one user, made once per user object.
+export async function sesionDe(usuario: Usuario): Promise<SupabaseClient> {
+  if (!usuario.clerkId) throw new Error('El usuario de prueba no tiene identidad de Clerk.');
+  if (!usuario.sesion) usuario.sesion = clienteDe(usuario.clerkId);
+  return usuario.sesion;
 }
 
 let adminCache: Usuario | undefined;

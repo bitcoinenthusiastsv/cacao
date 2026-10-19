@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 
 import { actualizarPerfil, destinoSeguro } from '@/servidor/cuentas';
 import { exigirSesion } from '@/servidor/sesion';
-import { clienteSesion } from '@/servidor/supabase';
 
 export type EstadoNombre = {
   nombre: string;
@@ -26,12 +25,4 @@ export async function guardarNombre(previo: EstadoNombre, datos: FormData): Prom
   // A visitor who came from a page that needs a name goes back there.
   if (volver !== '/') redirect(volver);
   return { nombre: resultado.dato.nombre, mensaje: 'Guardamos tu nombre.' };
-}
-
-export async function cerrarSesion(): Promise<void> {
-  const supabase = await clienteSesion();
-  // Local scope: this device only, so other devices stay signed in.
-  await supabase.auth.signOut({ scope: 'local' });
-  revalidatePath('/', 'layout');
-  redirect('/');
 }

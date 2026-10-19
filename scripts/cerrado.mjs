@@ -1,6 +1,6 @@
-// Runs before every build and dev start. Renders the locked part of each paid story (everything
-// after `<!-- gate -->`) and writes it to src/data/cerrado.json, which only server routes import.
-// The pages themselves are built without that text.
+// Manual tool, not part of build or dev. Renders the locked part of each paid story (everything
+// after `<!-- gate -->`) and writes it to src/data/cerrado.json (gitignored). Run it while the stories
+// still hold their locked text, then upload the result with scripts/subir-cerrado.mjs.
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -24,7 +24,15 @@ for (const archivo of (await readdir(DIR)).filter((a) => a.endsWith('.md')).sort
   const texto = await readFile(`${DIR}/${archivo}`, 'utf8');
   const [, frontmatter, cuerpo] = texto.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/) ?? [];
   if (!cuerpo || /^gratis:\s*true\s*$/m.test(frontmatter) || !cuerpo.includes('<!-- gate -->')) continue;
-  cerrado[archivo.replace(/\.md$/, '')] = String(await procesador.process(cuerpo)).trim();
+  const html = String(await procesador.process(cuerpo)).trim();
+  // A story already cut keeps only its marker, so its locked text is empty: nothing to save.
+  if (html) cerrado[archivo.replace(/\.md$/, '')] = html;
+}
+
+// Stories already cut have no locked text left. An empty result must not replace the saved file.
+if (Object.keys(cerrado).length === 0) {
+  console.error('No hay texto cerrado en src/content/historias. src/data/cerrado.json no se tocó.');
+  process.exit(1);
 }
 
 await mkdir('src/data', { recursive: true });

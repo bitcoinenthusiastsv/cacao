@@ -1,21 +1,24 @@
 'use client';
 
-import { clienteNavegador } from '@/lib/supabase-navegador';
+import { clienteNavegador, tokenNavegador } from '@/lib/supabase-navegador';
 
 // Realtime only delivers rows the signed-in user may read when the socket carries their token.
-// The browser client does not send it when a page opens with a cookie session, so events would
-// arrive as anonymous and never match. Set the token before a channel joins, and again on refresh.
-let escuchando = false;
+// Set the token before a channel joins, and refresh it while the page stays open: Clerk tokens are short-lived.
+const INTERVALO_TOKEN_MS = 50_000;
+
+let refrescando = false;
 
 export async function clienteEnVivo() {
   const cliente = clienteNavegador();
-  if (!escuchando) {
-    escuchando = true;
-    cliente.auth.onAuthStateChange((_evento, sesion) => {
-      if (sesion) void cliente.realtime.setAuth(sesion.access_token);
-    });
+  const token = await tokenNavegador();
+  if (token) await cliente.realtime.setAuth(token);
+  if (!refrescando) {
+    refrescando = true;
+    setInterval(() => {
+      void tokenNavegador().then((nuevo) => {
+        if (nuevo) void cliente.realtime.setAuth(nuevo);
+      });
+    }, INTERVALO_TOKEN_MS);
   }
-  const { data } = await cliente.auth.getSession();
-  if (data.session) await cliente.realtime.setAuth(data.session.access_token);
   return cliente;
 }

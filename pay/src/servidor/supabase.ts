@@ -1,8 +1,7 @@
 import 'server-only';
 
-import { createServerClient } from '@supabase/ssr';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 
 import type { Database } from '@/tipos/db';
@@ -17,38 +16,24 @@ function configuracionPublica() {
 }
 
 /**
- * Client for the current visitor. Row-level security applies.
- * Reads cookies, so it can only run inside a request (wrap callers in Suspense).
+ * Client for the current visitor. Row-level security applies: the Clerk session token goes to
+ * Supabase, and usuario_actual() reads its subject. Reads the request, so it can only run inside
+ * a request (wrap callers in Suspense).
  */
 export async function clienteSesion() {
   const { url, clave } = configuracionPublica();
-  // The auth client reads the clock (token expiry). With partial prefetching, cookies() alone
-  // still counts as prerenderable, so wait for the real request before building the client.
+  // The session check reads the clock (token expiry). With partial prefetching, a request-bound
+  // read alone still counts as prerenderable, so wait for the real request first.
   await connection();
-  // cookies() is async in Next 16.
-  const almacen = await cookies();
-  return createServerClient<Database>(url, clave, {
-    cookies: {
-      getAll() {
-        return almacen.getAll();
-      },
-      setAll(paraEscribir) {
-        try {
-          for (const { name, value, options } of paraEscribir) {
-            almacen.set({ name, value, ...options });
-          }
-        } catch {
-          // Server Components cannot write cookies. Refreshing the session belongs to a
-          // route handler or the proxy, so a failed write here is expected, not an error.
-        }
-      },
-    },
+  return createClient<Database>(url, clave, {
+    accessToken: async () => (await auth()).getToken() ?? null,
   });
 }
 
 /**
  * Service-role client: bypasses row-level security.
  * Only server code that has already checked the session may use it, and never from a Client Component.
+ * No accessToken here: it would replace the service-role key in the Authorization header.
  */
 export function clienteServicio() {
   const { url } = configuracionPublica();

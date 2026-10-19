@@ -1,3 +1,5 @@
+import { ClerkProvider } from '@clerk/nextjs';
+import { esMX } from '@clerk/localizations/es-MX';
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, JetBrains_Mono } from 'next/font/google';
 
@@ -19,6 +21,41 @@ const mono = JetBrains_Mono({
   variable: '--font-mono',
   display: 'swap',
 });
+
+// Clerk strings: the es-MX base, with the voseo lines of El Salvador on top.
+const localizacion = {
+  ...esMX,
+  signIn: {
+    ...esMX.signIn,
+    start: {
+      ...esMX.signIn?.start,
+      title: 'Entrá a tu cuenta',
+      titleCombined: 'Entrá a tu cuenta',
+      actionText: '¿No tenés cuenta?',
+      actionLink: 'Registrate',
+    },
+  },
+  signUp: {
+    ...esMX.signUp,
+    start: {
+      ...esMX.signUp?.start,
+      title: 'Creá tu cuenta',
+      titleCombined: 'Creá tu cuenta',
+      actionText: '¿Ya tenés cuenta?',
+      actionLink: 'Iniciá sesión',
+    },
+  },
+};
+
+// Same palette as globals.css: chocolate for buttons and links, tostado for text.
+const apariencia = {
+  variables: {
+    colorPrimary: '#5a3221',
+    colorText: '#2a1912',
+    colorBackground: '#fffaf4',
+    fontFamily: 'var(--font-bricolage), system-ui, sans-serif',
+  },
+};
 
 export const metadata: Metadata = {
   title: {
@@ -47,25 +84,27 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="es-SV" className={`${bricolage.variable} ${mono.variable}`}>
       <body>
-        <a className="saltar" href="#contenido">
-          Saltar al contenido
-        </a>
-        <div className="hoja">
-          <div className="cinta">Modo demo: envíos simulados</div>
-          <Cabecera />
-          <main id="contenido" tabIndex={-1} className="principal">
-            <div className="contenedor">{children}</div>
-          </main>
-        </div>
-        <div className="zona-grupo">
-          <div className="contenedor">
-            <p className="marca-gigante" aria-hidden="true">
-              <b>cacao</b>pay
-            </p>
+        <ClerkProvider localization={localizacion} appearance={apariencia}>
+          <a className="saltar" href="#contenido">
+            Saltar al contenido
+          </a>
+          <div className="hoja">
+            <div className="cinta">Modo demo: envíos simulados</div>
+            <Cabecera />
+            <main id="contenido" tabIndex={-1} className="principal">
+              <div className="contenedor">{children}</div>
+            </main>
           </div>
-          <GrupoCacao actual="pay" />
-        </div>
-        <BarraInferior />
+          <div className="zona-grupo">
+            <div className="contenedor">
+              <p className="marca-gigante" aria-hidden="true">
+                <b>cacao</b>pay
+              </p>
+            </div>
+            <GrupoCacao actual="pay" />
+          </div>
+          <BarraInferior />
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -291,15 +291,11 @@ async function asegurarUsuarios() {
   const ids = {};
   for (const u of USUARIOS) {
     const telefono = `5037000000${u.numero}`;
-    const { data: existente, error } = await s.from('usuarios').select('id').eq('telefono', telefono).maybeSingle();
-    if (error) throw error;
-    let id = existente?.id;
-    if (!id) {
-      const { data, error: errorAlta } = await s.auth.admin.createUser({ phone: telefono, phone_confirm: true });
-      if (errorAlta) throw errorAlta;
-      id = data.user.id;
-      nuevos.usuarios++;
-    }
+    // Links the seed user to its Clerk id 'seed_<n>', creating the row when neither the phone nor the
+    // clerk id has one. Running it again returns the same row.
+    const previo = await unico('usuarios', 'id', { telefono });
+    if (!previo) nuevos.usuarios++;
+    const id = await rpc('vincular_clerk', { p_clerk_id: `seed_${u.numero}`, p_telefono: telefono, p_correo: '', p_nombre: u.nombre });
     await rpc('actualizar_perfil', { p_usuario: id, p_nombre: u.nombre });
     if (u.admin) {
       const { error: errorAdmin } = await s.from('usuarios').update({ es_admin: true }).eq('id', id);

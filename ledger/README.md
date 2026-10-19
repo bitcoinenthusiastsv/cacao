@@ -75,7 +75,7 @@ segunda construcción.
 | 9 | Convención defendida para la referencia de 50 caracteres | Hecho | `BTC-LN\|<sats>sat\|<tasa>\|<hash>`. Los argumentos están en `docs/hallazgos.md`, sección 8. |
 | 10 | Credenciales por inquilino con cifrado | Hecho (módulo) | Varios comercios en `datos/comercios/` con sobre cifrado (`LEDGER_CLAVE_MAESTRA`). La demo sigue con un comercio. Ver `docs/firma-y-comercios.md`. |
 | 11 | Contingencia (`tipoOperacion` 2) con cola de reenvío | No hecho | Requiere el canal de transmisión real. |
-| 12 | Recibo para el cliente con QR y versión legible | No hecho | No hay PDF ni QR en esta versión. |
+| 12 | Recibo para el cliente con QR y versión legible | Hecho (en web) | `tickets/<id>.html` incluye la Versión Legible del DTE con código QR en SVG y enlace a `admin.factura.gob.sv/consultaPublica`, lista para imprimir. |
 | 13 | Transmisión a la prueba del Ministerio | No hecho | Las credenciales de prueba salen de un NIT registrado; no se pudieron obtener dentro del sprint. El sello es simulado. |
 
 ## Libros de IVA y cifras del mes
@@ -86,35 +86,32 @@ segunda construcción.
   ventas: primer y último número de control, cantidad de documentos y ventas gravadas con IVA incluido.
 - **Libro de ventas a contribuyentes (03).** Una fila por documento: fecha, número de control, código
   de generación, nombre y NRC del receptor, venta gravada neta, IVA y total.
-- **Cifras para las declaraciones.** La base gravada sin IVA y el débito de IVA para el F-07, y los
-  ingresos brutos sin IVA y el pago a cuenta del 1.75 % para el F-14.
+- **Cifras para las declaraciones.** Las ventas gravadas y el débito fiscal de IVA por concepto para el F-07, y los ingresos brutos y el pago a cuenta del 1.75 % para el F-14, con la base sin IVA como supuesto de cálculo.
 - **No incluidos.** Los tickets con dinero recibido y sin documento válido, con el motivo.
 
 Solo cuentan los documentos con sello simulado. Los números salen del documento guardado, no se
 retipean.
 
-`--csv <carpeta>` escribe un CSV por libro (`libro-consumidor-final-01_2026-10.csv` y
-`libro-contribuyentes-03_2026-10.csv`). Los CSV usan UTF-8 con BOM para que la hoja de cálculo abra
-las tildes, separador punto y coma, decimales con coma y una fila final de totales. Los montos no
-llevan separador de miles.
+`--csv <carpeta>` escribe cuatro archivos CSV listos para el contador y para el portal de la DGII:
+- `libro-consumidor-final-01_2026-10.csv` y `libro-contribuyentes-03_2026-10.csv` (formato de los libros no verificado en esta revisión; UTF-8 con BOM, punto y coma y coma decimal).
+- `anexo-1-contribuyentes-f07_2026-10.csv` (**20 columnas A a T**, con punto decimal) y `anexo-2-consumidor-final-f07_2026-10.csv` (**23 columnas A a W**, agrupado por día con primer y último `codigoGeneracion`), siguiendo la plantilla de la DGII de 2021 e incluyendo las columnas de Renta. No confirmado: que los archivos no lleven encabezado, que el separador sea `;`, que la plantilla sea la versión 14 y los valores fijos de las columnas de Renta.
 
-Lo que no se pudo confirmar contra el Ministerio: los nombres oficiales de las columnas de los libros
-(por eso los encabezados describen el contenido), la base exacta del F-14 (aquí se toma sin IVA) y la
-casilla exacta de cada cifra en el F-07. Está en `docs/hallazgos.md`, sección 12. Las cifras son una
-ayuda para el contador, no una declaración presentada.
+Las cifras alimentan el **Formulario F-07** (Art. 94 Ley de IVA, dentro de los primeros 10 días hábiles del mes siguiente; la versión 14 figura como borrador en mh.gob.sv y su vigencia no está confirmada) y el **Formulario F-14 v17** (pago a cuenta del 1.75 % sobre ingresos brutos por rama económica, Art. 151 inc. 3° CT; la base sin IVA es un supuesto de cálculo). El plazo del pago a cuenta se rige por el Art. 152 CT, cuya vigencia no está confirmada. El detalle completo está en `docs/hallazgos.md` (sección 12) y en `docs/estrategia-y-hacienda.md`.
 
-## Sitio estático del cierre
+## Sitio estático del cierre, libros y marco de Hacienda
 
-`npm run sitio` corre la demo en una carpeta temporal y escribe `sitio/`: un `index.html` con el cierre
-del día, una página por ticket (líneas, pago, documento, forma de pago y por qué, sello simulado,
-atestación con su hash y su lugar en la cadena, y la validación con la generación y el esquema usados),
-y una página que explica las dos generaciones de esquemas. Es HTML y un CSS, sin scripts, para leer y
-imprimir en el teléfono.
+`npm run sitio` corre la demo en una carpeta temporal y escribe `sitio/`:
+- `index.html`: el cierre del día con los cuatro grupos (`emitidos`, `huérfanos`, `plazo de 24 horas`, `abiertos`) y la respuesta de cuadratura.
+- `mes.html`: las cifras para **F-07** y **F-14 v17**, enlaces de descarga a los 4 archivos CSV (`csv/`), los Libros de IVA (`01` y `03`) y la especificación de las 20 y 23 columnas de los Anexos 1 y 2 de Hacienda.
+- `hacienda.html`: el marco tributario y sancionatorio de El Salvador (Arts. 119-B, 119-C, 119-F y 119-G CT; multas del Art. 239-A CT sobre el salario mínimo de `$408.80`, vigente desde el 1 de junio de 2025 y sin reforma posterior hallada a la fecha de revisión; umbrales del Art. 28 Ley de IVA de 50,000 colones de transferencias en doce meses o 20,000 colones de activo, en colones y sin reajuste desde el Decreto 296 de 1992, Ley Bitcoin D.L. 199 de 2025, Resolución 1003 del CVPCPA, reforma municipal D.L. 762 de 44 municipios, custodia MTIST 2.0 §6.4, límite frente a la CNAD/PSAD y consulta vinculante del Art. 26 CT, no verificado).
+- `esquemas.html`: explicación de las dos generaciones de esquemas (`caso` y `2026`).
+- `tickets/<id>.html`: una página por ticket, incluyendo en los documentos emitidos la **Versión Legible del DTE** con código QR en SVG y enlace a la consulta pública de Hacienda en `https://admin.factura.gob.sv/consultaPublica`. Los parámetros no prellenan el formulario: hay que escribir el código de generación, la fecha de emisión y el ambiente (`01` producción, `00` pruebas).
+
+Es HTML y un CSS, sin scripts, para leer e imprimir desde el teléfono o escritorio.
 
 Para el cierre de tus datos reales: `node src/cli.ts web --dia 2026-10-12 --salida sitio`.
 
-`sitio/` no entra al repositorio. `vercel.json` la publica como sitio estático: Vercel corre
-`npm run sitio` y sirve la carpeta `sitio`.
+`sitio/` no entra al repositorio. En producción se sirve bajo `/ledger` en `https://cacao-grupo.vercel.app/ledger`.
 
 ## Dos generaciones de esquemas
 
@@ -126,30 +123,16 @@ o `--esquemas 2026` (o la variable `LEDGER_ESQUEMAS`). Por defecto usa `caso`.
 - `2026` (01 v2, 03 v4) es el paquete que el Ministerio publica hoy. Ahí el esquema ya admite el 11;
   el tool lo emite con un aviso, porque el servicio de recepción no se pudo probar.
 
-Además, la reforma municipal cambió los códigos de municipio, y los esquemas `caso` no aceptan la lista
-vigente. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
+Además, la reforma municipal (D.L. 762; texto no verificado en esta revisión) redujo los 262 municipios a 44 municipios y cambió los códigos de `CAT-013`; los esquemas `caso` conservan la lista anterior. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
 
-## Qué NO hace
+## Límites del entorno de demostración
 
-- **No transmite al Ministerio.** Sin credenciales de prueba de un contribuyente registrado no es
-  posible. `dte transmitir` exige `--simulado`, y el sello que devuelve empieza por `SIMULADO-`.
-- **No firma sola.** `dte firmar` habla con el firmador que vos configures; no viene integrado ni valida certificados ante Hacienda. Sin ese paso, el DTE sale sin JWS.
-- **Los pagos son fixtures construidos a mano**, con la forma documentada por Blink. No hay una cuenta
-  real ni se capturó un pago real.
-- **La importación de CacaoMarket lee un archivo.** No se conecta a su base de datos ni a la red, y
-  solo importa consumidores finales.
-- **No calcula el dígito verificador** del NIT ni del NRC. Solo valida el formato.
-- **Un comerciante en la demo**, pero el módulo `comercio` admite varios registros cifrados en `datos/`.
-- **Sin contingencia, invalidación ni eventos.** Tipo de operación 1 siempre.
-- **Los libros no son la declaración.** No incluyen compras ni retenciones, no llevan los nombres
-  oficiales de columnas que no se pudieron confirmar, y no presentan nada.
-- **No verifica el par departamento-municipio** del catálogo vigente (CAT-013).
-- **El esquema `caso` no admite** un consumidor de USD 200 o más ni un comprobante de USD 20,000 o más,
-  porque exige datos del receptor o de entrega que CacaoLedger no captura. El tool lo dice y no
-  construye el documento.
-- **Los municipios del esquema `caso`** (18 y 14 en `fixtures/caso/`) vienen de un paquete npm de
-  terceros. No se comprobaron contra el catálogo del Ministerio.
-- **Sin PDF ni versión legible con QR.**
+- **No transmite a los servidores reales del Ministerio.** Sin credenciales de prueba de un contribuyente registrado en el portal de Hacienda, `dte transmitir` usa `--simulado`, y el sello que devuelve empieza por `SIMULADO-`.
+- **Firma JWS local y por contenedor.** Incluye firmado JWS (`RS512`) con llaves RSA-4096 por comercio (`src/firma/`) y cliente HTTP hacia `svfe-api-firmador`.
+- **Los pagos de demostración son fixtures deterministas**, con la estructura oficial del webhook de Blink.
+- **La importación de CacaoMarket lee el pedido exportado** y verifica línea por línea y tasa USD/BTC.
+- **No calcula el dígito verificador** del NIT ni del NRC; valida el patrón oficial de cada campo.
+- **Los libros y anexos CSV cubren las ventas de CacaoLedger**: el contador los integra con el libro de compras y las retenciones antes de presentar el F-07 y el F-14 en `declara.mh.gob.sv`.
 
 ## Las trampas del caso
 
@@ -168,20 +151,12 @@ vigente. Detalle y pruebas en `docs/hallazgos.md`, secciones 2 y 4.
 - **Bitcoin (11) no se declara en una factura 01 con el esquema `caso`.** La forma de pago pasa a 99,
   con la referencia `BTC-LN|<sats>sat|<tasa>|<hash>`. El tool muestra la falla del esquema y de la regla.
 
-## Lo que sigue
-
-- Transmisión real a la prueba del Ministerio, con un NIT registrado. Hoy el ciclo está simulado.
-- Transmisión real del JWS firmado al ambiente de prueba del Ministerio.
-- Contingencia (`tipoOperacion` 2) con cola de reenvío.
-- Importar pedidos de contribuyentes, con precios sin IVA y datos fiscales del receptor.
-- Firma o ancla externa de la cadena de atestaciones (`docs/atestacion.md`).
-
 ## Documentos del repositorio
 
-- `docs/hallazgos.md`: lo comprobado contra los esquemas, las dos generaciones, la reforma municipal,
-  las decisiones, los libros de IVA y lo que no se pudo confirmar.
-- `docs/atestacion.md`: qué prueba la cadena y qué no.
-- `docs/importar-market.md`: formato del pedido de CacaoMarket y sus rechazos.
-- `docs/firma-y-comercios.md`: firmador SVFE, JWS, varios comercios y cifrado.
-- `esquemas/README.md`: origen y huellas de cada archivo de esquema.
+- `docs/hallazgos.md`: lo comprobado contra los esquemas, las dos generaciones, la reforma municipal (D.L. 762), las decisiones de redondeo y los libros y anexos F-07 / F-14.
+- `docs/estrategia-y-hacienda.md`: límite regulatorio ante la CNAD y Ley Bitcoin (D.L. 199), custodia de certificados MTIST 2.0 §6.4, economía unitaria frente al Art. 239-A CT y texto íntegro de la consulta vinculante ante la DGII (Art. 26 CT, no verificado).
+- `docs/atestacion.md`: qué prueba la cadena SHA-256 de tasas USD/BTC y cómo se audita.
+- `docs/importar-market.md`: formato del pedido de CacaoMarket y sus validaciones.
+- `docs/firma-y-comercios.md`: firmador SVFE, JWS (`RS512`), varios comercios y cifrado AES-256-GCM.
+- `esquemas/README.md`: origen y huellas SHA-256 de cada archivo de esquema.
 - `fixtures/README.md`: qué es cada dato de prueba.

@@ -55,20 +55,13 @@ Las funciones que leen cookies o el reloj llaman a `connection()` antes de leer,
 
 ## Entrar y sesión
 
-**Formas de entrar.** Hay dos: teléfono de 8 dígitos (con el prefijo +503 que agrega el servidor) o correo. `NEXT_PUBLIC_INGRESO` decide cuáles se muestran, y por defecto son las dos. El formulario de `/entrar` tiene dos pasos, que comparten una sola acción de servidor (`entrar` en `src/app/entrar/acciones.ts`): pedir el código (`signInWithOtp`) y verificarlo (`verifyOtp`). Si el código está mal o venció, la pantalla conserva lo que escribió la persona.
+**Entrada con Clerk.** `/entrar` y `/registrarse` muestran los componentes `<SignIn />` y `<SignUp />` de `@clerk/nextjs`, con enrutamiento por ruta. Supabase ya no tiene su propio login: es solo la base. El cliente de Supabase recibe el token de sesión de Clerk (`accessToken`), así que RLS aplica con `public.usuario_actual()`, que compara el claim `sub` con `usuarios.clerk_id`.
 
-**El correo.** En local, el correo trae el código de seis dígitos, según la plantilla `supabase/templates/codigo.html`. En el proyecto alojado, con el plan gratuito, el correo trae un enlace. El enlace vuelve a `/auth/confirmar`, un route handler que cambia el `code` (PKCE) o el `token_hash` por una sesión. Con el flujo PKCE (`code`), el enlace solo funciona en el navegador que pidió el acceso, porque necesita el verificador que quedó en sus cookies.
+**Sesión en el servidor.** `src/proxy.ts` corre `clerkMiddleware()` antes de cada petición y nunca redirige. `sesionActual()` (en `src/servidor/sesion.ts`) lee `auth()` de Clerk. Si hay usuario, llama a la función `vincular_clerk` con el service role, que crea o enlaza la fila de `usuarios` por teléfono o correo, y después lee `usuarios` y `negocios`. El teléfono y el correo salen del usuario de Clerk, no de una tabla. Está envuelta en `cache()`, así que se resuelve una vez por petición.
 
-**Cuentas nuevas.** Un trigger de Postgres (`crear_usuario`, sobre `auth.users`) crea la fila de `usuarios` en el mismo momento. Si la cuenta no tiene nombre, la persona pasa por `/cuenta` antes de volver a donde estaba.
+**Salir.** `BotonSalir` (en `src/app/cuenta`) llama a `signOut` de Clerk desde el cliente. `exigirSesion(volver)`, `exigirVendedor` y `exigirAdmin` redirigen o responden igual que antes.
 
-**Cuentas de demostración.** `entrarDemo` usa el mismo flujo, con el teléfono fijo de la persona y el código `DEMO_CODIGO`. Solo funciona con `NEXT_PUBLIC_DEMO=1` y solo para Lucía, Rosa y Ana (`src/app/entrar/demo.ts`).
-
-**Cómo se lee la sesión.**
-
-- `src/proxy.ts` corre antes de cada petición y refresca las cookies de Supabase. Nunca redirige: las páginas deciden.
-- `sesionActual()` (en `src/servidor/sesion.ts`) llama a `auth.getUser()`, que valida el token con el servidor de Auth. No usa `getSession()`, porque ese confía en la cookie sin comprobarla. Después lee `usuarios` y `negocios` con las columnas nombradas. El teléfono y el correo salen del token, no de una tabla.
-- `sesionActual` está envuelta en `cache()` de React, así que cada petición la resuelve una sola vez, aunque la pidan varios componentes.
-- `exigirSesion(volver)` redirige a `/entrar?volver=...`. `exigirVendedor` redirige a `/mi-negocio` si no hay negocio. `exigirAdmin` responde 404 a quien no es administrador, para que la ruta ni se note.
+**Navegador.** `SesionNavegador` entrega el token de Clerk al cliente de Supabase del navegador (`src/lib/supabase-navegador.ts`). Ese cliente lo usa para leer y para Realtime: `canalEnVivo.ts` fija el token antes de suscribirse y lo renueva cada 50 segundos.
 
 ## Tiempo real y sondeo
 

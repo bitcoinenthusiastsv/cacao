@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es-SV">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libros y F-07 / F-14 · cacaoledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="hoja">
+<header class="cabecera">
+<p class="marca"><a href="index.html">cacao<span>ledger</span></a></p>
+<p class="lema">Cobrar y declarar</p>
+<nav class="nav" aria-label="Secciones">
+<a href="index.html">Cierre del día</a>
+<a href="mes.html">Libros y F-07 / F-14</a>
+<a href="hacienda.html">Hacienda y ley</a>
+<a href="esquemas.html">Esquemas</a>
+</nav>
+</header>
+<p class="cinta">Demostración: sello y transmisión simulados</p>
+<main class="contenido">
+
+<h1>Libros de IVA y declaraciones · <span class="num">2026-10</span></h1>
+<p class="nota">Solo entran los documentos con sello de recepción (Art. 119-C del Código Tributario). Los libros de IVA no pueden atrasarse más de 15 días calendario (Art. 242 numeral 1, subnumeral 2 del Código Tributario). El F-07 se presenta dentro de los primeros 10 días hábiles del mes siguiente (Art. 94 Ley de IVA). El pago a cuenta del F-14 se rige por el Art. 152 del Código Tributario; la vigencia de ese texto no está confirmada.</p>
+
+<section class="bloque">
+<h2>Cifras para Formulario F-07 (IVA) y Formulario F-14 v17 (Pago a Cuenta)</h2>
+<div class="tabla-wrap">
+<table class="tabla">
+<thead><tr><th>Concepto</th><th>Formulario y base legal</th><th class="der">Monto</th></tr></thead>
+<tbody>
+<tr><td>Ventas internas gravadas con contribuyentes (neto sin IVA)</td><td>F-07 · Ventas gravadas a contribuyentes (Anexo 1)</td><td class="der">$4.00</td></tr>
+<tr><td>Ventas internas gravadas a consumidor final (con IVA incluido)</td><td>Anexo 2 columna N y T (total bruto facturado en DTE 01)</td><td class="der">$4.52</td></tr>
+<tr><td>Ventas internas gravadas a consumidor final (neto sin IVA)</td><td>F-07 · Ventas gravadas a consumidor final (total dividido entre 1.13)</td><td class="der">$4.00</td></tr>
+<tr><td>Base imponible gravada total del mes (sin IVA)</td><td>F-07 · Suma de ventas gravadas netas</td><td class="der">$8.00</td></tr>
+<tr><td>Débito fiscal por ventas a contribuyentes (13 %)</td><td>F-07 · Débito fiscal por contribuyentes (13 % sobre CCF 03)</td><td class="der">$0.52</td></tr>
+<tr><td>Débito fiscal por ventas a consumidor final (13 %)</td><td>F-07 · Débito fiscal por consumidor final (IVA contenido en Factura 01)</td><td class="der">$0.52</td></tr>
+<tr><td>Total débito fiscal de IVA del mes (13 %)</td><td>F-07 · Débito fiscal total del período</td><td class="der">$1.04</td></tr>
+<tr><td>Ingresos brutos mensuales (sin IVA)</td><td>F-14 v17 · Base del pago a cuenta por rama económica (Art. 151 inciso 3 CT). Sin IVA es un supuesto de cálculo, no una norma</td><td class="der">$8.00</td></tr>
+<tr><td>Entero de Pago a Cuenta del ISR (1.75 %)</td><td>F-14 v17 · 1.75 % de los ingresos brutos por rama económica (Art. 151 inciso 3 CT, reformado por el Decreto 958)</td><td class="der">$0.14</td></tr>
+</tbody>
+</table>
+</div>
+<p class="nota">Estas cifras salen solo de los tickets de CacaoLedger: no incluyen compras, retenciones ni otros ingresos, y son una ayuda para el contador, no una declaración presentada.</p>
+<p class="nota">La versión 14 del F-07 figura como borrador en mh.gob.sv; su vigencia no está confirmada. El F-14 vigente según la lista de formularios de mh.gob.sv es la versión 17 (junio de 2026). Cada cifra se describe por concepto, sin número de casilla.</p>
+</section>
+
+<section class="bloque">
+<h2>Archivos CSV generados (libros y anexos DGII F-07)</h2>
+<p>Los dos primeros archivos tienen formato de hoja de cálculo salvadoreña (UTF-8 con BOM, punto y coma, coma decimal y fila de total). Los dos anexos F-07 siguen la plantilla de la DGII de 2021 (20 columnas en el Anexo 1 y 23 en el Anexo 2). No están confirmados: que los anexos no lleven encabezado, que se separen con punto y coma, que la plantilla sea la versión 14 y los valores fijos de las columnas R, S, U y V:</p>
+<ul class="enlaces-csv">
+<li><a href="csv/libro-consumidor-final-01_2026-10.csv"><span class="num">libro-consumidor-final-01_2026-10.csv</span></a> · Libro de ventas a consumidor final (31 días del mes)</li>
+<li><a href="csv/libro-contribuyentes-03_2026-10.csv"><span class="num">libro-contribuyentes-03_2026-10.csv</span></a> · Libro de ventas a contribuyentes (detalle por CCF 03)</li>
+<li><a href="csv/anexo-1-contribuyentes-f07_2026-10.csv"><span class="num">anexo-1-contribuyentes-f07_2026-10.csv</span></a> · Anexo 1 de la plantilla DGII de 2021 (ventas a contribuyentes, 20 columnas A a T)</li>
+<li><a href="csv/anexo-2-consumidor-final-f07_2026-10.csv"><span class="num">anexo-2-consumidor-final-f07_2026-10.csv</span></a> · Anexo 2 de la plantilla DGII de 2021 (ventas a consumidor final, 23 columnas A a W)</li>
+</ul>
+</section>
+
+<section class="bloque">
+<h2>Libro de ventas a consumidor final (DTE 01 · días con movimiento)</h2>
+<p class="nota">El CSV completo incluye los 31 días del mes, incluidos los días sin ventas en cero. Aquí se muestran los días con emisión sellada:</p>
+<div class="tabla-wrap">
+<table class="tabla">
+<thead><tr><th>Fecha</th><th>Primer control</th><th>Último control</th><th class="der">Docs</th><th class="der">Ventas gravadas (IVA incl.)</th></tr></thead>
+<tbody><tr><td class="num">12/10/2026</td><td class="num">DTE-01-M001P001-000000000000001</td><td class="num">DTE-01-M001P001-000000000000001</td><td class="der">1</td><td class="der">$4.52</td></tr></tbody>
+<tfoot><tr><td colspan="3">Total del mes (31 días en CSV)</td><td class="der">1</td><td class="der">$4.52</td></tr></tfoot>
+</table>
+</div>
+</section>
+
+<section class="bloque">
+<h2>Libro de ventas a contribuyentes (DTE 03 · Crédito Fiscal)</h2>
+<div class="tabla-wrap">
+<table class="tabla">
+<thead><tr><th>Fecha</th><th>Número de control</th><th>Código de generación</th><th>Receptor y NRC</th><th class="der">Neto</th><th class="der">IVA (13 %)</th><th class="der">Total</th></tr></thead>
+<tbody><tr><td class="num">12/10/2026</td><td class="num">DTE-03-M001P001-000000000000001</td><td class="num">4E153B2A-5ECA-4A9A-A756-F2AE9260B8B5</td><td>Distribuidora Ejemplo, S.A. de C.V. (<span class="num">1234567</span>)</td><td class="der">$4.00</td><td class="der">$0.52</td><td class="der">$4.52</td></tr></tbody>
+<tfoot><tr><td colspan="4">Total del mes (1 documento)</td><td class="der">$4.00</td><td class="der">$0.52</td><td class="der">$4.52</td></tr></tfoot>
+</table>
+</div>
+</section>
+
+<section class="bloque">
+<h2>Especificación de columnas de los Anexos F-07 (plantilla DGII de 2021)</h2>
+<p>Los identificadores se escriben sin guiones (Clase <span class="num">4</span>, DTE). Los valores fijos de las columnas R, S, U y V no están confirmados:</p>
+<dl class="datos"><div><dt>Anexo 1 · Ventas a contribuyentes (20 columnas A a T)</dt><dd>A: Fecha (DD/MM/YYYY) · B: Clase (4=DTE) · C: Tipo (03=CCF) · D: Número de resolución (numeroControl sin guiones) · E: Serie (selloRecepcion) · F: Número de documento (codigoGeneracion sin guiones) · G: Control interno (vacío) · H: NIT o NRC · I: Nombre · J: Exentas · K: No sujetas · L: Gravadas locales (neto) · M: Débito fiscal (13 %) · N: Terceros · O: Débito terceros · P: Total ventas · Q: DUI · R: Tipo de operación Renta (1=Gravada) · S: Tipo de ingreso Renta (3=Comercial) · T: Anexo (1).</dd></div><div><dt>Anexo 2 · Ventas a consumidor final (23 columnas A a W)</dt><dd>A: Fecha (DD/MM/YYYY) · B: Clase (4=DTE) · C: Tipo (01=Factura) · D a G: N/A en DTE · H: Número de documento Del (primer codigoGeneracion del día sin guiones) · I: Número de documento Al (último codigoGeneracion del día sin guiones) · J: Máquina registradora (vacío) · K a M: Exentas y no sujetas · N: Ventas gravadas locales (IVA incluido) · O a S: Exportaciones y zonas francas · T: Total ventas · U: Tipo de operación Renta (1=Gravada) · V: Tipo de ingreso Renta (3=Comercial) · W: Anexo (2).</dd></div></dl>
+</section>
+
+<section class="bloque">
+<h2>No incluidos en libros ni declaraciones (sin sello de recepción)</h2>
+<p class="nota">Cobros recibidos cuyo documento fue rechazado o aún no se ha transmitido. Permanecen fuera del F-07 y F-14 hasta que obtienen su sello:</p>
+<ul class="filas"><li class="fila"><a class="ticket" href="tickets/TK-20261012-B7EB.html">TK-20261012-B7EB</a> <span class="fecha">12/10/2026</span> <span class="chip chip-rechazado">rechazado</span> <span class="motivo">rechazado por la recepción: identificacion.ambiente: &quot;01&quot; es producción. Sin --confirmar-produccion este documento se rechaza.</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-E377.html">TK-20261012-E377</a> <span class="fecha">12/10/2026</span> <span class="chip chip-pagado">pagado</span> <span class="motivo">documento construido, sin transmitir</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-E87C.html">TK-20261012-E87C</a> <span class="fecha">12/10/2026</span> <span class="chip chip-pagado">pagado</span> <span class="motivo">pagado y sin documento: nunca se construyó</span></li><li class="fila"><a class="ticket" href="tickets/TK-20261012-F4B8.html">TK-20261012-F4B8</a> <span class="fecha">12/10/2026</span> <span class="chip chip-pagado">pagado</span> <span class="motivo">pagado y sin documento: nunca se construyó</span></li></ul>
+</section>
+</main>
+</div>
+<footer class="pie">
+<p class="pie__gigante" aria-hidden="true"><b>cacao</b>ledger</p>
+<p>Cacao, la empresa, y los otros productos</p>
+<ul><li><a href="https://cacao-grupo.vercel.app">cacao</a></li><li><a href="https://cacao-media.vercel.app">cacaomedia</a></li><li><a href="https://cacao-travel.vercel.app">cacaotravel</a></li><li><a href="https://cacao-market.vercel.app">cacaomarket</a></li><li><a href="https://cacao-pay.vercel.app">cacaopay</a></li></ul>
+</footer>
+</body>
+</html>

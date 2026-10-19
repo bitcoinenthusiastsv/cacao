@@ -1,9 +1,11 @@
 import 'server-only';
 
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { notFound, redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import { cache } from 'react';
 
-import { clienteSesion } from './supabase';
+import { clienteServicio } from './supabase';
 
 export type Sesion = {
   // A person signs in by phone or by email, so one of the two is empty.
@@ -20,27 +22,43 @@ export type SesionVendedor = Sesion & { negocio: NonNullable<Sesion['negocio']> 
 
 // cache() keeps one lookup per request, however many components ask.
 export const sesionActual = cache(async (): Promise<Sesion | null> => {
-  const supabase = await clienteSesion();
-  // getUser() checks the token with the auth server; getSession() would trust the cookie.
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  const id = data.user.id;
+  // Clerk reads the request and the clock; this keeps that read at request time.
+  await connection();
+  const { userId } = await auth();
+  if (!userId) return null;
+
+  // Phone and email come from the Clerk user, never from a table read. Clerk gives them in E.164.
+  const cuenta = await currentUser();
+  const telefono = cuenta?.primaryPhoneNumber?.phoneNumber ?? '';
+  const correo = cuenta?.primaryEmailAddress?.emailAddress ?? '';
+
+  // Creates the usuarios row on first visit, or links the existing one by phone or email.
+  const supabase = clienteServicio();
+  const { data: usuarioId, error: errorVinculo } = await supabase.rpc('vincular_clerk', {
+    p_clerk_id: userId,
+    p_telefono: telefono,
+    p_correo: correo,
+    p_nombre: cuenta?.fullName ?? '',
+  });
+  if (errorVinculo || !usuarioId) {
+    if (errorVinculo) console.error('vincular_clerk:', errorVinculo.code, errorVinculo.message);
+    return null;
+  }
 
   // Columns are named on purpose: the database grants column by column on both tables.
   const [perfil, negocio] = await Promise.all([
-    supabase.from('usuarios').select('id, nombre, es_admin').eq('id', id).maybeSingle(),
-    supabase.from('negocios').select('id, nombre, estado, abierto').eq('usuario_id', id).maybeSingle(),
+    supabase.from('usuarios').select('id, nombre, es_admin').eq('id', usuarioId).maybeSingle(),
+    supabase.from('negocios').select('id, nombre, estado, abierto').eq('usuario_id', usuarioId).maybeSingle(),
   ]);
   if (!perfil.data) return null;
 
   return {
     usuario: {
-      id,
+      id: usuarioId,
       nombre: perfil.data.nombre,
       esAdmin: perfil.data.es_admin,
-      // Phone and email come from the user's own token, never from a table read.
-      telefono: data.user.phone ?? '',
-      correo: data.user.email ?? '',
+      telefono,
+      correo,
     },
     negocio: negocio.data
       ? {

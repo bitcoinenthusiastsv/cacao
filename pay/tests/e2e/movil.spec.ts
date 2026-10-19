@@ -29,7 +29,7 @@ test('sin sesión: las rutas públicas no se corren a los lados en 320 px', asyn
   const visitante = await browser.newContext(OPCIONES_CONTEXTO);
   try {
     const pagina = await visitante.newPage();
-    await recorrer(pagina, ['/', '/entrar', '/rastrear', `/t/${codigo}`, '/t/CP-ABCD-EFGH', '/enviar', '/envios', '/recibidos', '/cuenta', '/monitor']);
+    await recorrer(pagina, ['/', '/hacienda', '/entrar', '/rastrear', `/t/${codigo}`, '/t/CP-ABCD-EFGH', '/enviar', '/envios', '/recibidos', '/cuenta', '/monitor']);
   } finally {
     await visitante.close();
   }

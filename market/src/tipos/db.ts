@@ -520,6 +520,24 @@ export type Database = {
           },
         ]
       }
+      media_cerrado: {
+        Row: {
+          actualizado_en: string
+          html: string
+          slug: string
+        }
+        Insert: {
+          actualizado_en?: string
+          html: string
+          slug: string
+        }
+        Update: {
+          actualizado_en?: string
+          html?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       media_cobros: {
         Row: {
           cerrada_en: string | null
@@ -1204,6 +1222,7 @@ export type Database = {
       }
       usuarios: {
         Row: {
+          clerk_id: string | null
           creado_en: string
           es_admin: boolean
           id: string
@@ -1211,13 +1230,15 @@ export type Database = {
           telefono: string
         }
         Insert: {
+          clerk_id?: string | null
           creado_en?: string
           es_admin?: boolean
-          id: string
+          id?: string
           nombre?: string
           telefono: string
         }
         Update: {
+          clerk_id?: string | null
           creado_en?: string
           es_admin?: boolean
           id?: string
@@ -1473,6 +1494,7 @@ export type Database = {
       actualizar_perfil: {
         Args: { p_nombre: string; p_usuario: string }
         Returns: {
+          clerk_id: string | null
           creado_en: string
           es_admin: boolean
           id: string
@@ -2609,7 +2631,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      usuario_actual: { Args: never; Returns: string }
       vencer_necesidades: { Args: never; Returns: number }
+      vincular_clerk: {
+        Args: {
+          p_clerk_id: string
+          p_correo: string
+          p_nombre: string
+          p_telefono: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       estado_cobro: "pendiente" | "pagado" | "expirado" | "cancelado"

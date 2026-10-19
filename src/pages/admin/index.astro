@@ -10,11 +10,13 @@ import {
   usd,
   type ResumenPanel,
 } from '../../lib/servidor/admin';
-import { sesionDeCookies } from '../../lib/servidor/admin-sesion';
+import { accesoAdmin, noEncontrado } from '../../lib/servidor/admin-acceso';
 
 export const prerender = false;
 Astro.response.headers.set('Cache-Control', 'no-store');
-if (!sesionDeCookies(Astro.cookies)) return Astro.redirect('/admin/entrar/');
+const acceso = await accesoAdmin(Astro);
+if (acceso.estado === 'sin-sesion') return Astro.redirect('/admin/entrar/');
+if (acceso.estado === 'sin-permiso') return noEncontrado();
 
 const rango = leerRango({
   desde: Astro.url.searchParams.get('desde'),

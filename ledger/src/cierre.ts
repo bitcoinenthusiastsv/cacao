@@ -217,6 +217,6 @@ Muestra, para un día (hoy por defecto, hora de El Salvador), cada ticket en un 
 emitidos, pagados sin documento válido (huérfanos), con plazo de 24 horas corriendo y abiertos.
 Termina con una sola pregunta y sale con código 1 si la respuesta es no.
 
-Un DTE rechazado debe reenviarse dentro de las 24 horas desde el rechazo, y nadie avisa cuando ese plazo vence.
+Un DTE rechazado debe reenviarse dentro de las 24 horas desde el rechazo (cifra por confirmar ante Hacienda), y nadie avisa cuando ese plazo vence.
 No hay declaración diaria obligatoria, pero el cierre diario es un control operativo: responde si cada cobro del día tiene su sello.
 `;

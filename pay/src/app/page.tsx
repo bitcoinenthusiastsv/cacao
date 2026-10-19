@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
@@ -35,6 +36,10 @@ export default function Inicio() {
           <li>Las comisiones aparecen aparte del tipo de cambio.</li>
           <li>Ves cuánto llega antes de confirmar.</li>
           <li>Cada envío tiene un código para seguirlo.</li>
+          <li>
+            En El Salvador, el Art. 3 num. 4 de la LISR dice que los valores recibidos del exterior no constituyen renta; el alcance para remesas familiares no está confirmado.{' '}
+            <Link href="/hacienda">Mirá el marco de Hacienda y del BCR</Link>.
+          </li>
         </ul>
         <div>
           <Boton href="/enviar">Enviar dinero</Boton> <Boton href="/rastrear" variante="secundario">Seguir un envío</Boton>

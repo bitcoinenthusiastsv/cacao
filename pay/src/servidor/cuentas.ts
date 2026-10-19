@@ -62,6 +62,11 @@ export function rutaCuenta(volver: string): string {
   return volver === '/' ? '/cuenta' : `/cuenta?volver=${encodeURIComponent(volver)}`;
 }
 
+/** A sign-in or sign-up page, carrying the visitor's destination through the sign-in. */
+export function rutaAcceso(ruta: '/entrar' | '/registrarse', volver: string): string {
+  return volver === '/' ? ruta : `${ruta}?volver=${encodeURIComponent(volver)}`;
+}
+
 function validarNombre(nombre: string): Resultado<string> {
   const limpio = nombre.trim();
   if (largo(limpio) < 2 || largo(limpio) > 80) {

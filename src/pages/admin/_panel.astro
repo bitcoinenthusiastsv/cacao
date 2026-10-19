@@ -5,6 +5,7 @@ import '@fontsource/jetbrains-mono/latin-500.css';
 import '../../styles/global.css';
 import './_admin.css';
 import Logo from '../../components/Logo.astro';
+import { SignOutButton } from '@clerk/astro/components';
 import type { Rango } from '../../lib/servidor/admin';
 
 type Seccion = 'resumen' | 'transacciones' | 'actividad';
@@ -44,9 +45,11 @@ const SECCIONES = [
         <h1 class="panel__titulo">Panel de Cacao Media</h1>
         {
           seccion && (
-            <form class="panel__salir" method="post" action="/api/admin/salir/">
-              <button class="boton boton--oscuro" type="submit">Salir</button>
-            </form>
+            <div class="panel__salir">
+              <SignOutButton redirectUrl="/admin/entrar/" asChild>
+                <button class="boton boton--oscuro" type="button">Salir</button>
+              </SignOutButton>
+            </div>
           )
         }
       </header>

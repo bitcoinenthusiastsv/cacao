@@ -22,9 +22,11 @@ export interface DocumentoMes {
   fecha: string; // YYYY-MM-DD, date of emission in El Salvador
   numeroControl: string;
   codigoGeneracion: string;
+  selloRecepcion?: string | null;
   ticket: string;
   receptorNombre: string | null;
   receptorNrc: string | null;
+  receptorNit?: string | null;
   netoCentavos: number; // taxable sales without IVA
   ivaCentavos: number;
   totalCentavos: number; // 01: IVA included, as recorded; 03: net plus IVA
@@ -42,6 +44,8 @@ export interface FilaConsumidor {
   fecha: string;
   primerControl: string | null;
   ultimoControl: string | null;
+  primerCodigoGeneracion?: string | null;
+  ultimoCodigoGeneracion?: string | null;
   cantidad: number;
   ventasGravadasCentavos: number;
 }
@@ -50,14 +54,21 @@ export interface FilaContribuyente {
   fecha: string;
   numeroControl: string;
   codigoGeneracion: string;
+  selloRecepcion?: string;
   receptorNombre: string;
   receptorNrc: string;
+  receptorNit?: string;
   netoCentavos: number;
   ivaCentavos: number;
   totalCentavos: number;
 }
 
 export interface Cifras {
+  f07VentasConsumidorIvaIncluidoCentavos: number;
+  f07VentasConsumidorNetoCentavos: number;
+  f07DebitoConsumidorCentavos: number;
+  f07VentasContribuyentesNetoCentavos: number;
+  f07DebitoContribuyentesCentavos: number;
   f07BaseGravadaCentavos: number;
   f07DebitoIvaCentavos: number;
   f14IngresosBrutosCentavos: number;
@@ -91,7 +102,7 @@ function dolaresACentavos(v: unknown, campo: string): number {
 }
 
 // Reads the figures a book needs from a stored document. Amounts are cents from here on.
-export function documentoDesde(doc: unknown, ticket: string): DocumentoMes {
+export function documentoDesde(doc: unknown, ticket: string, selloRecepcion?: string | null): DocumentoMes {
   const d = doc as Record<string, any>;
   const ident = d.identificacion ?? {};
   const resumen = d.resumen ?? {};
@@ -106,9 +117,11 @@ export function documentoDesde(doc: unknown, ticket: string): DocumentoMes {
       fecha,
       numeroControl: String(ident.numeroControl),
       codigoGeneracion: String(ident.codigoGeneracion),
+      selloRecepcion: selloRecepcion ?? null,
       ticket,
       receptorNombre: null,
       receptorNrc: null,
+      receptorNit: null,
       netoCentavos: gravadoIvaIncluido - iva,
       ivaCentavos: iva,
       totalCentavos: gravadoIvaIncluido,
@@ -122,9 +135,11 @@ export function documentoDesde(doc: unknown, ticket: string): DocumentoMes {
     fecha,
     numeroControl: String(ident.numeroControl),
     codigoGeneracion: String(ident.codigoGeneracion),
+    selloRecepcion: selloRecepcion ?? null,
     ticket,
     receptorNombre: String(d.receptor?.nombre ?? ""),
     receptorNrc: String(d.receptor?.nrc ?? ""),
+    receptorNit: d.receptor?.nit ? String(d.receptor.nit) : null,
     netoCentavos: neto,
     ivaCentavos: iva,
     totalCentavos: total,
@@ -143,7 +158,7 @@ export function leerDocumentosEmitidos(datos: string, tickets: Ticket[]): Docume
     } catch {
       throw new ErrorLedger(`No se puede leer el documento del ticket ${t.id} (${t.dte.archivo}).`);
     }
-    documentos.push(documentoDesde(doc, t.id));
+    documentos.push(documentoDesde(doc, t.id, t.sello?.valor ?? null));
   }
   return documentos;
 }
@@ -185,6 +200,7 @@ function noIncluidosDelMes(mes: string, tickets: Ticket[]): NoIncluido[] {
 // Pure: the books and figures of one month from the documents and tickets given.
 export function informeMes(mes: string, documentos: DocumentoMes[], tickets: Ticket[]): InformeMes {
   validarMes(mes);
+  const ticketsPorId = new Map(tickets.map((t) => [t.id, t]));
   const delMes = documentos.filter((d) => d.fecha.slice(0, 7) === mes);
   const porDia = new Map<string, DocumentoMes[]>();
   for (const d of delMes) {
@@ -202,6 +218,8 @@ export function informeMes(mes: string, documentos: DocumentoMes[], tickets: Tic
       fecha: dia,
       primerControl: primero?.numeroControl ?? null,
       ultimoControl: ultimo?.numeroControl ?? null,
+      primerCodigoGeneracion: primero?.codigoGeneracion ?? null,
+      ultimoCodigoGeneracion: ultimo?.codigoGeneracion ?? null,
       cantidad: docs.length,
       ventasGravadasCentavos: docs.reduce((acc, d) => acc + d.totalCentavos, 0),
     };
@@ -215,14 +233,21 @@ export function informeMes(mes: string, documentos: DocumentoMes[], tickets: Tic
     fecha: d.fecha,
     numeroControl: d.numeroControl,
     codigoGeneracion: d.codigoGeneracion,
+    selloRecepcion: d.selloRecepcion ?? ticketsPorId.get(d.ticket)?.sello?.valor ?? "",
     receptorNombre: d.receptorNombre ?? "",
     receptorNrc: d.receptorNrc ?? "",
+    receptorNit: d.receptorNit ?? "",
     netoCentavos: d.netoCentavos,
     ivaCentavos: d.ivaCentavos,
     totalCentavos: d.totalCentavos,
   }));
 
   const sumar = (docs: DocumentoMes[], f: (d: DocumentoMes) => number) => docs.reduce((acc, d) => acc + f(d), 0);
+  const consumidorBruto = sumar(docs01, (d) => d.totalCentavos);
+  const consumidorNeto = sumar(docs01, (d) => d.netoCentavos);
+  const consumidorIva = sumar(docs01, (d) => d.ivaCentavos);
+  const contribuyentesNeto = sumar(docs03, (d) => d.netoCentavos);
+  const contribuyentesIva = sumar(docs03, (d) => d.ivaCentavos);
   const baseGravada = sumar(delMes, (d) => d.netoCentavos);
   const debitoIva = sumar(delMes, (d) => d.ivaCentavos);
   const pagoACuenta = pagoACuentaCentavos(baseGravada);
@@ -232,16 +257,21 @@ export function informeMes(mes: string, documentos: DocumentoMes[], tickets: Tic
     consumidor: {
       filas,
       cantidad: docs01.length,
-      ventasGravadasCentavos: sumar(docs01, (d) => d.totalCentavos),
+      ventasGravadasCentavos: consumidorBruto,
     },
     contribuyentes: {
       filas: contribuyentes,
       cantidad: docs03.length,
-      netoCentavos: sumar(docs03, (d) => d.netoCentavos),
-      ivaCentavos: sumar(docs03, (d) => d.ivaCentavos),
+      netoCentavos: contribuyentesNeto,
+      ivaCentavos: contribuyentesIva,
       totalCentavos: sumar(docs03, (d) => d.totalCentavos),
     },
     cifras: {
+      f07VentasConsumidorIvaIncluidoCentavos: consumidorBruto,
+      f07VentasConsumidorNetoCentavos: consumidorNeto,
+      f07DebitoConsumidorCentavos: consumidorIva,
+      f07VentasContribuyentesNetoCentavos: contribuyentesNeto,
+      f07DebitoContribuyentesCentavos: contribuyentesIva,
       f07BaseGravadaCentavos: baseGravada,
       f07DebitoIvaCentavos: debitoIva,
       f14IngresosBrutosCentavos: baseGravada,
@@ -264,12 +294,23 @@ function cifraCsv(centavos: number): string {
   return `${signo}${Math.floor(abs / 100)},${String(abs % 100).padStart(2, "0")}`;
 }
 
+// Decimal period (0.00). Whether the DGII template requires it is not confirmed.
+function cifraPuntoCsv(centavos: number): string {
+  const signo = centavos < 0 ? "-" : "";
+  const abs = Math.abs(centavos);
+  return `${signo}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
+}
+
+function sinGuiones(texto: string | null | undefined): string {
+  return (texto ?? "").replace(/-/g, "");
+}
+
 function celdaCsv(v: string | number | null): string {
   const texto = v === null ? "" : String(v);
   return /[;"\r\n]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
 }
 
-const BOM = "﻿";
+const BOM = "\uFEFF";
 
 function csv(encabezados: string[], filas: (string | number | null)[][]): string {
   const lineas = [encabezados, ...filas].map((f) => f.map(celdaCsv).join(";"));
@@ -308,19 +349,95 @@ export function libroContribuyentesCsv(informe: InformeMes): string {
   );
 }
 
-export function nombresLibros(mes: string): { consumidor: string; contribuyentes: string } {
+// DGII 2021 template, Anexo 1: Detalle de Ventas a Contribuyentes (20 columns A-T). Header-less output is not confirmed.
+export function anexoContribuyentesF07Csv(informe: InformeMes): string {
+  const filas: (string | number | null)[][] = informe.contribuyentes.filas.map((f) => [
+    fechaCorta(f.fecha), // A: Fecha de emisión (DD/MM/YYYY)
+    "4", // B: Clase de documento (4 = DTE)
+    "03", // C: Tipo de documento (03 = CCF)
+    sinGuiones(f.numeroControl), // D: Número de resolución (numeroControl sin guiones)
+    sinGuiones(f.selloRecepcion), // E: Serie de documento (selloRecepcion sin guiones)
+    sinGuiones(f.codigoGeneracion), // F: Número de documento (codigoGeneracion sin guiones)
+    "", // G: Número de control interno (vacío en DTE)
+    sinGuiones(f.receptorNit || f.receptorNrc), // H: NIT o NRC del cliente
+    f.receptorNombre, // I: Nombre o razón social
+    "0.00", // J: Ventas exentas
+    "0.00", // K: Ventas no sujetas
+    cifraPuntoCsv(f.netoCentavos), // L: Ventas gravadas locales
+    cifraPuntoCsv(f.ivaCentavos), // M: Débito fiscal (13 % IVA)
+    "0.00", // N: Ventas a cuenta de terceros no domiciliados
+    "0.00", // O: Débito fiscal por venta a cuenta de terceros
+    cifraPuntoCsv(f.totalCentavos), // P: Total ventas
+    "", // Q: DUI del cliente (vacío cuando hay NIT/NRC)
+    "1", // R: Tipo de operación Renta (1 = Gravada; fixed value not confirmed)
+    "3", // S: Tipo de ingreso Renta (3 = Comercial; fixed value not confirmed)
+    "1", // T: Número de anexo (1)
+  ]);
+  const lineas = filas.map((f) => f.map(celdaCsv).join(";"));
+  return lineas.length > 0 ? `${lineas.join("\r\n")}\r\n` : "";
+}
+
+// DGII 2021 template, Anexo 2: Detalle de Ventas a Consumidor Final (23 columns A-W). Header-less output is not confirmed.
+// Only days with emitted 01 documents are uploaded to the DGII portal, grouped by day.
+export function anexoConsumidorF07Csv(informe: InformeMes): string {
+  const filas: (string | number | null)[][] = informe.consumidor.filas
+    .filter((f) => f.cantidad > 0)
+    .map((f) => [
+      fechaCorta(f.fecha), // A: Fecha de emisión (DD/MM/YYYY)
+      "4", // B: Clase de documento (4 = DTE)
+      "01", // C: Tipo de documento (01 = Factura)
+      "N/A", // D: Número de resolución
+      "N/A", // E: Serie de documento
+      "N/A", // F: Número de control interno (Del)
+      "N/A", // G: Número de control interno (Al)
+      sinGuiones(f.primerCodigoGeneracion ?? f.primerControl), // H: Número de documento (Del)
+      sinGuiones(f.ultimoCodigoGeneracion ?? f.ultimoControl), // I: Número de documento (Al)
+      "", // J: N° de máquina registradora
+      "0.00", // K: Ventas exentas
+      "0.00", // L: Ventas internas exentas no sujetas a proporcionalidad
+      "0.00", // M: Ventas no sujetas
+      cifraPuntoCsv(f.ventasGravadasCentavos), // N: Ventas gravadas locales (IVA incluido)
+      "0.00", // O: Exportaciones dentro del área centroamericana
+      "0.00", // P: Exportaciones fuera del área centroamericana
+      "0.00", // Q: Exportaciones de servicios
+      "0.00", // R: Ventas a zonas francas y DPA (tasa cero)
+      "0.00", // S: Ventas a cuenta de terceros no domiciliados
+      cifraPuntoCsv(f.ventasGravadasCentavos), // T: Total ventas (IVA incluido)
+      "1", // U: Tipo de operación Renta (1 = Gravada; fixed value not confirmed)
+      "3", // V: Tipo de ingreso Renta (3 = Comercial; fixed value not confirmed)
+      "2", // W: Número de anexo (2)
+    ]);
+  const lineas = filas.map((f) => f.map(celdaCsv).join(";"));
+  return lineas.length > 0 ? `${lineas.join("\r\n")}\r\n` : "";
+}
+
+export function nombresLibros(mes: string): {
+  consumidor: string;
+  contribuyentes: string;
+  anexo1: string;
+  anexo2: string;
+} {
   return {
     consumidor: `libro-consumidor-final-01_${mes}.csv`,
     contribuyentes: `libro-contribuyentes-03_${mes}.csv`,
+    anexo1: `anexo-1-contribuyentes-f07_${mes}.csv`,
+    anexo2: `anexo-2-consumidor-final-f07_${mes}.csv`,
   };
 }
 
 export function escribirLibrosCsv(carpeta: string, informe: InformeMes): string[] {
   mkdirSync(carpeta, { recursive: true });
   const nombres = nombresLibros(informe.mes);
-  const rutas = [join(carpeta, nombres.consumidor), join(carpeta, nombres.contribuyentes)];
+  const rutas = [
+    join(carpeta, nombres.consumidor),
+    join(carpeta, nombres.contribuyentes),
+    join(carpeta, nombres.anexo1),
+    join(carpeta, nombres.anexo2),
+  ];
   writeFileSync(rutas[0] as string, libroConsumidorCsv(informe), "utf8");
   writeFileSync(rutas[1] as string, libroContribuyentesCsv(informe), "utf8");
+  writeFileSync(rutas[2] as string, anexoContribuyentesF07Csv(informe), "utf8");
+  writeFileSync(rutas[3] as string, anexoConsumidorF07Csv(informe), "utf8");
   return rutas;
 }
 
@@ -383,23 +500,26 @@ export function lineasMes(informe: InformeMes): string[] {
   lineas.push("");
 
   const c = informe.cifras;
-  lineas.push("Cifras para las declaraciones");
+  lineas.push("Cifras para las declaraciones (F-07 y F-14 v17)");
   lineas.push(
     ...tabla(
       ["Cifra", "Monto", "Formulario"],
       [
-        ["Base gravada del mes, sin IVA", formatoUsd(c.f07BaseGravadaCentavos), "F-07, ventas gravadas"],
-        ["Débito fiscal de IVA del mes", formatoUsd(c.f07DebitoIvaCentavos), "F-07, IVA a pagar"],
-        ["Ingresos brutos del mes, sin IVA", formatoUsd(c.f14IngresosBrutosCentavos), "F-14, base del pago a cuenta"],
-        ["Pago a cuenta de 1.75 %", formatoUsd(c.f14PagoACuentaCentavos), "F-14, pago a cuenta"],
+        ["Ventas a contribuyentes, sin IVA", formatoUsd(c.f07VentasContribuyentesNetoCentavos), "F-07, ventas gravadas a contribuyentes (Anexo 1)"],
+        ["Ventas a consumidor final, sin IVA", formatoUsd(c.f07VentasConsumidorNetoCentavos), "F-07, ventas gravadas a consumidor final, neto (Anexo 2 / 1.13)"],
+        ["Base gravada del mes, sin IVA", formatoUsd(c.f07BaseGravadaCentavos), "F-07, ventas gravadas (base total sin IVA)"],
+        ["Débito fiscal de IVA del mes (13 %)", formatoUsd(c.f07DebitoIvaCentavos), "F-07, débito fiscal (por contribuyentes y por consumidor final)"],
+        ["Ingresos brutos del mes, sin IVA", formatoUsd(c.f14IngresosBrutosCentavos), "F-14, base del pago a cuenta (Art. 151 inciso 3 CT; sin IVA es supuesto)"],
+        ["Pago a cuenta de 1.75 %", formatoUsd(c.f14PagoACuentaCentavos), "F-14, pago a cuenta (1.75 % por rama económica)"],
       ],
       ["izq", "der", "izq"],
     ),
   );
   lineas.push(informe.nota);
+  lineas.push("F-07: primeros 10 días hábiles del mes siguiente (Art. 94 Ley de IVA). F-14: pago a cuenta según el Art. 152 CT, vigencia no confirmada. La versión 14 del F-07 figura como borrador en mh.gob.sv.");
   lineas.push("");
 
-  lineas.push("No incluidos: no tienen documento válido con sello");
+  lineas.push("No incluidos: no tienen documento válido con sello (Art. 119-C CT)");
   if (informe.noIncluidos.length === 0) {
     lineas.push("  Ninguno este mes.");
   } else {

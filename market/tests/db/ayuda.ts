@@ -1,15 +1,17 @@
+import { createHmac } from 'node:crypto';
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // Helpers for the database tests, which run against the local Supabase stack.
 // Every test creates its own users, shops and products, so the tests pass on an empty database and
-// on a seeded one. Only the nine test phones of supabase/config.toml can sign in with a code.
+// on a seeded one. Users sign in with Clerk in production, so the tests sign their own session JWTs with
+// the local JWT secret (JWT_SECRET) and send them the way the browser does. The sub claim is a Clerk id.
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
 
 const sinSesion = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } };
-const CLAVE = 'clave-de-prueba-123';
 
 export const COTIZACION = 100000;
 
@@ -17,7 +19,8 @@ export const COTIZACION = 100000;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Fila = Record<string, any>;
 
-export type Usuario = { id: string; telefono: string; sesion?: SupabaseClient };
+// id is the uuid of the usuarios row; clerkId is the Clerk id that signs its session.
+export type Usuario = { id: string; telefono: string; clerkId?: string; sesion?: SupabaseClient };
 
 let servicioCache: SupabaseClient | undefined;
 
@@ -40,38 +43,67 @@ export function sufijo(): string {
   return Math.random().toString(36).slice(2, 8);
 }
 
-// Signs in with the fixed test code. Works for the nine phones in supabase/config.toml; the user is
-// created on first sign-in when the database is empty.
-export async function sesionConCodigo(telefono: string): Promise<SupabaseClient> {
-  const cliente = anonimo();
-  const { error: errorEnvio } = await cliente.auth.signInWithOtp({ phone: telefono });
-  if (errorEnvio) throw errorEnvio;
-  const { error: errorCodigo } = await cliente.auth.verifyOtp({ phone: telefono, token: '123456', type: 'sms' });
-  if (errorCodigo) throw errorCodigo;
-  return cliente;
+// Clerk ids of the users these tests create: one per call, so no two tests share a row.
+function clerkIdNuevo(): string {
+  return `user_test_${sufijo()}${sufijo()}`;
 }
 
-// A fresh user with a random phone outside the test range. Created with the admin API, so it does
-// not use up the nine test phones.
-export async function usuarioNuevo(): Promise<Usuario> {
-  const telefono = `5035${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`;
-  const { data, error } = await servicio().auth.admin.createUser({
-    phone: telefono,
-    password: CLAVE,
-    phone_confirm: true,
+// Signs a session JWT the way Clerk's token reaches the database: the Clerk id goes in `sub`.
+// Signed with the local JWT secret from the environment (see `npx supabase status -o env`).
+export function firmarJwt(clerkId: string): string {
+  const secreto = process.env.JWT_SECRET ?? '';
+  if (!secreto) throw new Error('Falta JWT_SECRET. Corré las pruebas con la variable JWT_SECRET del Supabase local.');
+  const codificar = (objeto: object) => Buffer.from(JSON.stringify(objeto)).toString('base64url');
+  const ahora = Math.floor(Date.now() / 1000);
+  const cabecera = codificar({ alg: 'HS256', typ: 'JWT' });
+  const cuerpo = codificar({ sub: clerkId, role: 'authenticated', aud: 'authenticated', iat: ahora, exp: ahora + 3600 });
+  const firma = createHmac('sha256', secreto).update(`${cabecera}.${cuerpo}`).digest('base64url');
+  return `${cabecera}.${cuerpo}.${firma}`;
+}
+
+// A client with the anon key that sends the session JWT of one Clerk user, as the browser does.
+export function clienteDe(clerkId: string): SupabaseClient {
+  return createClient(url, anonKey, { ...sinSesion, accessToken: async () => firmarJwt(clerkId) });
+}
+
+// The Clerk user of a test phone (50370000001..9). Links the seed row the first time, through
+// vincular_clerk with the clerk id 'seed_<n>' that scripts/sembrar.mjs uses too.
+export async function usuarioSemilla(telefono: string): Promise<Usuario> {
+  const clerkId = `seed_${telefono.slice(-1)}`;
+  const { data, error } = await servicio().rpc('vincular_clerk', {
+    p_clerk_id: clerkId,
+    p_telefono: telefono,
+    p_correo: '',
+    p_nombre: '',
   });
   if (error) throw error;
-  return { id: data.user.id, telefono };
+  return { id: data as string, telefono, clerkId };
 }
 
-// Signs a fresh user in with phone and password, once per user object.
+// Session of a test phone's user, signed with its clerk id.
+export async function sesionConCodigo(telefono: string): Promise<SupabaseClient> {
+  return sesionDe(await usuarioSemilla(telefono));
+}
+
+// A fresh user with a random phone from the 5035 range, linked through vincular_clerk with a new clerk
+// id. The stored phone is digits only, as the database keeps it, so a contact "+5035..." matches it.
+export async function usuarioNuevo(nombre = 'Usuaria de prueba'): Promise<Usuario> {
+  const telefono = `5035${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`;
+  const clerkId = clerkIdNuevo();
+  const { data, error } = await servicio().rpc('vincular_clerk', {
+    p_clerk_id: clerkId,
+    p_telefono: telefono,
+    p_correo: '',
+    p_nombre: nombre,
+  });
+  if (error) throw error;
+  return { id: data as string, telefono, clerkId };
+}
+
+// The session of one user, made once per user object.
 export async function sesionDe(usuario: Usuario): Promise<SupabaseClient> {
-  if (!usuario.sesion) {
-    const cliente = anonimo();
-    const { error } = await cliente.auth.signInWithPassword({ phone: usuario.telefono, password: CLAVE });
-    if (error) throw error;
-    usuario.sesion = cliente;
-  }
+  if (!usuario.clerkId) throw new Error('El usuario de prueba no tiene identidad de Clerk.');
+  if (!usuario.sesion) usuario.sesion = clienteDe(usuario.clerkId);
   return usuario.sesion;
 }
 
@@ -468,9 +500,15 @@ export async function negocioDe(dueno: Usuario): Promise<Fila> {
 // A user who signs in with an email. The profile keeps the email where the phone would be.
 export async function usuarioConCorreo(): Promise<Usuario & { correo: string }> {
   const correo = `prueba-${sufijo()}@ejemplo.sv`;
-  const { data, error } = await servicio().auth.admin.createUser({ email: correo, password: CLAVE, email_confirm: true });
+  const clerkId = clerkIdNuevo();
+  const { data, error } = await servicio().rpc('vincular_clerk', {
+    p_clerk_id: clerkId,
+    p_telefono: '',
+    p_correo: correo,
+    p_nombre: '',
+  });
   if (error) throw error;
-  return { id: data.user.id, telefono: correo, correo };
+  return { id: data as string, telefono: correo, clerkId, correo };
 }
 
 // A phone that no test user has (test users use the 5035 range).

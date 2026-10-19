@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
@@ -17,7 +18,6 @@ import {
   vaciarNegocio,
 } from '@/lib/carrito';
 import { formatoSats, formatoUsd, usdCentavosASats } from '@/lib/dinero';
-import { clienteNavegador } from '@/lib/supabase-navegador';
 
 import { hacerPedido, revisarCarrito } from './acciones';
 import styles from './estilos.module.css';
@@ -187,6 +187,7 @@ export function CarritoCliente() {
 
 function CarritoListo({ datos }: { datos: string }) {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const lineas = useMemo(() => JSON.parse(datos) as LineaCarrito[], [datos]);
   // Bumped to check the cart again, for example after a failed order.
   const [version, setVersion] = useState(0);
@@ -248,8 +249,7 @@ function CarritoListo({ datos }: { datos: string }) {
     };
 
     try {
-      const sesion = await clienteNavegador().auth.getSession();
-      if (!sesion.data.session) {
+      if (!isSignedIn) {
         liberar();
         router.push('/entrar?volver=/carrito');
         return;

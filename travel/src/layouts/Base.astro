@@ -5,6 +5,7 @@ import '../styles/global.css';
 import GrupoCacao from '../components/GrupoCacao.astro';
 import Logo from '../components/Logo.astro';
 import Telon from '../components/Telon.astro';
+import { Show, SignInButton, UserButton } from '@clerk/astro/components';
 import { MEDIA_URL } from '../lib/tours';
 
 interface Props {
@@ -52,6 +53,13 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
             <a href="/reservas/">Mis reservas</a>
             <a href="/operadores/">Operadores</a>
             <a href={`${MEDIA_URL}/`}>Cacao Media</a>
+            <!-- isStatic: most pages are prerendered, so the sign-in state is read in the browser. -->
+            <Show when="signed-out" isStatic class="cabecera__entrar">
+              <SignInButton mode="modal">Entrar</SignInButton>
+            </Show>
+            <Show when="signed-in" isStatic>
+              <UserButton />
+            </Show>
           </nav>
         </header>
       </div>
@@ -121,6 +129,21 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     font-size: 1rem;
   }
   .cabecera nav a:hover { color: var(--mazorca); }
+  /* The sign-in button is a button, so it takes the same size and label as the links in the bar. */
+  .cabecera nav :global(.cabecera__entrar button) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .cabecera nav :global(.cabecera__entrar button:hover) { color: var(--mazorca); }
 
   .pie {
     overflow: hidden;

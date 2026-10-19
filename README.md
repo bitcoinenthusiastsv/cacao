@@ -103,7 +103,7 @@ Ninguna de las dos mueve dinero. Las dos sirven solo para el lector dueño de la
 - `PRECIO_FIJO_USD_BTC`: precio fijo para demos y trabajo sin internet.
 - `PUBLIC_DEMO`: `1` activa los botones de pago simulado.
 - `CACAO_SECRET`: secreto que firma los tokens.
-- `ADMIN_CLAVE`: clave del panel de administración.
+- `PUBLIC_CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY`: Clerk, que entra al panel de administración. Entra solo quien tenga una fila en `usuarios` con `es_admin = true`, enlazada por `clerk_id`.
 
 ## APIs
 
@@ -133,7 +133,8 @@ CacaoMedia/                       Cacao Media (raíz del repositorio)
   vercel.json                     cabeceras, redirecciones y buildCommand
   playwright.config.ts            configuración de las pruebas
   scripts/
-    cerrado.mjs                   genera el texto cerrado de las historias de pago
+    cerrado.mjs                   herramienta manual: genera el texto cerrado de las historias de pago
+    subir-cerrado.mjs             herramienta manual: sube el texto cerrado a la tabla media_cerrado
     arreglar-funcion.mjs          ajuste del build para el adaptador de Vercel
     portada.mjs                   busca y baja fotos libres de Wikimedia Commons
   tests/
@@ -152,7 +153,7 @@ CacaoMedia/                       Cacao Media (raíz del repositorio)
     lib/                          firma.ts (tokens), gate.ts (muro en el navegador),
                                   rehype-gate.mjs (corta el texto cerrado), travel.ts
     styles/global.css
-    data/                         cerrado.json, generado al arrancar (no se sube a git)
+    data/                         cerrado.json, generado a mano con scripts/cerrado.mjs (no se sube a git)
   travel/                         Cacao Travel (su propio proyecto Astro)
     package.json                  scripts y dependencias de Cacao Travel
     astro.config.mjs
@@ -184,7 +185,7 @@ npm install
 npm run dev
 ```
 
-Abrí http://localhost:4321. Antes de arrancar, `npm run dev` ejecuta `scripts/cerrado.mjs`, que genera `src/data/cerrado.json` con el texto de las historias de pago. Ese archivo no se sube a git.
+Abrí http://localhost:4321. `npm run dev` ya no ejecuta `scripts/cerrado.mjs`. Ese script es manual: genera `src/data/cerrado.json` con el texto de las historias de pago. El texto cerrado vive en la tabla privada `media_cerrado` de Supabase, que se carga con `scripts/subir-cerrado.mjs`. El JSON no se sube a git.
 
 **Cacao Travel** (desde la carpeta `travel/`):
 
@@ -228,14 +229,14 @@ Las pruebas de Cacao Travel recorren el catálogo con búsqueda, fecha, personas
 
 Cacao Media y Cacao Travel se despliegan en Vercel como dos proyectos separados. Cada uno tiene su `vercel.json`, con `buildCommand` en `npm run build`. Los comandos que corre cada build, según su `package.json`, son:
 
-- Cacao Media: `node scripts/cerrado.mjs && astro build && node scripts/arreglar-funcion.mjs`
+- Cacao Media: `astro build && node scripts/arreglar-funcion.mjs`
 - Cacao Travel: `astro build && node scripts/arreglar-funcion.mjs`
 
 Cacao Travel se despliega desde la carpeta `travel/` (o configurando esa carpeta como directorio raíz de su proyecto en Vercel).
 
 Dos scripts auxiliares participan del build:
 
-- `scripts/cerrado.mjs` (Cacao Media) corre antes de cada build y de `dev`. Toma la parte cerrada de cada historia de pago, lo que viene después de `<!-- gate -->`, y la guarda en `src/data/cerrado.json`. Solo leen ese archivo las rutas del servidor, así que las páginas se construyen sin ese texto.
+- `scripts/cerrado.mjs` (Cacao Media) es una herramienta manual: no corre en el build ni en `dev`. Toma la parte cerrada de cada historia de pago, lo que viene después de `<!-- gate -->`, y la guarda en `src/data/cerrado.json`. `scripts/subir-cerrado.mjs` sube ese texto a la tabla privada `media_cerrado` de Supabase. Solo lo leen las rutas del servidor, así que las páginas se construyen sin ese texto.
 - `scripts/arreglar-funcion.mjs` (en los dos proyectos) es una solución temporal para el adaptador de Vercel con Astro 7. Quita de la función del servidor dos imports que hacían fallar cada petición con "Cannot find native binding". El build informa cuántas líneas quitó. Se puede borrar cuando el adaptador deje de generarlos.
 
 Variables de entorno:

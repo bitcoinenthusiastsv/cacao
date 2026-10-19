@@ -4,10 +4,10 @@
   "description": "",
   "scripts": {
     "test": "playwright test",
-    "dev": "node scripts/cerrado.mjs && node --env-file-if-exists=.env.local node_modules/astro/bin/astro.mjs dev",
-    "build": "node scripts/cerrado.mjs && astro build && node scripts/arreglar-funcion.mjs",
+    "dev": "node --env-file-if-exists=.env.local node_modules/astro/bin/astro.mjs dev",
+    "build": "astro build && node scripts/arreglar-funcion.mjs",
     "preview": "astro preview",
-    "check": "node scripts/cerrado.mjs && astro check"
+    "check": "astro check"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,8 @@
     "@astrojs/markdown-remark": "^7.3.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/vercel": "^11.0.13",
+    "@clerk/astro": "^4.1.14",
+    "@clerk/localizations": "^4.23.0",
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@supabase/supabase-js": "^2.117.3",

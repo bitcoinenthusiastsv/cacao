@@ -35,9 +35,9 @@ Media, Market y Pay traen un `.env.example` con los nombres. Los valores no est�
 
 | Producto | Archivo local | Variables |
 |---|---|---|
-| Media | `.env.local` en la raíz | `CACAO_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRECIO_FIJO_USD_BTC`, `PUBLIC_DEMO`, `ADMIN_CLAVE` |
-| Travel | ninguno obligatorio | `CACAO_SECRET` (el mismo de Media), `PUBLIC_MEDIA_URL` opcional |
-| Market | `market/.env.local` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `PRECIO_FIJO_USD_BTC`, `NEXT_PUBLIC_INGRESO`, `NEXT_PUBLIC_DEMO` |
+| Media | `.env.local` en la raíz | `CACAO_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PRECIO_FIJO_USD_BTC`, `PUBLIC_DEMO`, `PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` |
+| Travel | `.env.local` en `travel/` | `CACAO_SECRET` (el mismo de Media), `PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `PUBLIC_MEDIA_URL` opcional |
+| Market | `market/.env.local` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `PRECIO_FIJO_USD_BTC`, `NEXT_PUBLIC_DEMO`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` |
 | Pay | `pay/.env.local` | las mismas de Market |
 | Ledger | ninguno | no usa |
 
@@ -71,7 +71,7 @@ Para trabajar en local, las llaves de la base salen del comando que la arranca (
    npm run demo
    ```
 
-Cuentas de prueba: en `/entrar` de Market y de Pay hay botones de demostración. También sirven los celulares 7000 0001 a 7000 0009 con el código 123456 (el 1 es administradora; del 2 al 5, el 7 y el 8 tienen negocio).
+Cuentas de prueba: el ingreso de Market y de Pay es con Clerk, así que se usan usuarios de prueba creados en Clerk. Ya no hay botones de demostración ni el código 123456. Para tener rol de administración, marcá `es_admin = true` en la fila de `usuarios` enlazada por `clerk_id`.
 
 ## Pruebas
 

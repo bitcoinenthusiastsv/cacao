@@ -440,9 +440,9 @@ function cmdDteTransmitir(id: string, a: Argumentos, datos: string): Resultado {
     lineas: [
       "Recepción simulada: documento rechazado.",
       ...respuesta.observaciones.map((o) => `  - ${o}`),
-      `Ticket ${id} rechazado el ${respuesta.momento} (UTC). Tiene 24 horas para reenviarlo.`,
+      `Ticket ${id} rechazado el ${respuesta.momento} (UTC). Tiene 24 horas (cifra por confirmar) para reenviarlo.`,
     ],
-    fallo: `El documento fue rechazado; el ticket ${id} queda rechazado con 24 horas de plazo.`,
+    fallo: `El documento fue rechazado; el ticket ${id} queda rechazado con 24 horas de plazo (cifra por confirmar).`,
   };
 }
 

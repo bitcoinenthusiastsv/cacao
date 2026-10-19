@@ -148,7 +148,7 @@ export function ejecutarDemo(valor?: string, opciones: OpcionesDemo = {}): numbe
     run("Construir su factura con ambiente de producción", ["dte", "construir", idD, "--ambiente", "01", "--confirmar-produccion", "--esquemas", gen], 33);
     const rechazo = run("Transmitir: el servicio de prueba rechaza el documento de producción", ["dte", "transmitir", idD, "--simulado"], 34);
     if (rechazo.codigo === 0) fallos += 1;
-    nota("El rechazo abre 24 horas para reenviar el documento. El cierre diario lo muestra.");
+    nota("El rechazo abre 24 horas (cifra por confirmar) para reenviar el documento. El cierre diario lo muestra.");
 
     // Tamper with a copy of the chain: the real file stays intact for the close.
     const copia = join(tmp, "copia");

@@ -1,10 +1,10 @@
 // Invoices and paid-story access for Cacao Media. Server only.
 // Payments are simulated: the database records what the simulator says, nothing moves money.
-import cerrado from '../../data/cerrado.json';
 import { DIA, firmar } from '../firma';
 import { todasLasHistorias } from '../historias';
+import { cerradoDe } from './cerrado';
 import { cotizacionUsdBtc } from './precio';
-import { bd, leerError } from './bd';
+import { bd, hayBase, leerError } from './bd';
 
 export type EstadoCobro = 'pendiente' | 'pagada' | 'vencida' | 'fallida';
 
@@ -52,11 +52,13 @@ export function modoDemo(): boolean {
   return variable('PUBLIC_DEMO') === '1';
 }
 
-/** A paid story the server knows: in the locked-text store and with a price in its frontmatter. */
+/** A paid story the server knows: with a price in its frontmatter and locked text in media_cerrado. */
 export async function historiaDePago(slug: unknown): Promise<HistoriaDePago | null> {
-  if (typeof slug !== 'string' || !Object.hasOwn(cerrado, slug)) return null;
+  if (typeof slug !== 'string') return null;
   const historia = (await todasLasHistorias()).find((h) => h.id === slug);
   if (!historia || historia.data.gratis || !(historia.data.precio > 0)) return null;
+  // Without a database the routes answer 503 right after this, so there is nothing to check here.
+  if (hayBase() && (await cerradoDe(slug)) === null) return null;
   return { slug, titulo: historia.data.titulo, precioSats: historia.data.precio };
 }
 

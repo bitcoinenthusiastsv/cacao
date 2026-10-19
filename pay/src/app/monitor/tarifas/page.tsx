@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
 import { fechaSv, tiempoEstimado } from '@/componentes/textosEnvio';
 import tabla from '@/componentes/Tabla.module.css';
 import { formatoMonto } from '@/lib/cotizacion';
+import { desgloseTributarioEnvio } from '@/lib/hacienda';
 import { ETIQUETA_ENTREGA } from '@/lib/transferencias';
 import { tarifasYTasas } from '@/servidor/monitor';
 import { exigirAdmin } from '@/servidor/sesion';
@@ -50,20 +52,39 @@ async function Tarifas() {
                     <th scope="col">Parte fija (USD)</th>
                     <th scope="col">Porcentaje</th>
                     <th scope="col">Tiempo estimado</th>
+                    <th scope="col">Código CAT-017 (DTE)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {resultado.dato.tarifas.map((t) => (
-                    <tr key={t.entrega}>
-                      <th scope="row">{ETIQUETA_ENTREGA[t.entrega]}</th>
-                      <td data-etiqueta="Parte fija (USD)">{formatoMonto(t.fijoCentavos, 'USD')}</td>
-                      <td data-etiqueta="Porcentaje">{`${t.porcentajeBps / 100}%`}</td>
-                      <td data-etiqueta="Tiempo estimado">{tiempoEstimado(t.minutosEstimados)}</td>
-                    </tr>
-                  ))}
+                  {resultado.dato.tarifas.map((t) => {
+                    const cat = desgloseTributarioEnvio({
+                      monedaOrigen: 'USD',
+                      montoOrigenCentavos: 10_000,
+                      comisionCentavos: t.fijoCentavos + Math.floor((10_000 * t.porcentajeBps + 9_999) / 10_000),
+                      entrega: t.entrega,
+                    });
+                    return (
+                      <tr key={t.entrega}>
+                        <th scope="row">{ETIQUETA_ENTREGA[t.entrega]}</th>
+                        <td data-etiqueta="Parte fija (USD)">{formatoMonto(t.fijoCentavos, 'USD')}</td>
+                        <td data-etiqueta="Porcentaje">{`${t.porcentajeBps / 100}%`}</td>
+                        <td data-etiqueta="Tiempo estimado">{tiempoEstimado(t.minutosEstimados)}</td>
+                        <td data-etiqueta="Código CAT-017 (DTE)" className={estilos.mono}>
+                          {cat.etiquetaCat017}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+            <p className={estilos.leyenda}>
+              Según el Art. 3 num. 4 de la LISR, los valores recibidos del exterior no constituyen renta; el alcance para
+              remesas familiares no está confirmado, y el tratamiento de IVA del principal no fue verificado. El cobro por
+              servicio local incluye 13% de IVA (F-07, v14 sin vigencia confirmada) y 1.75% de Pago a Cuenta sobre la base
+              sin IVA (F-14 v17, Art. 151 CT; la base es un supuesto de cálculo).{' '}
+              <Link href="/hacienda">Ver marco tributario completo</Link>.
+            </p>
           </section>
 
           <section className={estilos.seccion} aria-labelledby="titulo-tasas">
@@ -104,3 +125,4 @@ async function Tarifas() {
     </div>
   );
 }
+

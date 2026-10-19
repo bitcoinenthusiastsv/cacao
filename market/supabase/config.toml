@@ -380,9 +380,9 @@ enabled = false
 
 # Use Clerk as a third-party provider alongside Supabase Auth.
 [auth.third_party.clerk]
-enabled = false
-# Obtain from https://clerk.com/setup/supabase
-# domain = "example.clerk.accounts.dev"
+enabled = true
+# Clerk's frontend API domain for this application (public; it is part of the publishable key).
+domain = "worthy-sole-498.clerk.accounts.dev"
 
 # OAuth server configuration
 [auth.oauth_server]

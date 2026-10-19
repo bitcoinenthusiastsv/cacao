@@ -1,10 +1,10 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { anonimo, categoriaDePrueba, negocio, pagar, pedir, producto, servicio, sesionConCodigo, usuarioNuevo, limpiar } from './ayuda';
+import { anonimo, categoriaDePrueba, negocio, pagar, pedir, producto, servicio, sesionDe, usuarioNuevo, usuarioSemilla, limpiar } from './ayuda';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Row-level security and column grants, checked with real user sessions. Buyers 06 and 07 are two of
-// the test phones in supabase/config.toml; they sign in with the fixed code. Signing in is rate
-// limited, so the two sessions are made once for the whole file.
+// the seed users (clerk ids seed_6 and seed_7); their sessions are signed with the local JWT secret.
+// The sessions are made once for the whole file.
 
 const TELEFONO_1 = '50370000006';
 const TELEFONO_2 = '50370000007';
@@ -14,11 +14,9 @@ let sesionesCache: Promise<{ b1: SupabaseClient; b2: SupabaseClient; u1: string 
 function sesiones() {
   if (!sesionesCache) {
     sesionesCache = (async () => {
-      const b1 = await sesionConCodigo(TELEFONO_1);
-      const b2 = await sesionConCodigo(TELEFONO_2);
-      const { data, error } = await b1.auth.getUser();
-      if (error || !data.user) throw error ?? new Error('El comprador 1 no tiene sesión');
-      return { b1, b2, u1: data.user.id };
+      const comprador1 = await usuarioSemilla(TELEFONO_1);
+      const comprador2 = await usuarioSemilla(TELEFONO_2);
+      return { b1: await sesionDe(comprador1), b2: await sesionDe(comprador2), u1: comprador1.id };
     })();
   }
   return sesionesCache;

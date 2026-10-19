@@ -4,6 +4,7 @@ import '@fontsource/jetbrains-mono/latin-500.css';
 import '../styles/global.css';
 import GrupoCacao from '../components/GrupoCacao.astro';
 import Logo from '../components/Logo.astro';
+import { Show, SignInButton, UserButton } from '@clerk/astro/components';
 import { SECCIONES, type SeccionId } from '../lib/secciones';
 import { TRAVEL_URL } from '../lib/travel';
 
@@ -72,6 +73,13 @@ const demo = import.meta.env.PUBLIC_DEMO === '1';
         <div class="cabecera__extra">
           <a class="etiqueta" href="/archivo/">Archivo</a>
           <a class="etiqueta" href="/acerca/">Acerca</a>
+          <!-- isStatic: the pages are prerendered, so the state is read in the browser, not at build time. -->
+          <Show when="signed-out" isStatic class="cabecera__entrar etiqueta">
+            <SignInButton mode="modal">Entrar</SignInButton>
+          </Show>
+          <Show when="signed-in" isStatic>
+            <UserButton />
+          </Show>
         </div>
       </header>
       </div>
@@ -143,6 +151,21 @@ const demo = import.meta.env.PUBLIC_DEMO === '1';
     margin-inline: -8px;
     text-decoration: none;
   }
+
+  /* The sign-in button is a button, not a link: it takes the same tap area and label as the links beside it. */
+  .cabecera__extra :global(.cabecera__entrar button) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 8px;
+    margin-inline: -8px;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+  }
+  .cabecera__extra :global(.cabecera__entrar button:hover) { color: var(--mazorca-oscuro); }
 
   @media (max-width: 860px) {
     .cabecera { grid-template-columns: minmax(0, 1fr); }

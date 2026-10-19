@@ -6,6 +6,8 @@ import { ChipEstado } from '@/componentes/ChipEstado';
 import { fechaEnvio, fraseDeLaSuma } from '@/componentes/formatoEnvio';
 import { LineasDinero } from '@/componentes/LineasDinero';
 import { Logo } from '@/componentes/Logo';
+import { formatoUsd } from '@/lib/dinero';
+import { desgloseTributarioEnvio } from '@/lib/hacienda';
 import {
   accionesPosibles,
   descripcionDeEstado,
@@ -36,6 +38,7 @@ export default async function PaginaEnvio(props: PageProps<'/envios/[id]'>) {
 
   const acciones = accionesPosibles(envio.estado, envio.rol);
   const enCamino = envio.estado === 'procesando';
+  const tributario = desgloseTributarioEnvio(envio);
 
   return (
     <article className={estilos.envio}>
@@ -88,6 +91,28 @@ export default async function PaginaEnvio(props: PageProps<'/envios/[id]'>) {
             </div>
           )}
         </dl>
+      </section>
+
+      <section className={estilos.bloque} aria-labelledby="titulo-hacienda">
+        <h2 id="titulo-hacienda">Tratamiento tributario en El Salvador (DGII · BCR)</h2>
+        <dl className={estilos.datos}>
+          <div>
+            <dt>Principal de la remesa</dt>{' '}
+            <dd>Valores recibidos del exterior: no constituyen renta según el Art. 3 num. 4 LISR (alcance para remesas familiares no confirmado). IVA no verificado.</dd>
+          </div>
+          <div>
+            <dt>Desglose fiscal del servicio (DTE 01)</dt>{' '}
+            <dd className="dato">
+              Base sin IVA {formatoUsd(tributario.baseSinIvaUsdCentavos)} + IVA 13% {formatoUsd(tributario.ivaUsdCentavos)} (F-07, v14 sin vigencia confirmada) · Pago a Cuenta 1.75% {formatoUsd(tributario.pagoACuentaUsdCentavos)} (F-14 v17). La base sin IVA es un supuesto de cálculo.
+            </dd>
+          </div>
+          <div>
+            <dt>Forma de pago CAT-017</dt> <dd className="dato">{tributario.etiquetaCat017}</dd>
+          </div>
+        </dl>
+        <p className={estilos.nota}>
+          <Link href="/hacienda">Ver el marco tributario y regulatorio completo</Link>.
+        </p>
       </section>
 
       <section className={estilos.comprobante} aria-labelledby="titulo-comprobante">

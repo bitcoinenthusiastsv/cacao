@@ -1,23 +1,21 @@
 'use client';
 
-import { useFormStatus } from 'react-dom';
+import { useClerk } from '@clerk/nextjs';
+import { useState } from 'react';
 
-import { cerrarSesion } from './acciones';
-
-// Signs out with a server action. The button waits while the sign-out runs.
+// Signs out on this device with Clerk, then goes home. The button waits while the sign-out runs.
 export function BotonSalir() {
-  return (
-    <form action={cerrarSesion}>
-      <BotonEnviar />
-    </form>
-  );
-}
+  const { signOut } = useClerk();
+  const [saliendo, setSaliendo] = useState(false);
 
-function BotonEnviar() {
-  const { pending } = useFormStatus();
+  async function salir() {
+    setSaliendo(true);
+    await signOut({ redirectUrl: '/' });
+  }
+
   return (
-    <button type="submit" className="boton boton--secundario" disabled={pending}>
-      {pending ? 'Cerrando sesión…' : 'Cerrar sesión'}
+    <button type="button" className="boton boton--secundario" disabled={saliendo} onClick={salir}>
+      {saliendo ? 'Cerrando sesión…' : 'Cerrar sesión'}
     </button>
   );
 }

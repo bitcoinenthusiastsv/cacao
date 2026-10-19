@@ -12,7 +12,6 @@ Hay tres route handlers. Todos viven en `src/app`.
 |---|---|---|---|
 | POST | `/api/fotos` | `src/app/api/fotos/route.ts` | Formularios de producto y de servicio, con sesión y negocio. |
 | POST | `/api/evento` | `src/app/api/evento/route.ts` | Cualquier visitante. Lo llama el navegador al ver un producto o agregarlo al carrito. |
-| GET | `/auth/confirmar` | `src/app/auth/confirmar/route.ts` | El enlace del correo de acceso. |
 
 Las respuestas de error de `/api/fotos` tienen forma JSON: `{ "codigo": "...", "mensaje": "..." }`. Las de `/api/evento` no tienen cuerpo.
 
@@ -97,39 +96,9 @@ Set-Cookie: cm_sesion=<valor>; Path=/; Max-Age=31536000; HttpOnly; SameSite=lax
 
 El `Set-Cookie` solo aparece la primera vez que el navegador envía un evento.
 
-### `GET /auth/confirmar`
+### Acceso con Clerk
 
-Termina el acceso que empezó con el correo. Cambia el código del enlace por una sesión y redirige.
-
-**Quién puede llamarla:** el enlace que llega al correo, abierto en el mismo navegador que pidió el acceso (en el flujo PKCE).
-
-**Parámetros de consulta:**
-
-| Parámetro | Significado |
-|---|---|
-| `code` | Código PKCE del flujo por defecto del proyecto alojado. Se cambia por una sesión. |
-| `token_hash` y `type` | Hash del enlace y su tipo. `type` debe ser `magiclink`, `email` o `signup`. Cualquier otro tipo se rechaza sin llamar a Auth. |
-| `volver` | Ruta del sitio a la que ir después. Pasa por `destinoSeguro`: si no es una ruta del propio sitio, se usa `/`. |
-
-**Respuestas (redirección 307):**
-
-| Destino | Cuándo |
-|---|---|
-| `volver` (por ejemplo `/carrito`) | El enlace funcionó y la cuenta ya tiene nombre. |
-| `/cuenta?volver=...` | El enlace funcionó y la cuenta no tiene nombre todavía. |
-| `/entrar?aviso=enlace` | El enlace no sirve: venció, ya se usó, se abrió en otro navegador, o le faltan parámetros. |
-
-**Ejemplo:**
-
-```http
-GET /auth/confirmar?token_hash=<hash>&type=email&volver=%2Fcarrito HTTP/1.1
-```
-
-```http
-HTTP/1.1 307 Temporary Redirect
-Location: /carrito
-Set-Cookie: sb-<proyecto>-auth-token=<valor>; ...
-```
+No hay ruta propia para confirmar el acceso. `/entrar` y `/registrarse` muestran los componentes `SignIn` y `SignUp` de `@clerk/nextjs`. Clerk se encarga del código y del enlace, y `sesionActual` lee la sesión con `auth()`. El parámetro `volver` pasa por `destinoSeguro` antes de redirigir.
 
 ## Capa de servidor
 
@@ -210,10 +179,10 @@ Cuentas, perfiles y negocios. Las funciones `normalizarCelular`, `normalizarCorr
 
 | Función | Qué hace | Quién la llama | Códigos |
 |---|---|---|---|
-| `normalizarCelular(texto: string): string \| null` | Ocho dígitos. Acepta espacios, guiones y el prefijo `+503` o `503`. Si no sirve, nulo. | `entrar`. | Ninguno. |
-| `normalizarCorreo(texto: string): string \| null` | Correo en minúsculas, de hasta 254 caracteres. Si no parece un correo, nulo. | `entrar`. | Ninguno. |
-| `destinoSeguro(volver): string` | Solo acepta rutas del propio sitio. Si no, `/`. Rechaza `/entrar`. | `entrar`, `entrarDemo`, `/auth/confirmar`. | Ninguno. |
-| `rutaCuenta(volver: string): string` | `/cuenta` con el destino en `volver`. | `entrar`, `/auth/confirmar`. | Ninguno. |
+| `normalizarCelular(texto: string): string \| null` | Ocho dígitos. Acepta espacios, guiones y el prefijo `+503` o `503`. Si no sirve, nulo. | Ninguno desde el ingreso con Clerk. | Ninguno. |
+| `normalizarCorreo(texto: string): string \| null` | Correo en minúsculas, de hasta 254 caracteres. Si no parece un correo, nulo. | Ninguno desde el ingreso con Clerk. | Ninguno. |
+| `destinoSeguro(volver): string` | Solo acepta rutas del propio sitio. Si no, `/`. Rechaza `/entrar`. | `entrar`, `registrarse`, `cuenta`. | Ninguno. |
+| `rutaCuenta(volver: string): string` | `/cuenta` con el destino en `volver`. | `entrar`. | Ninguno. |
 | `actualizarPerfil(usuarioId, nombre): Promise<Resultado<{ nombre }>>` | Cambia el nombre de la cuenta (2 a 80 caracteres). | `guardarNombre` (`/cuenta`). | `DATOS_INVALIDOS`, `NO_ENCONTRADA`, y los de `actualizar_perfil`. |
 | `solicitarNegocio(usuarioId, datos: DatosNegocio): Promise<Resultado<Negocio>>` | Registra el negocio. Nace pendiente. | `solicitar` (`/mi-negocio`). | `DATOS_INVALIDOS` (nombre, descripción, ubicación, Lightning Address), y los de `solicitar_negocio`. |
 | `actualizarNegocio(usuarioId, datos: DatosNegocio & { abierto }): Promise<Resultado<Negocio>>` | Edita el negocio. No cambia el estado. | `actualizar` (`/mi-negocio`). | `DATOS_INVALIDOS`, y los de `actualizar_negocio`. |
@@ -374,8 +343,7 @@ Cada acción vive en un `acciones.ts` de su pantalla. Todas revisan la sesión p
 |---|---|---|---|
 | Carrito | `src/app/carrito/acciones.ts` | `revisarCarrito(lineas)` | `revisarCarrito` (público). |
 | Carrito | | `hacerPedido(entrada)` | `sesionActual` → `crearPedido` → `crear_orden`, `registrar_cobro`. |
-| Entrar | `src/app/entrar/acciones.ts` | `entrar(previo, datos)` | Auth: `signInWithOtp` y `verifyOtp`. Después lee `usuarios`. |
-| Entrar | | `entrarDemo(persona, volver)` | Igual que `entrar`, con el teléfono de la persona y `DEMO_CODIGO`. Solo con `NEXT_PUBLIC_DEMO=1`. |
+| Entrar | `src/app/entrar/page.tsx` | Componente `SignIn` de Clerk | `sesionActual` (si ya hay sesión, redirige). |
 | Cuenta | `src/app/cuenta/acciones.ts` | `guardarNombre(previo, datos)` | `exigirSesion` → `actualizarPerfil` → `actualizar_perfil`. |
 | Cuenta | | `cerrarSesion()` | Cierra la sesión solo en este navegador (`signOut` con `scope: 'local'`). |
 | Mi negocio | `src/app/mi-negocio/acciones.ts` | `solicitar(previo, datos)` | `exigirSesion` → `solicitarNegocio` → `solicitar_negocio`. |
@@ -445,7 +413,6 @@ type Resultado<T> = { ok: true; dato: T } | { ok: false; codigo: string; mensaje
 | `NO_DISPONIBLE` | Servidor | El proveedor de cobro (`nwc` o `blink`) todavía no tiene adaptador. |
 | `NO_SESION`, `SIN_SESION` | Servidor | La acción se llamó sin sesión. Se pide volver a entrar. |
 | `NO_AUTORIZADO` | Route handler | `/api/fotos` sin sesión (401). |
-| `NO_ENVIADO` | Servidor | No se pudo mandar el código de acceso (entrar de demostración). |
 | `ERROR` | Servidor | Falla inesperada. El detalle queda en el registro del servidor. |
 
 Las funciones de lectura no usan `Resultado`. Lanzan `Error` y la página muestra la pantalla de error. Las excepciones son `contarNoLeidos` (devuelve 0), `cotizacionSegura` (devuelve nulo), `registrarEvento` (no lanza nunca) y `barrer` (registra el error y sigue).

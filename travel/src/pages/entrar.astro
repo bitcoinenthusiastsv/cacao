@@ -1,0 +1,23 @@
+---
+// Sign-in page for the operator panel. A visitor who is already signed in goes straight to /operadores/.
+import Base from '../layouts/Base.astro';
+import { SignIn } from '@clerk/astro/components';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (Astro.locals.auth().isAuthenticated) return Astro.redirect('/operadores/');
+---
+
+<Base titulo="Entrar" descripcion="Entrá para publicar tus experiencias en Cacao Travel.">
+  <div class="contenedor entrar">
+    <header>
+      <h1>Entrá a tu panel</h1>
+      <p>Con tu cuenta publicás experiencias y ves cuánto recibís por cada reserva.</p>
+    </header>
+    <SignIn routing="hash" forceRedirectUrl="/operadores/" />
+  </div>
+</Base>
+
+<style>
+  .entrar { display: grid; gap: 24px; max-width: 34rem; padding-block: 40px; }
+</style>

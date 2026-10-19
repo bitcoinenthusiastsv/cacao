@@ -71,15 +71,31 @@ test("the demo day site: groups and totals, ticket pages, schema page, and every
     const emitido = readFileSync(join(salida, "tickets", `${ids[0]}.html`), "utf8");
     const t = textoPlano(emitido);
     assert.ok(emitido.includes("sello simulado"));
+    assert.ok(emitido.includes('href="https://admin.factura.gob.sv/consultaPublica"'));
+    assert.doesNotMatch(emitido, /consultaPublica\?/, "the link opens the query without parameters");
+    assert.ok(emitido.includes("En la consulta se escriben el código de generación"));
+    assert.ok(t.includes("Versión legible para el receptor. Por regla general, el DTE se considera emitido al recibir el sello de recepción"));
     assert.ok(t.includes("Validación de la copia guardada"));
     assert.ok(t.includes("Resultado VÁLIDO"));
+
+    const mes = textoPlano(readFileSync(join(salida, "mes.html"), "utf8"));
+    assert.ok(mes.includes("Cifras para Formulario F-07 (IVA) y Formulario F-14 v17 (Pago a Cuenta)"));
+    assert.ok(mes.includes("Anexo 1 · Ventas a contribuyentes (20 columnas A a T)"));
+    assert.ok(mes.includes("Anexo 2 · Ventas a consumidor final (23 columnas A a W)"));
+
+    const hacienda = textoPlano(readFileSync(join(salida, "hacienda.html"), "utf8"));
+    assert.ok(hacienda.includes("Carácter constitutivo del sello de recepción"));
+    assert.ok(hacienda.includes("$3,679.20 (9 salarios mínimos)"));
+    assert.ok(hacienda.includes("vigente desde el 1 de junio de 2025"));
+    assert.doesNotMatch(hacienda, /490\.00/, "the flat 490 dollar fine is gone");
+    assert.ok(hacienda.includes("Resolución 1003 del CVPCPA"));
 
     const esquemas = textoPlano(readFileSync(join(salida, "esquemas.html"), "utf8"));
     assert.ok(esquemas.includes("Dos generaciones de esquemas"));
 
     // Every page has no script, and every relative link and stylesheet points at an existing file.
     const paginas = readdirSync(salida, { recursive: true }).map(String).filter((f) => f.endsWith(".html"));
-    assert.ok(paginas.length === 8, "index, schema page and six ticket pages");
+    assert.ok(paginas.length === 10, "index, monthly books page, Hacienda page, schema page and six ticket pages");
     for (const p of paginas) {
       const html = readFileSync(join(salida, p), "utf8");
       assert.doesNotMatch(html, /<script/i, p);

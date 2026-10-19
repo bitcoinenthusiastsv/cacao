@@ -14,7 +14,7 @@ Versión en línea: https://cacao-market.vercel.app
 - Vender: registrar el negocio, publicar productos y servicios, responder cotizaciones y marcar pedidos y trabajos.
 - Administrar: aprobar negocios, resolver disputas, ocultar publicaciones y revisar órdenes, auditoría y embudo de ventas.
 
-En `/entrar` hay cuentas de demostración (aparecen con `NEXT_PUBLIC_DEMO=1`): Lucía, compradora (7000 0006), Rosa, vendedora (7000 0002), y Ana, administradora (7000 0001).
+El ingreso es con Clerk: en `/entrar` se entra con celular o correo, y en `/registrarse` se crea la cuenta. Ya no hay cuentas de demostración. El rol de administración sale de `usuarios.es_admin`.
 
 ## Requisitos
 
@@ -36,7 +36,7 @@ En `/entrar` hay cuentas de demostración (aparecen con `NEXT_PUBLIC_DEMO=1`): L
    npx supabase start
    ```
 
-3. Copiá `.env.example` como `.env.local`. Con `npx supabase status` obtené la URL de la API y las claves `anon` y `service_role`, y pegalas en `.env.local`. Para ver las cuentas de demostración, poné `NEXT_PUBLIC_DEMO=1`.
+3. Copiá `.env.example` como `.env.local`. Con `npx supabase status` obtené la URL de la API y las claves `anon` y `service_role`, y pegalas en `.env.local`. Poné también `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` con las claves de desarrollo de tu aplicación en Clerk.
 
 4. Aplicá las migraciones de `supabase/migrations`. El comando solo aplica las que faltan:
 
@@ -56,7 +56,7 @@ En `/entrar` hay cuentas de demostración (aparecen con `NEXT_PUBLIC_DEMO=1`): L
    npm run dev
    ```
 
-Para entrar en local, usá un teléfono de prueba (8 dígitos, sin +503) y el código 123456. Los teléfonos de prueba van del 7000 0001 al 7000 0009. El correo de prueba se revisa en el servidor de correo local de Supabase, en http://127.0.0.1:54324.
+Para entrar en local, usá un usuario de prueba creado en el panel de Clerk. Los números 7000 0001 a 7000 0009 y el código 123456 ya no sirven. Para tener rol de administración, marcá `es_admin = true` en la fila de `usuarios` enlazada por `clerk_id`.
 
 ## Variables de entorno
 
@@ -66,9 +66,9 @@ Los valores van en `.env.local`, que no se sube al repositorio. Cambiar una vari
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: clave pública (anon) del proyecto.
 - `SUPABASE_SERVICE_ROLE_KEY`: clave de servicio. Solo la usan el servidor y los scripts.
 - `PRECIO_FIJO_USD_BTC`: precio fijo del bitcoin en USD. Si tiene un número positivo, no se consultan Coinbase ni Kraken.
-- `NEXT_PUBLIC_INGRESO`: formas de entrar, `telefono`, `correo`, o las dos (por defecto, las dos).
-- `NEXT_PUBLIC_DEMO`: con `1` muestra las cuentas de demostración en `/entrar`.
-- `DEMO_CODIGO`: código de las cuentas de demostración. Por defecto, 123456.
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: clave pública de Clerk para `/entrar` y `/registrarse`.
+- `CLERK_SECRET_KEY`: clave secreta de Clerk. La usa solo el servidor.
+- `NEXT_PUBLIC_DEMO`: modo demo. Ya no abre cuentas de demostración en `/entrar`.
 - `MARKET_URL`: dirección de la aplicación para las pruebas de navegador. Por defecto, http://localhost:4323.
 
 ## Pruebas

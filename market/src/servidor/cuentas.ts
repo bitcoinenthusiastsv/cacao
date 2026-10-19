@@ -82,6 +82,16 @@ export function rutaCuenta(volver: string): string {
   return volver === '/' ? '/cuenta' : `/cuenta?volver=${encodeURIComponent(volver)}`;
 }
 
+/** The sign-in page, with the destination kept in `volver`. */
+export function rutaEntrar(volver: string): string {
+  return volver === '/' ? '/entrar' : `/entrar?volver=${encodeURIComponent(volver)}`;
+}
+
+/** The sign-up page, with the destination kept in `volver`. */
+export function rutaRegistrarse(volver: string): string {
+  return volver === '/' ? '/registrarse' : `/registrarse?volver=${encodeURIComponent(volver)}`;
+}
+
 function validarNombre(nombre: string): Resultado<string> {
   const limpio = nombre.trim();
   if (largo(limpio) < 2 || largo(limpio) > 80) {
