@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
-import { destinoSeguro, rutaCuenta, rutaEntrar, rutaRegistrarse } from '@/servidor/cuentas';
+import { destinoSeguro, rutaContinuar, rutaCuenta, rutaRegistrarse } from '@/servidor/cuentas';
 import { sesionActual } from '@/servidor/sesion';
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ async function EntradaConDestino({ busqueda }: { busqueda: PageProps<'/entrar/[[
     redirect(sesion.usuario.nombre.trim() ? volver : rutaCuenta(volver));
   }
 
-  // Clerk sends the visitor back to this page after signing in, so the name check above runs
+  // Clerk sends the visitor to /continuar after signing in. That route runs the name check
   // before the visitor reaches `volver`.
   return (
     <>
@@ -46,7 +46,7 @@ async function EntradaConDestino({ busqueda }: { busqueda: PageProps<'/entrar/[[
         routing="path"
         path="/entrar"
         signUpUrl={rutaRegistrarse(volver)}
-        forceRedirectUrl={rutaEntrar(volver)}
+        forceRedirectUrl={rutaContinuar(volver)}
       />
     </>
   );

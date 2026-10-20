@@ -6,7 +6,7 @@ import type { APIContext } from 'astro';
 import { verificar } from '../../../lib/firma';
 import { hayBase } from '../../../lib/servidor/bd';
 import { cerradoDe } from '../../../lib/servidor/cerrado';
-import { respuestaError, tieneAcceso } from '../../../lib/servidor/cobros';
+import { historiaDePago, respuestaError, TEXTO_NO_DISPONIBLE, tieneAcceso } from '../../../lib/servidor/cobros';
 import { cookieLector } from '../../../lib/servidor/lector';
 
 export const prerender = false;
@@ -28,6 +28,10 @@ export async function GET(context: APIContext) {
     return respuestaError(error);
   }
   if (html === null) {
+    // A paid story with no row in media_cerrado is a missing text, not an unknown story.
+    if (await historiaDePago(slug)) {
+      return Response.json({ error: TEXTO_NO_DISPONIBLE }, { status: 503, headers: PRIVADO });
+    }
     return Response.json({ error: 'Esa historia no existe o es gratis.' }, { status: 404, headers: PRIVADO });
   }
 

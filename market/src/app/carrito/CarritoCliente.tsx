@@ -187,7 +187,7 @@ export function CarritoCliente() {
 
 function CarritoListo({ datos }: { datos: string }) {
   const router = useRouter();
-  const { isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const lineas = useMemo(() => JSON.parse(datos) as LineaCarrito[], [datos]);
   // Bumped to check the cart again, for example after a failed order.
   const [version, setVersion] = useState(0);
@@ -235,7 +235,8 @@ function CarritoListo({ datos }: { datos: string }) {
   const grupos = agrupar(lineas.map((linea) => filaDe(linea, porId.get(linea.productoId), revisada)));
 
   async function pedir(grupo: Grupo) {
-    if (enCurso.current) return;
+    // Until Clerk loads, isSignedIn is still undefined. Wait instead of sending the visitor to sign in.
+    if (!isLoaded || enCurso.current) return;
     enCurso.current = true;
     setPidiendo(grupo.negocioId);
     setErrores((previos) => {
@@ -317,6 +318,7 @@ function CarritoListo({ datos }: { datos: string }) {
           grupo={grupo}
           cotizacion={cotizacion}
           revisada={revisada}
+          sesionCargada={isLoaded}
           modo={modos[grupo.negocioId] ?? 'recogida'}
           onModo={(valor) => setModos((previos) => ({ ...previos, [grupo.negocioId]: valor }))}
           onPedir={() => void pedir(grupo)}
@@ -333,6 +335,7 @@ function BloqueNegocio({
   grupo,
   cotizacion,
   revisada,
+  sesionCargada,
   modo,
   onModo,
   onPedir,
@@ -343,6 +346,7 @@ function BloqueNegocio({
   grupo: Grupo;
   cotizacion: number | null;
   revisada: boolean;
+  sesionCargada: boolean;
   modo: ModoEntrega;
   onModo: (valor: ModoEntrega) => void;
   onPedir: () => void;
@@ -352,7 +356,7 @@ function BloqueNegocio({
 }) {
   const idTitulo = `negocio-${grupo.negocioId}`;
   const hayDisponibles = grupo.disponibles.length > 0;
-  const puedePedir = revisada && hayDisponibles && pidiendo === null;
+  const puedePedir = revisada && hayDisponibles && pidiendo === null && sesionCargada;
 
   return (
     <section className={styles.negocio} aria-labelledby={idTitulo}>

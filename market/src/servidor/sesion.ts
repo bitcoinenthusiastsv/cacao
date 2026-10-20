@@ -32,12 +32,16 @@ export const sesionActual = cache(async (): Promise<Sesion | null> => {
   const telefono = cuenta?.primaryPhoneNumber?.phoneNumber ?? '';
   const correo = cuenta?.primaryEmailAddress?.emailAddress ?? '';
 
+  // Only a phone or email that Clerk has verified may link an existing row. Anyone can type an unverified one.
+  const telefonoVinculo = cuenta?.primaryPhoneNumber?.verification?.status === 'verified' ? telefono : '';
+  const correoVinculo = cuenta?.primaryEmailAddress?.verification?.status === 'verified' ? correo : '';
+
   // Creates the usuarios row on first visit, or links the existing one by phone or email.
   const supabase = clienteServicio();
   const { data: usuarioId, error: errorVinculo } = await supabase.rpc('vincular_clerk', {
     p_clerk_id: userId,
-    p_telefono: telefono,
-    p_correo: correo,
+    p_telefono: telefonoVinculo,
+    p_correo: correoVinculo,
     p_nombre: cuenta?.fullName ?? '',
   });
   if (errorVinculo || !usuarioId) {

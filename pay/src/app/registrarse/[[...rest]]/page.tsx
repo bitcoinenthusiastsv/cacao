@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
-import { destinoSeguro, rutaAcceso, rutaCuenta } from '@/servidor/cuentas';
+import { destinoSeguro, rutaAcceso, rutaContinuar, rutaCuenta } from '@/servidor/cuentas';
 import { sesionActual } from '@/servidor/sesion';
 
 import estilos from '../../entrar/estilos.module.css';
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: 'Crear cuenta',
 };
 
-// The sign-up form is Clerk's. A finished sign-up goes back through /entrar, which sends the visitor on.
+// The sign-up form is Clerk's. A finished sign-up goes through /continuar, which sends the visitor on.
 export default function PaginaRegistrarse(props: PageProps<'/registrarse/[[...rest]]'>) {
   return (
     <div className="entrar">
@@ -43,7 +43,7 @@ async function RegistroConDestino({ busqueda }: { busqueda: PageProps<'/registra
 
       <div className={estilos.bloque}>
         <SignUp
-          forceRedirectUrl={rutaAcceso('/entrar', volver)}
+          forceRedirectUrl={rutaContinuar(volver)}
           signInUrl={rutaAcceso('/entrar', volver)}
         />
       </div>

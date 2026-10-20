@@ -7,9 +7,11 @@ import {
   precioUsdCentavos,
   respuestaError,
   sinGuardar,
+  TEXTO_NO_DISPONIBLE,
   tieneAcceso,
   tokenDeAcceso,
 } from '../../lib/servidor/cobros';
+import { cerradoDe } from '../../lib/servidor/cerrado';
 import { lectorDe } from '../../lib/servidor/lector';
 
 export const prerender = false;
@@ -30,6 +32,9 @@ export async function POST(context: APIContext) {
   }
 
   try {
+    if ((await cerradoDe(historia.slug)) === null) {
+      return Response.json({ error: TEXTO_NO_DISPONIBLE }, { status: 503, headers: sinGuardar });
+    }
     const lector = await lectorDe(context);
     if (await tieneAcceso(lector, historia.slug)) {
       const { token, expira } = tokenDeAcceso(historia.slug);

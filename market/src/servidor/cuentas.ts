@@ -92,6 +92,11 @@ export function rutaRegistrarse(volver: string): string {
   return volver === '/' ? '/registrarse' : `/registrarse?volver=${encodeURIComponent(volver)}`;
 }
 
+/** The step after sign-in, which sends the visitor on with the destination kept in `volver`. */
+export function rutaContinuar(volver: string): string {
+  return volver === '/' ? '/continuar' : `/continuar?volver=${encodeURIComponent(volver)}`;
+}
+
 function validarNombre(nombre: string): Resultado<string> {
   const limpio = nombre.trim();
   if (largo(limpio) < 2 || largo(limpio) > 80) {

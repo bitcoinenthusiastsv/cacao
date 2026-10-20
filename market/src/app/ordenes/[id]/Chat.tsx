@@ -69,7 +69,7 @@ export function Chat({
       if (!activo) return;
       cliente = navegador;
       canal = navegador
-        .channel(`orden-${ordenId}`)
+        .channel(`orden-${ordenId}-chat`)
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `orden_id=eq.${ordenId}` },

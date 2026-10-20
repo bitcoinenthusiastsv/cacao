@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -20,9 +21,6 @@ const TOUR = {
   foto: `${TRAVEL}/fotos/prueba.jpg`,
   historias: [SLUG],
 };
-
-// A sentence that only exists after the gate in this story.
-const FRASE_CERRADA = 'Una moneda que llegó por la misma carretera';
 
 const muro = (page: Page) => page.locator('[data-gate-muro]');
 const cerrado = (page: Page) => page.locator('[data-gate-cerrado]');
@@ -49,6 +47,38 @@ function servicio() {
   const clave = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !clave) throw new Error('Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY: correr con --env-file=.env.local.');
   return createClient(url, clave, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+/** Eight words from one plain text run of locked HTML: no tags, entities or doubled spaces inside them. */
+function muestraDe(html: string): string | null {
+  for (const bloque of html.match(/>[^<>\n]+</g) ?? []) {
+    const texto = bloque.slice(1, -1).trim();
+    if (texto.includes('&') || /\s{2}/.test(texto)) continue;
+    const palabras = texto.split(' ');
+    if (palabras.length >= 8) return palabras.slice(0, 8).join(' ');
+  }
+  return null;
+}
+
+/**
+ * A sentence of the locked text, read at run time: from media_cerrado with the service role, or from the
+ * local src/data/cerrado.json that scripts/cerrado.mjs writes. Null when neither can give one.
+ */
+async function fraseCerrada(): Promise<string | null> {
+  let html: string | null = null;
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const { data } = await servicio().from('media_cerrado').select('html').eq('slug', SLUG).maybeSingle();
+    html = (data as { html: string } | null)?.html ?? null;
+  }
+  if (!html) {
+    try {
+      const cache = JSON.parse(await readFile('src/data/cerrado.json', 'utf8')) as Record<string, string>;
+      html = cache[SLUG] ?? null;
+    } catch {
+      html = null;
+    }
+  }
+  return html ? muestraDe(html) : null;
 }
 
 test('paid story starts locked with its price and the unlock button', async ({ page }) => {
@@ -199,8 +229,13 @@ test('an expired stored pass is renewed from the cookie', async ({ page }) => {
 });
 
 test('the locked text is not in the page and the server refuses it without a valid pass', async ({ page, request }) => {
+  const frase = await fraseCerrada();
+  if (!frase) {
+    test.skip(true, `Sin texto cerrado de muestra para ${SLUG}: correr con --env-file=.env.local o tener src/data/cerrado.json.`);
+    return;
+  }
   const fuente = await (await request.get(PAGA)).text();
-  expect(fuente).not.toContain(FRASE_CERRADA);
+  expect(fuente).not.toContain(frase);
 
   const api = `/api/contenido/${SLUG}/`;
   expect((await request.get(api)).status()).toBe(401);
@@ -224,7 +259,7 @@ test('the locked text is not in the page and the server refuses it without a val
   const buena = (await page.evaluate((k) => JSON.parse(localStorage.getItem(k)!), CLAVE)) as { token: string };
   const r = await request.get(api, { headers: { Authorization: `Bearer ${buena.token}` } });
   expect(r.status()).toBe(200);
-  expect((await r.json()).html).toContain(FRASE_CERRADA);
+  expect((await r.json()).html).toContain(frase);
 });
 
 test('the unlock API answers 402 without access and never gives a free story', async ({ request }) => {

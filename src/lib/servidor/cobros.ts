@@ -2,9 +2,8 @@
 // Payments are simulated: the database records what the simulator says, nothing moves money.
 import { DIA, firmar } from '../firma';
 import { todasLasHistorias } from '../historias';
-import { cerradoDe } from './cerrado';
 import { cotizacionUsdBtc } from './precio';
-import { bd, hayBase, leerError } from './bd';
+import { bd, leerError } from './bd';
 
 export type EstadoCobro = 'pendiente' | 'pagada' | 'vencida' | 'fallida';
 
@@ -32,6 +31,8 @@ export const SEGUNDOS_PARA_PAGAR = 300;
 const DIAS_DE_ACCESO = 7;
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SIN_GUARDAR = { 'Cache-Control': 'no-store' };
+/** Answer for a paid story whose locked text is missing from media_cerrado. */
+export const TEXTO_NO_DISPONIBLE = 'El texto de esta historia no está disponible ahora. Probá en un rato.';
 
 const CODIGOS: Record<string, number> = {
   NO_ENCONTRADA: 404,
@@ -52,13 +53,14 @@ export function modoDemo(): boolean {
   return variable('PUBLIC_DEMO') === '1';
 }
 
-/** A paid story the server knows: with a price in its frontmatter and locked text in media_cerrado. */
+/**
+ * A paid story from the content collection: not gratis and a price above zero. Null when the slug is
+ * unknown or free. Callers read the locked text themselves, so a missing row can answer 503, not 404.
+ */
 export async function historiaDePago(slug: unknown): Promise<HistoriaDePago | null> {
   if (typeof slug !== 'string') return null;
   const historia = (await todasLasHistorias()).find((h) => h.id === slug);
   if (!historia || historia.data.gratis || !(historia.data.precio > 0)) return null;
-  // Without a database the routes answer 503 right after this, so there is nothing to check here.
-  if (hayBase() && (await cerradoDe(slug)) === null) return null;
   return { slug, titulo: historia.data.titulo, precioSats: historia.data.precio };
 }
 

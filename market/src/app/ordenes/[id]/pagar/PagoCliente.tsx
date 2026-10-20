@@ -183,7 +183,7 @@ export function PagoCliente({
       if (!vigente) return;
       navegador = cliente;
       canal = cliente
-        .channel(`orden-${ordenId}`)
+        .channel(`orden-${ordenId}-pago`)
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'ordenes', filter: `id=eq.${ordenId}` },

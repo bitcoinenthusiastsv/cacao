@@ -20,11 +20,16 @@ export async function accesoAdmin(astro: Pick<AstroGlobal, 'locals'>): Promise<A
   if (!cuenta) return { estado: 'sin-permiso' };
 
   // Phone and email come from the Clerk record. The database keeps digits only for the phone.
+  // Only a verified phone or email may link an existing row; an unverified one is sent as empty.
+  const telefonoVinculo =
+    cuenta.primaryPhoneNumber?.verification?.status === 'verified' ? cuenta.primaryPhoneNumber.phoneNumber : '';
+  const correoVinculo =
+    cuenta.primaryEmailAddress?.verification?.status === 'verified' ? cuenta.primaryEmailAddress.emailAddress : '';
   const servicio = bd();
   const { data: id, error } = await servicio.rpc('vincular_clerk', {
     p_clerk_id: userId,
-    p_telefono: cuenta.primaryPhoneNumber?.phoneNumber ?? '',
-    p_correo: cuenta.primaryEmailAddress?.emailAddress ?? '',
+    p_telefono: telefonoVinculo,
+    p_correo: correoVinculo,
     p_nombre: cuenta.fullName ?? '',
   });
   if (error || !id) {

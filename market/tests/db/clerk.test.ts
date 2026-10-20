@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { anonimo, servicio, sesionDe, sufijo, telefonoComoLoEscribe, usuarioNuevo } from './ayuda';
 
@@ -20,6 +21,14 @@ async function filaPrevia(telefono: string): Promise<string> {
   const { data, error } = await servicio().from('usuarios').insert({ telefono, nombre: 'Previa' }).select('id').single();
   if (error) throw error;
   return data.id as string;
+}
+
+// A row created before Clerk for an administrator: no clerk_id yet, but vincular_clerk must not link it.
+async function filaPreviaAdmin(contacto: string): Promise<string> {
+  const id = await filaPrevia(contacto);
+  const { error } = await servicio().from('usuarios').update({ es_admin: true }).eq('id', id);
+  if (error) throw error;
+  return id;
 }
 
 async function vincular(clerkId: string, telefono: string, correo = '', nombre = '') {
@@ -75,6 +84,80 @@ describe('vincular_clerk', () => {
     expect(segunda.data).toBe(primera.data);
     const { count } = await servicio().from('usuarios').select('id', { count: 'exact', head: true }).eq('clerk_id', clerkId);
     expect(count).toBe(1);
+  });
+
+  it('no enlaza una administradora por teléfono: crea una fila nueva', async () => {
+    const telefono = telefonoLibre();
+    const admin = await filaPreviaAdmin(telefono);
+
+    const { data, error } = await vincular(clerkIdLibre(), telefono);
+
+    expect(error).toBeNull();
+    expect(data).not.toBe(admin);
+    const { data: fila } = await servicio().from('usuarios').select('clerk_id, es_admin').eq('id', admin).single();
+    expect(fila).toEqual({ clerk_id: null, es_admin: true });
+  });
+
+  it('no enlaza una administradora por correo: crea una fila nueva', async () => {
+    const correo = `prueba-${sufijo()}@ejemplo.sv`;
+    const admin = await filaPreviaAdmin(correo);
+
+    const { data, error } = await vincular(clerkIdLibre(), '', correo);
+
+    expect(error).toBeNull();
+    expect(data).not.toBe(admin);
+    const { data: fila } = await servicio().from('usuarios').select('clerk_id, es_admin').eq('id', admin).single();
+    expect(fila).toEqual({ clerk_id: null, es_admin: true });
+  });
+
+  it('los dígitos del teléfono no enlazan una fila cuyo teléfono es un uuid', async () => {
+    const uuid = randomUUID();
+    const previa = await filaPrevia(uuid);
+    const digitos = uuid.replace(/\D/g, '');
+
+    const { data, error } = await vincular(clerkIdLibre(), digitos);
+
+    expect(error).toBeNull();
+    expect(data).not.toBe(previa);
+    const { data: fila } = await servicio().from('usuarios').select('clerk_id').eq('id', previa).single();
+    expect(fila?.clerk_id).toBeNull();
+  });
+
+  it('los dígitos del teléfono no enlazan una fila cuyo contacto es un correo', async () => {
+    const telefono = telefonoLibre();
+    const previa = await filaPrevia(`${telefono}@ejemplo.sv`);
+
+    const { data, error } = await vincular(clerkIdLibre(), telefono);
+
+    expect(error).toBeNull();
+    expect(data).not.toBe(previa);
+    const { data: fila } = await servicio().from('usuarios').select('clerk_id').eq('id', previa).single();
+    expect(fila?.clerk_id).toBeNull();
+  });
+
+  it('el correo no enlaza una fila cuyo teléfono es un teléfono', async () => {
+    const telefono = telefonoLibre();
+    const previa = await filaPrevia(telefono);
+
+    const { data, error } = await vincular(clerkIdLibre(), '', telefono);
+
+    expect(error).toBeNull();
+    expect(data).not.toBe(previa);
+    const { data: fila } = await servicio().from('usuarios').select('clerk_id').eq('id', previa).single();
+    expect(fila?.clerk_id).toBeNull();
+  });
+
+  it('dos inicios de sesión con un teléfono nuevo a la vez no lanzan error', async () => {
+    const telefono = telefonoLibre();
+
+    const resultados = await Promise.all(
+      [0, 1, 2, 3].map(() => vincular(clerkIdLibre(), telefono)),
+    );
+
+    for (const { error } of resultados) expect(error).toBeNull();
+    const ids = resultados.map((r) => r.data);
+    for (const id of ids) expect(typeof id).toBe('string');
+    expect(new Set(ids).size).toBe(4);
   });
 });
 

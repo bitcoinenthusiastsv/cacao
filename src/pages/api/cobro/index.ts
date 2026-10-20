@@ -7,11 +7,13 @@ import {
   respuestaError,
   SEGUNDOS_PARA_PAGAR,
   sinGuardar,
+  TEXTO_NO_DISPONIBLE,
   tieneAcceso,
   tokenDeAcceso,
   vistaCobro,
   type Cobro,
 } from '../../../lib/servidor/cobros';
+import { cerradoDe } from '../../../lib/servidor/cerrado';
 import { lectorDe } from '../../../lib/servidor/lector';
 import { registrarEvento } from '../../../lib/servidor/eventos';
 import { cotizacionUsdBtc } from '../../../lib/servidor/precio';
@@ -37,6 +39,10 @@ export async function POST(context: APIContext) {
 
   let lector: string;
   try {
+    // A paid story without locked text cannot be sold: the invoice would open nothing.
+    if ((await cerradoDe(historia.slug)) === null) {
+      return Response.json({ error: TEXTO_NO_DISPONIBLE }, { status: 503, headers: sinGuardar });
+    }
     lector = await lectorDe(context);
     if (await tieneAcceso(lector, historia.slug)) {
       return Response.json({ estado: 'pagada', token: tokenDeAcceso(historia.slug).token }, { headers: sinGuardar });

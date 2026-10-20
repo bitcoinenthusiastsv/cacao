@@ -26,7 +26,10 @@ export async function clienteSesion() {
   // read alone still counts as prerenderable, so wait for the real request first.
   await connection();
   return createClient<Database>(url, clave, {
-    accessToken: async () => (await auth()).getToken() ?? null,
+    accessToken: async () => {
+      const { getToken } = await auth();
+      return (await getToken()) ?? null;
+    },
   });
 }
 

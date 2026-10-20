@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
-import { destinoSeguro, rutaAcceso, rutaCuenta } from '@/servidor/cuentas';
+import { destinoSeguro, rutaAcceso, rutaContinuar, rutaCuenta } from '@/servidor/cuentas';
 import { sesionActual } from '@/servidor/sesion';
 
 import estilos from '../estilos.module.css';
@@ -43,9 +43,9 @@ async function EntradaConDestino({ busqueda }: { busqueda: PageProps<'/entrar/[[
       </section>
 
       <div className={estilos.bloque}>
-        {/* After sign-in this page runs again, so the name check and the destination happen here once. */}
+        {/* After sign-in, /continuar runs the name check and sends the visitor on, once. */}
         <SignIn
-          forceRedirectUrl={rutaAcceso('/entrar', volver)}
+          forceRedirectUrl={rutaContinuar(volver)}
           signUpUrl={rutaAcceso('/registrarse', volver)}
         />
       </div>

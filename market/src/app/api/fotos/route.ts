@@ -32,6 +32,9 @@ export async function POST(request: Request) {
   const sesion = await sesionActual();
   if (!sesion) return error('NO_AUTORIZADO', 'Entrá a tu cuenta para subir fotos.', 401);
   if (!sesion.negocio) return error('NO_PERMITIDO', 'Primero tenés que registrar tu negocio.', 403);
+  if (sesion.negocio.estado !== 'aprobado') {
+    return error('NO_PERMITIDO', 'Tu negocio todavía no está aprobado. Podés subir fotos cuando lo aprobemos.', 403);
+  }
 
   let formulario: FormData;
   try {

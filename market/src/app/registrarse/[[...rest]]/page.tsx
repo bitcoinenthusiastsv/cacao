@@ -4,14 +4,14 @@ import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
-import { destinoSeguro, rutaEntrar } from '@/servidor/cuentas';
+import { destinoSeguro, rutaContinuar, rutaEntrar } from '@/servidor/cuentas';
 import { sesionActual } from '@/servidor/sesion';
 
 export const metadata: Metadata = {
   title: 'Registrarse',
 };
 
-// The sign-up form is Clerk's. A new account lands on /entrar, which sends it to /cuenta to set a name.
+// The sign-up form is Clerk's. A new account lands on /continuar, which sends it to /cuenta to set a name.
 export default function PaginaRegistrarse(props: PageProps<'/registrarse/[[...rest]]'>) {
   return (
     <div className="entrar">
@@ -42,7 +42,7 @@ async function RegistroConDestino({ busqueda }: { busqueda: PageProps<'/registra
         routing="path"
         path="/registrarse"
         signInUrl={rutaEntrar(volver)}
-        forceRedirectUrl={rutaEntrar(volver)}
+        forceRedirectUrl={rutaContinuar(volver)}
       />
     </>
   );
